@@ -98,3 +98,15 @@ def test_create_and_orchestrate_quick_decision():
     assert outcome_resp.status_code == 200
     o_data = outcome_resp.json()
     assert o_data["satisfaction_score"] == 9
+
+def test_upload_document_rag():
+    # Test document upload and RAG text extraction
+    file_content = b"Candidate Offer: Senior Architect. Base salary: $260,000 USD. Equity: 40,000 ISOs. Remote work: approved."
+    files = {"file": ("test_offer.txt", file_content, "text/plain")}
+    resp = client.post("/api/documents/upload", files=files)
+    assert resp.status_code == 200
+    doc_data = resp.json()
+    assert doc_data["id"] is not None
+    assert doc_data["filename"] == "test_offer.txt"
+    assert doc_data["chunk_count"] >= 1
+

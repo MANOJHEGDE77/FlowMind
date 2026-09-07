@@ -16,6 +16,15 @@
   --line-active: rgba(0, 240, 255, 0.5);
   --surface-blur: rgba(6, 9, 15, 0.75);
   --halo-glow: rgba(0, 240, 255, 0.05);
+
+  /* Component semantic aliases */
+  --bg-surface: #090B12;
+  --bg-surface-subtle: rgba(255, 255, 255, 0.03);
+  --bg-surface-elevated: rgba(255, 255, 255, 0.07);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --text-primary: #FFFFFF;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
 }
 
 html.light {
@@ -33,6 +42,15 @@ html.light {
   --line-active: rgba(2, 132, 199, 0.6);
   --surface-blur: rgba(251, 251, 250, 0.88);
   --halo-glow: rgba(2, 132, 199, 0.06);
+
+  /* Component semantic aliases */
+  --bg-surface: #F1F1EF;
+  --bg-surface-subtle: rgba(0, 0, 0, 0.03);
+  --bg-surface-elevated: rgba(0, 0, 0, 0.06);
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
 }
 
 body {
