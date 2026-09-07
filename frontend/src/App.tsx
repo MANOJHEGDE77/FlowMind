@@ -14,6 +14,7 @@ import { DecisionArchive } from './components/DecisionArchive';
 import { ExplorerPage } from './pages/ExplorerPage';
 import { OmniCommand } from './components/OmniCommand';
 import { HelpGuideModal } from './components/HelpGuideModal';
+import { AskAIModal } from './components/AskAIModal';
 import { AuthModal } from './pages/AuthPage';
 import { EvidenceDropZone } from './components/EvidenceDropZone';
 import { ThemeProvider } from './context/ThemeContext';
@@ -45,6 +46,8 @@ export function AppRoot() {
   const [isRedTeamOpen, setIsRedTeamOpen] = useState(false);
   const [isWhatIfOpen, setIsWhatIfOpen] = useState(false);
   const [isEvidenceOpen, setIsEvidenceOpen] = useState(false);
+  const [isAskAIOpen, setIsAskAIOpen] = useState(false);
+  const [askAIQuestion, setAskAIQuestion] = useState('');
   const [inspectedNode, setInspectedNode] = useState<{ type: string; data: any } | null>(null);
 
   const loadData = async () => {
@@ -66,6 +69,17 @@ export function AppRoot() {
 
   useEffect(() => {
     loadData();
+
+    // Global keyboard shortcut: ⌘/ or Ctrl+/ to toggle Ask AI
+    const handleGlobalKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+        e.preventDefault();
+        setAskAIQuestion('');
+        setIsAskAIOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKey);
+    return () => window.removeEventListener('keydown', handleGlobalKey);
   }, []);
 
   const handleCreateDecision = async (data: {
@@ -113,7 +127,7 @@ export function AppRoot() {
   };
 
   return (
-    <div className="relative min-h-screen w-screen bg-[var(--canvas-bg)] text-[var(--text-vivid)] overflow-hidden">
+    <div className="relative min-h-screen w-full bg-[var(--canvas-bg)] text-[var(--text-vivid)] overflow-x-hidden">
       {/* 1. Subtle Animated Thinking Field Background with Living Constellation */}
       <ThinkingField
         inputText={activeInputText}
@@ -148,13 +162,17 @@ export function AppRoot() {
         }}
         onOpenCommandPalette={() => setIsCommandOpen(true)}
         onOpenHelp={() => setIsHelpOpen(true)}
+        onOpenAskAI={() => {
+          setAskAIQuestion('');
+          setIsAskAIOpen(true);
+        }}
         onOpenAuth={() => setIsAuthOpen(true)}
         currentDecision={currentDecision}
         currentUser={currentUser}
       />
 
       {/* 5. Main Views */}
-      <main className="relative z-10 w-full h-full">
+      <main className="relative z-10 w-full min-h-screen">
         {/* HOME: BORDERLESS LIVING THOUGHT COMPOSER */}
         {activeView === 'home' && (
           <ThoughtComposer
@@ -176,6 +194,10 @@ export function AppRoot() {
             onOpenSimulator={() => setIsWhatIfOpen(true)}
             onOpenEvidence={() => setIsEvidenceOpen(true)}
             onOpenCouncil={() => setIsCouncilOpen(true)}
+            onOpenAskAI={() => {
+              setAskAIQuestion('');
+              setIsAskAIOpen(true);
+            }}
             onSelectNode={(type, data) => {
               if (type === 'signal') {
                 setIsSignalOpen(true);
@@ -212,7 +234,7 @@ export function AppRoot() {
 
         {/* EXPLORE: CURATED DILEMMAS */}
         {activeView === 'explore' && (
-          <div className="py-16">
+          <div className="w-full">
             <ExplorerPage onLoadDilemma={handleCloneDilemma} />
           </div>
         )}
@@ -240,6 +262,10 @@ export function AppRoot() {
         }}
         onNavigate={setActiveView}
         onSelectDecision={handleSelectDecision}
+        onOpenAskAI={(q) => {
+          setAskAIQuestion(q || '');
+          setIsAskAIOpen(true);
+        }}
         recentDecisions={recentDecisions}
         hasActiveDecision={Boolean(currentDecision)}
       />
@@ -351,6 +377,14 @@ export function AppRoot() {
           setCurrentDecision(null);
           setActiveView('home');
         }}
+      />
+
+      {/* 13. Interactive AI Question Answering (Gemini 1.5 Flash / Cognitive Core) */}
+      <AskAIModal
+        isOpen={isAskAIOpen}
+        onClose={() => setIsAskAIOpen(false)}
+        decision={currentDecision}
+        initialQuestion={askAIQuestion}
       />
     </div>
   );

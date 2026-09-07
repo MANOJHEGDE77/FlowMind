@@ -89,7 +89,7 @@ export const DecisionArchive: React.FC<DecisionArchiveProps> = ({
   };
 
   return (
-    <div className="min-h-screen px-6 py-24 max-w-4xl mx-auto space-y-8 select-none z-10 relative">
+    <div className="min-h-screen px-6 pt-24 pb-36 max-w-4xl mx-auto space-y-8 select-none z-10 relative">
       {/* Header */}
       <div className="space-y-1.5 text-center">
         <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 font-bold block">

@@ -169,6 +169,33 @@ class ApiService {
       body: formData,
     });
   }
+
+  // AI Question Answering (Gemini / Efficient Model)
+  async askAI(data: {
+    question: string;
+    decisionId?: number;
+    context?: string;
+    history?: Array<{ role: string; content: string }>;
+  }): Promise<{
+    question: string;
+    answer: string;
+    model_used: string;
+    confidence: number;
+    relevant_factors: string[];
+    suggested_followups: string[];
+    citations: string[];
+  }> {
+    const endpoint = data.decisionId ? `/decisions/${data.decisionId}/ask` : '/ai/ask';
+    return this.request(endpoint, {
+      method: 'POST',
+      body: JSON.stringify({
+        question: data.question,
+        decision_id: data.decisionId,
+        context: data.context,
+        history: data.history || [],
+      }),
+    });
+  }
 }
 
 export const api = new ApiService();

@@ -13,6 +13,7 @@ interface FloatingNavProps {
   onNewDecision: () => void;
   onOpenCommandPalette: () => void;
   onOpenHelp?: () => void;
+  onOpenAskAI?: () => void;
   onOpenAuth: () => void;
   currentDecision: Decision | null;
   currentUser: User | null;
@@ -55,6 +56,7 @@ export const FloatingNav: React.FC<FloatingNavProps> = ({
   onNewDecision,
   onOpenCommandPalette,
   onOpenHelp,
+  onOpenAskAI,
   onOpenAuth,
   currentDecision,
   currentUser,
@@ -136,6 +138,20 @@ export const FloatingNav: React.FC<FloatingNavProps> = ({
               ⌘K
             </kbd>
           </motion.button>
+
+          {/* Ask AI Trigger */}
+          {onOpenAskAI && (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={onOpenAskAI}
+              className="flex items-center space-x-1.5 text-[11px] font-mono text-cyan-300 hover:text-white bg-cyan-500/15 hover:bg-cyan-500/25 px-3 py-1.5 rounded-full border border-cyan-500/30 transition-all shadow-[0_0_12px_rgba(0,240,255,0.15)]"
+              title="Ask Gemini / FlowMind AI any question (⌘/)"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="font-semibold">✦ Ask AI</span>
+            </motion.button>
+          )}
 
           {/* New Dilemma Quick Action (Only in Workspace) */}
           {activeView === 'workspace' && (

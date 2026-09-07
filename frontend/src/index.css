@@ -53,11 +53,17 @@ html.light {
   --text-muted: #94A3B8;
 }
 
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
 body {
   background-color: var(--canvas-bg);
   color: var(--text-vivid);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   user-select: none;
   -webkit-font-smoothing: antialiased;
 }

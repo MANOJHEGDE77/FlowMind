@@ -110,3 +110,31 @@ def test_upload_document_rag():
     assert doc_data["filename"] == "test_offer.txt"
     assert doc_data["chunk_count"] >= 1
 
+def test_ai_question_answering():
+    # 1. Global question answering
+    q_resp = client.post("/api/ai/ask", json={
+        "question": "What are the core trade-offs between cash compensation and early-stage startup equity?"
+    })
+    assert q_resp.status_code == 200
+    data = q_resp.json()
+    assert data["question"] is not None
+    assert len(data["answer"]) > 50
+    assert data["confidence"] > 0
+    assert len(data["relevant_factors"]) > 0
+
+    # 2. Contextual decision-grounded question
+    prompt = "Should I pursue an accelerated MS degree or take an immediate Staff Engineer offer?"
+    dec_resp = client.post("/api/decisions/quick", json={"prompt": prompt})
+    assert dec_resp.status_code == 200
+    dec_id = dec_resp.json()["id"]
+
+    q_dec_resp = client.post(f"/api/decisions/{dec_id}/ask", json={
+        "question": "Why is the top option recommended over the alternative?",
+        "decision_id": dec_id
+    })
+    assert q_dec_resp.status_code == 200
+    dec_q_data = q_dec_resp.json()
+    assert len(dec_q_data["answer"]) > 50
+    assert dec_q_data["model_used"] is not None
+
+

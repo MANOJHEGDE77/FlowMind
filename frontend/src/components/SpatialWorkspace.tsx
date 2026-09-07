@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import {
   ZoomIn, ZoomOut, Maximize2, Swords, SlidersHorizontal,
   Scale, BookOpen, Crown, TrendingUp, ShieldAlert,
-  Sparkles, ArrowRight, Layers, Eye
+  Sparkles, ArrowRight, Layers, Eye, MessageSquare
 } from 'lucide-react';
 import { Decision, DecisionOption } from '../types';
 
@@ -13,6 +13,7 @@ interface SpatialWorkspaceProps {
   onOpenEvidence: () => void;
   onSelectNode: (type: string, data: any) => void;
   onOpenCouncil: () => void;
+  onOpenAskAI?: () => void;
 }
 
 export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
@@ -22,6 +23,7 @@ export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
   onOpenEvidence,
   onSelectNode,
   onOpenCouncil,
+  onOpenAskAI,
 }) => {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -61,6 +63,18 @@ export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
     setPan({ x: 0, y: 0 });
   };
 
+  const handleWheel = (e: React.WheelEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      const zoomDelta = e.deltaY < 0 ? 0.08 : -0.08;
+      setZoom((prev) => Math.min(Math.max(prev + zoomDelta, 0.5), 1.8));
+    } else {
+      setPan((prev) => ({
+        x: prev.x - e.deltaX * 0.8,
+        y: prev.y - e.deltaY * 0.8,
+      }));
+    }
+  };
+
   const winnerOption = decision.options.find(o => o.is_recommended) || decision.options[0];
 
   return (
@@ -69,6 +83,7 @@ export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
+      onWheel={handleWheel}
       className={`fixed inset-0 w-screen h-screen bg-[var(--canvas-bg)] spatial-grid select-none overflow-hidden cursor-${
         isPanning ? 'grabbing' : 'grab'
       }`}
@@ -132,6 +147,18 @@ export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
             <BookOpen className="w-3.5 h-3.5" />
             <span>Evidence ({decision.evidence_items.length})</span>
           </button>
+
+          {onOpenAskAI && (
+            <button
+              onClick={onOpenAskAI}
+              onMouseEnter={() => setHoveredAction('Ask AI: Ask questions to Gemini / FlowMind regarding this dilemma, trade-offs, or risks')}
+              onMouseLeave={() => setHoveredAction(null)}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 text-xs font-mono transition-all shadow-[0_0_12px_rgba(0,240,255,0.15)]"
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>✦ Ask AI</span>
+            </button>
+          )}
         </div>
 
         {/* Hover micro-description tooltip */}

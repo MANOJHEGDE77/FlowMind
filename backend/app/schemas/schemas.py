@@ -248,3 +248,21 @@ class DocumentResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+# ----------------- AI Question Answering -----------------
+
+class AskQuestionRequest(BaseModel):
+    question: str
+    decision_id: Optional[int] = None
+    context: Optional[str] = None
+    history: Optional[List[Dict[str, str]]] = []
+
+class AskQuestionResponse(BaseModel):
+    question: str
+    answer: str
+    model_used: str
+    confidence: float = 0.85
+    relevant_factors: List[str] = []
+    suggested_followups: List[str] = []
+    citations: List[str] = []
+

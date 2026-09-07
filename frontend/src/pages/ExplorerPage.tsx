@@ -79,7 +79,7 @@ export const ExplorerPage: React.FC<ExplorerPageProps> = ({ onLoadDilemma }) => 
   ];
 
   return (
-    <div className="p-6 md:p-12 max-w-4xl mx-auto space-y-10 select-none animate-in fade-in duration-200">
+    <div className="px-6 pt-24 pb-36 max-w-4xl mx-auto space-y-10 select-none animate-in fade-in duration-200 min-h-screen">
       {/* Header */}
       <div className="text-center space-y-1.5 pb-4 border-b border-[var(--line-color)]">
         <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 font-bold block">

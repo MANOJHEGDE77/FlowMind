@@ -17,6 +17,7 @@ interface OmniCommandProps {
   onUploadDoc: () => void;
   onNavigate: (view: 'home' | 'workspace' | 'archive' | 'explore') => void;
   onSelectDecision: (id: number) => void;
+  onOpenAskAI?: (question?: string) => void;
   recentDecisions: DecisionListItem[];
   hasActiveDecision: boolean;
 }
@@ -30,6 +31,7 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
   onUploadDoc,
   onNavigate,
   onSelectDecision,
+  onOpenAskAI,
   recentDecisions,
   hasActiveDecision,
 }) => {
@@ -174,8 +176,25 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
     q === '' ? false : d.title.toLowerCase().includes(q) || d.keywords.toLowerCase().includes(q)
   );
 
+  // AI Question Instant Action (if query is typed)
+  const aiActionItem = (query.trim().length > 0 && onOpenAskAI)
+    ? [{
+        id: 'ai-ask-query',
+        type: 'ai',
+        title: `✦ Ask AI Model: "${query.trim()}"`,
+        subtitle: 'Query Gemini 1.5 Flash or Cognitive Core for instant calibrated strategic answer',
+        icon: Sparkles,
+        color: 'text-cyan-300',
+        keywords: query.toLowerCase(),
+        action: () => {
+          onOpenAskAI(query.trim());
+          onClose();
+        },
+      }]
+    : [];
+
   // Combined flat list for keyboard arrow navigation
-  const allResults = [...filteredDecisions, ...filteredActions];
+  const allResults = [...aiActionItem, ...filteredDecisions, ...filteredActions];
 
   const handleKeyDownList = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
@@ -228,6 +247,43 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
 
         {/* Results Container */}
         <div className="max-h-[65vh] overflow-y-auto p-3 space-y-4 font-mono text-xs">
+          {/* AI Strategic Question Action */}
+          {aiActionItem.length > 0 && (
+            <div className="space-y-1">
+              <span className="px-3 text-[10px] uppercase tracking-widest text-cyan-300 font-bold block mb-1">
+                ✦ ASK AI MODEL (GEMINI FLASH)
+              </span>
+              {aiActionItem.map((item) => {
+                const isSelected = selectedIndex === 0;
+                return (
+                  <div
+                    key={item.id}
+                    onClick={item.action}
+                    onMouseEnter={() => setSelectedIndex(0)}
+                    className={`p-3 rounded-2xl cursor-pointer flex items-center justify-between transition-all ${
+                      isSelected
+                        ? 'bg-cyan-500/25 border border-cyan-400/60 text-white shadow-lg'
+                        : 'bg-cyan-500/10 text-slate-200 border border-cyan-500/20'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/40">
+                        <Sparkles className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-white text-xs">{item.title}</div>
+                        <div className="text-[11px] text-cyan-200/80 font-sans">{item.subtitle}</div>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-mono text-cyan-300 bg-black/40 px-2 py-0.5 rounded border border-cyan-500/30">
+                      ↵ Press Enter
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           {/* Matched Decisions if searching */}
           {filteredDecisions.length > 0 && (
             <div className="space-y-1">
@@ -235,12 +291,13 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
                 ✦ MATCHED DECISIONS
               </span>
               {filteredDecisions.map((item, idx) => {
-                const isSelected = idx === selectedIndex;
+                const itemIdx = aiActionItem.length + idx;
+                const isSelected = itemIdx === selectedIndex;
                 return (
                   <div
                     key={item.id}
                     onClick={item.action}
-                    onMouseEnter={() => setSelectedIndex(idx)}
+                    onMouseEnter={() => setSelectedIndex(itemIdx)}
                     className={`p-3 rounded-2xl cursor-pointer flex items-center justify-between transition-all ${
                       isSelected
                         ? 'bg-cyan-500/20 border border-cyan-400/50 text-white shadow-md'
@@ -269,7 +326,7 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
               {q ? 'ACTIONS & COMMANDS' : 'QUICK ACTIONS'}
             </span>
             {filteredActions.map((action, idx) => {
-              const actualIdx = filteredDecisions.length + idx;
+              const actualIdx = aiActionItem.length + filteredDecisions.length + idx;
               const isSelected = actualIdx === selectedIndex;
               const Icon = action.icon;
 

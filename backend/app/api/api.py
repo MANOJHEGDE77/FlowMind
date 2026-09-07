@@ -9,12 +9,14 @@ from app.schemas.schemas import (
     ChallengeRequest, ChallengeResponse,
     SimulationRequest, SimulationResponse,
     OutcomeCreate, OutcomeResponse,
-    EvidenceResponse, AgentRunResponse, DocumentResponse
+    EvidenceResponse, AgentRunResponse, DocumentResponse,
+    AskQuestionRequest, AskQuestionResponse
 )
 from app.services.auth_service import auth_service, get_current_user
 from app.services.decision_service import decision_service
 from app.agents.orchestrator import orchestrator
 from app.services.rag_service import rag_service
+from app.services.ai_qa_service import ai_qa_service
 
 api_router = APIRouter()
 
@@ -239,3 +241,41 @@ async def upload_document(
         chunk_count=len(extracted.get("pages", [])),
         created_at=document.created_at
     )
+
+# ----------------- AI Question Answering -----------------
+
+@api_router.post("/ai/ask", response_model=AskQuestionResponse)
+async def ask_question_endpoint(
+    data: AskQuestionRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    result = await ai_qa_service.ask_question(
+        question=data.question,
+        decision_id=data.decision_id,
+        context=data.context,
+        history=data.history,
+        db=db
+    )
+    return AskQuestionResponse(**result)
+
+@api_router.post("/decisions/{decision_id}/ask", response_model=AskQuestionResponse)
+async def ask_decision_question_endpoint(
+    decision_id: int,
+    data: AskQuestionRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    decision = db.query(Decision).filter(Decision.id == decision_id, Decision.user_id == current_user.id).first()
+    if not decision:
+        raise HTTPException(status_code=404, detail="Decision not found")
+
+    result = await ai_qa_service.ask_question(
+        question=data.question,
+        decision_id=decision_id,
+        context=data.context,
+        history=data.history,
+        db=db
+    )
+    return AskQuestionResponse(**result)
+
