@@ -136,7 +136,7 @@ export const AIThinkingState: React.FC<AIThinkingStateProps> = ({ isAnalyzing })
               <h2 className="text-2xl font-mono font-bold text-white tracking-wider">
                 {currentPhase.title}
               </h2>
-              <p className="text-sm font-editorial text-slate-300 italic max-w-sm mx-auto">
+              <p className="text-sm font-sans text-slate-300 not-italic max-w-sm mx-auto">
                 "{currentPhase.action}"
               </p>
             </motion.div>

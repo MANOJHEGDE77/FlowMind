@@ -209,7 +209,7 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                     onFocusChange?.(false);
                   }}
                   placeholder="Tell FlowMind what you're trying to figure out..."
-                  className="w-full bg-transparent text-2xl sm:text-4xl font-editorial text-white placeholder-slate-500 placeholder:font-editorial placeholder:italic focus:outline-none resize-none leading-relaxed text-center tracking-tight border-b border-transparent focus:border-cyan-400/50 pb-2 transition-all"
+                  className="w-full bg-transparent text-2xl sm:text-4xl font-sans font-normal text-white placeholder-slate-500 placeholder:font-sans placeholder:not-italic not-italic focus:outline-none resize-none leading-relaxed text-center tracking-tight border-b border-transparent focus:border-cyan-400/50 pb-2 transition-all"
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey && dilemma.trim()) {
@@ -332,7 +332,7 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                 animate={{ opacity: 1, scale: 1 }}
                 className="space-y-2"
               >
-                <h1 className="text-2xl sm:text-3xl font-editorial text-white max-w-xl mx-auto italic leading-snug drop-shadow-sm">
+                <h1 className="text-2xl sm:text-3xl font-sans font-medium text-white max-w-xl mx-auto not-italic leading-snug drop-shadow-sm">
                   "{dilemma}"
                 </h1>
                 <button
@@ -686,7 +686,7 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                     <span className="text-[9px] font-mono uppercase text-slate-500 block">
                       Last Dilemma
                     </span>
-                    <p className="text-xs font-editorial text-white italic">
+                    <p className="text-xs font-sans text-white not-italic">
                       "{latestMemory.title}"
                     </p>
                   </div>
