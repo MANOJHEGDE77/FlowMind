@@ -192,60 +192,74 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
             </p>
           )}
 
-          {/* Central User Thought (The core centerpiece of the entire app) */}
+          {/* Central User Thought (Stylized Glassmorphic Cognitive Capsule) */}
           <div className="relative pt-2">
             {stage === 'prompt' ? (
-              <div className="relative flex flex-col items-center">
-                <textarea
-                  rows={2}
-                  value={dilemma}
-                  onChange={(e) => handleTextChange(e.target.value)}
-                  onFocus={() => {
-                    setIsFocused(true);
-                    onFocusChange?.(true);
-                  }}
-                  onBlur={() => {
-                    setIsFocused(false);
-                    onFocusChange?.(false);
-                  }}
-                  placeholder="Tell FlowMind what you're trying to figure out..."
-                  className="w-full bg-transparent text-2xl sm:text-4xl font-sans font-normal text-white placeholder-slate-500 placeholder:font-sans placeholder:not-italic not-italic focus:outline-none resize-none leading-relaxed text-center tracking-tight border-b border-transparent focus:border-cyan-400/50 pb-2 transition-all"
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey && dilemma.trim()) {
-                      e.preventDefault();
-                      setStage('priorities');
-                    }
-                  }}
-                />
+              <div className="relative flex flex-col items-center w-full">
+                {/* Stylized Glassmorphic Thought Capsule */}
+                <div
+                  className={`w-full max-w-xl mx-auto rounded-3xl p-5 sm:p-6 bg-slate-950/40 backdrop-blur-2xl border transition-all duration-300 relative group shadow-[0_0_50px_rgba(0,0,0,0.5)] ${
+                    isFocused
+                      ? 'border-cyan-400/40 shadow-[0_0_35px_rgba(0,240,255,0.12)] ring-1 ring-cyan-400/20'
+                      : 'border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <textarea
+                    rows={2}
+                    value={dilemma}
+                    onChange={(e) => handleTextChange(e.target.value)}
+                    onFocus={() => {
+                      setIsFocused(true);
+                      onFocusChange?.(true);
+                    }}
+                    onBlur={() => {
+                      setIsFocused(false);
+                      onFocusChange?.(false);
+                    }}
+                    placeholder="What are you looking to decide?"
+                    className="w-full bg-transparent text-base sm:text-xl font-sans font-normal text-white placeholder-slate-500/80 not-italic placeholder:not-italic focus:outline-none resize-none leading-relaxed text-center tracking-tight pb-1 transition-all"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey && dilemma.trim()) {
+                        e.preventDefault();
+                        setStage('priorities');
+                      }
+                    }}
+                  />
 
-                {/* What you can provide helper chips when empty */}
-                {!dilemma && (
-                  <div className="flex flex-wrap items-center justify-center gap-2 pt-2 text-[10px] font-mono text-slate-500">
-                    <span className="px-2.5 py-0.5 rounded-full bg-black/40 border border-slate-800 text-slate-400">
-                      • Competing Pathways
+                  {/* Micro Helper Bar inside capsule */}
+                  <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[10px] font-mono text-slate-500">
+                    <span className="flex items-center space-x-1 text-slate-400">
+                      <Sparkles className="w-3 h-3 text-cyan-400" />
+                      <span>Natural Language Decision Modeler</span>
                     </span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-black/40 border border-slate-800 text-slate-400">
-                      • Core Priorities
-                    </span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-black/40 border border-slate-800 text-slate-400">
-                      • Non-Negotiables
-                    </span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-black/40 border border-slate-800 text-slate-400">
-                      • Evidence Sources
-                    </span>
+                    {dilemma ? (
+                      <span className="text-cyan-400/80">Press ↵ to structure</span>
+                    ) : (
+                      <span className="text-slate-500">Describe any ambition or choice</span>
+                    )}
                   </div>
-                )}
+                </div>
 
-                {/* Subtle intelligent cursor representation */}
+                {/* Quick Inspiration Pills when empty */}
                 {!dilemma && (
-                  <motion.span
-                    animate={{ opacity: [1, 0, 1] }}
-                    transition={{ duration: 1.1, repeat: Infinity }}
-                    className="absolute bottom-5 right-1/4 text-cyan-400 text-2xl font-light pointer-events-none hidden sm:inline-block"
-                  >
-                    |
-                  </motion.span>
+                  <div className="flex flex-wrap items-center justify-center gap-2 pt-3 text-[11px] font-mono">
+                    <span className="text-slate-500 text-[10px] mr-1">TRY:</span>
+                    {[
+                      'I want to become an AI engineer',
+                      'Startup Offer vs BigTech Principal',
+                      'Bootstrap SaaS vs Raise Seed Capital',
+                    ].map((sample, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleTextChange(sample)}
+                        className="px-2.5 py-1 rounded-full bg-slate-900/60 border border-slate-800/80 text-slate-400 hover:text-cyan-300 hover:border-cyan-500/30 transition-all cursor-pointer text-[10px]"
+                      >
+                        {sample}
+                      </button>
+                    ))}
+                  </div>
                 )}
 
                 {/* Dynamic concept extraction floating badges */}
