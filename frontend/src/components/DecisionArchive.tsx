@@ -30,6 +30,16 @@ export const DecisionArchive: React.FC<DecisionArchiveProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  const avgConfidence = useMemo(() => {
+    if (decisions.length === 0) return 0;
+    const sum = decisions.reduce((acc, d) => acc + (d.confidence_score || 0), 0);
+    return Math.round(sum / decisions.length);
+  }, [decisions]);
+
+  const resolvedCount = useMemo(() => {
+    return decisions.filter((d) => d.status === 'resolved').length;
+  }, [decisions]);
+
   // Filtering and Sorting
   const filteredDecisions = useMemo(() => {
     return decisions
@@ -103,16 +113,16 @@ export const DecisionArchive: React.FC<DecisionArchiveProps> = ({
         </p>
       </div>
 
-      {/* Intelligence Calibration Insight Banner */}
+      {/* Real Intelligence Calibration Insight Banner */}
       {decisions.length > 0 && (
         <div className="p-4 rounded-2xl bg-cyan-950/30 border border-cyan-500/30 flex items-start space-x-3 text-xs font-sans text-slate-300">
           <TrendingUp className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
           <div className="space-y-1">
             <span className="font-mono text-[10px] font-bold uppercase text-cyan-300 block tracking-wider">
-              DECISION CALIBRATION INSIGHT
+              REAL-TIME MEMORY METRICS
             </span>
             <p className="text-xs text-slate-300 leading-relaxed">
-              You have evaluated <strong className="text-white">{decisions.length} high-stakes decisions</strong>. Models with prioritized Learning Velocity & Autonomy exhibit highest long-term satisfaction.
+              You have evaluated <strong className="text-white">{decisions.length} live decision{decisions.length === 1 ? '' : 's'}</strong> with a mean AI model confidence of <strong className="text-cyan-300">{avgConfidence}%</strong> across {resolvedCount} resolved and {decisions.length - resolvedCount} active dilemma workspaces.
             </p>
           </div>
         </div>

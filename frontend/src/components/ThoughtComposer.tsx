@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight, Plus, Shield, Sparkles, RefreshCw, X, History, ChevronRight
@@ -43,23 +43,15 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
   const [isFocused, setIsFocused] = useState(false);
   const [stage, setStage] = useState<'prompt' | 'priorities' | 'options' | 'constraints'>('prompt');
 
-  // Interactive floating priorities
-  const [selectedPriorities, setSelectedPriorities] = useState<string[]>([
-    'Career Velocity & Learning',
-    'Long-Term Equity / Financial Upside',
-  ]);
+  // Interactive floating priorities (clean slate: user chooses)
+  const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
 
-  // Options
-  const [options, setOptions] = useState<string[]>([
-    'Series B High-Growth Startup Lead',
-    'BigTech Principal Track',
-  ]);
+  // Real Options (clean slate: no fake pre-seeded offers)
+  const [options, setOptions] = useState<string[]>([]);
   const [customOption, setCustomOption] = useState('');
 
-  // Constraints
-  const [constraints, setConstraints] = useState<string[]>([
-    'Decision required within 14 days',
-  ]);
+  // Real Constraints (clean slate: no fake 14-day limit)
+  const [constraints, setConstraints] = useState<string[]>([]);
   const [customConstraint, setCustomConstraint] = useState('');
 
   // Hovered memory fragment
@@ -69,6 +61,29 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
   useEffect(() => {
     onPrioritiesChange?.(selectedPriorities);
   }, [selectedPriorities, onPrioritiesChange]);
+
+  // Real-time automatic extraction from typed dilemma
+  const autoExtractedOptions = useMemo(() => {
+    if (!dilemma.trim()) return [];
+    const cleaned = dilemma
+      .replace(/^(should i|shall i|what if i|i need to decide between|deciding between|help me decide between)\s+/i, '')
+      .replace(/\?+$/, '')
+      .trim();
+    const parts = cleaned
+      .split(/\s+vs\.?\s+|\s+versus\s+|\s+or\s+|,\s*/i)
+      .map(s => s.trim())
+      .filter(s => s.length > 1 && !['accept', 'choose', 'between', 'the', 'and', 'my', 'to', 'a', 'an'].includes(s.toLowerCase()));
+
+    if (parts.length >= 2) return parts.slice(0, 4);
+    if (parts.length === 1 && parts[0].length > 3) return [parts[0], 'Maintain Current Trajectory'];
+    return [];
+  }, [dilemma]);
+
+  const effectiveOptions = useMemo(() => {
+    if (options.length > 0) return options;
+    if (autoExtractedOptions.length > 0) return autoExtractedOptions;
+    return [];
+  }, [options, autoExtractedOptions]);
 
   const handleTextChange = (text: string) => {
     setDilemma(text);
@@ -105,7 +120,7 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
     await onSubmit({
       title: dilemma.slice(0, 80) + (dilemma.length > 80 ? '...' : ''),
       context: dilemma,
-      options: options.map(o => ({ title: o, description: `Evaluation pathway for ${o}` })),
+      options: effectiveOptions.map(o => ({ title: o, description: `Pathway evaluating ${o}` })),
       goals: selectedPriorities.map(p => ({ description: p, priority: 'high', weight: 1.2 })),
       constraints: constraints.map(c => ({ description: c, severity: 'hard' })),
     });
@@ -351,27 +366,50 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
             </div>
 
             <div className="flex flex-wrap justify-center gap-2 max-w-lg mx-auto">
-              {options.map((opt, i) => (
-                <div
-                  key={i}
-                  className="px-3.5 py-1.5 rounded-full bg-[var(--canvas-subtle)] border border-cyan-500/30 text-xs font-mono text-white flex items-center space-x-2 shadow-sm"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  <span>{opt}</span>
-                  <button
-                    onClick={() => setOptions(options.filter((_, idx) => idx !== i))}
-                    className="text-slate-400 hover:text-rose-400 transition-colors"
+              {options.length > 0 ? (
+                options.map((opt, i) => (
+                  <div
+                    key={i}
+                    className="px-3.5 py-1.5 rounded-full bg-[var(--canvas-subtle)] border border-cyan-500/30 text-xs font-mono text-white flex items-center space-x-2 shadow-sm"
                   >
-                    ×
-                  </button>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span>{opt}</span>
+                    <button
+                      onClick={() => setOptions(options.filter((_, idx) => idx !== i))}
+                      className="text-slate-400 hover:text-rose-400 transition-colors"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))
+              ) : autoExtractedOptions.length > 0 ? (
+                <div className="space-y-2 w-full text-center">
+                  <span className="text-[10px] font-mono text-cyan-400/80 uppercase tracking-wider block">
+                    ⚡ Auto-detected from your dilemma:
+                  </span>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {autoExtractedOptions.map((opt, i) => (
+                      <div
+                        key={i}
+                        className="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-400/30 text-xs font-mono text-cyan-200 flex items-center space-x-2"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                        <span>{opt}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
+              ) : (
+                <p className="text-[11px] font-mono text-slate-500 py-1">
+                  Add candidate options below, or launch directly to let FlowMind extract them in real time.
+                </p>
+              )}
             </div>
 
             <div className="flex items-center justify-center space-x-2 max-w-md mx-auto pt-1">
               <input
                 type="text"
-                placeholder="Add another path..."
+                placeholder="Add custom option (e.g. Option A, Option B)..."
                 value={customOption}
                 onChange={(e) => setCustomOption(e.target.value)}
                 onKeyDown={(e) => {
@@ -380,7 +418,7 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                     handleAddOption();
                   }
                 }}
-                className="bg-[var(--canvas-subtle)] border border-[var(--line-color)] rounded-full px-4 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 transition-colors flex-1"
+                className="bg-[var(--canvas-subtle)] border border-[var(--line-color)] rounded-full px-4 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 transition-colors flex-1 font-mono"
               />
               <button
                 onClick={handleAddOption}
@@ -411,35 +449,41 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
           >
             <div className="space-y-1">
               <span className="text-[10px] font-mono uppercase text-cyan-400 tracking-widest font-semibold block">
-                NON-NEGOTIABLES & DEADLINES
+                NON-NEGOTIABLES & DEADLINES (OPTIONAL)
               </span>
               <p className="text-[11px] font-mono text-slate-400">
-                Hard constraints that will invalidate candidate paths
+                Any hard constraints, budget limits, or deadlines that must not be violated
               </p>
             </div>
 
             <div className="flex flex-wrap justify-center gap-2 max-w-lg mx-auto">
-              {constraints.map((c, i) => (
-                <span
-                  key={i}
-                  className="px-3.5 py-1.5 rounded-full bg-[var(--canvas-subtle)] border border-amber-500/30 text-xs font-mono text-slate-200 flex items-center space-x-1.5"
-                >
-                  <Shield className="w-3 h-3 text-amber-400" />
-                  <span>{c}</span>
-                  <button
-                    onClick={() => setConstraints(constraints.filter((_, idx) => idx !== i))}
-                    className="text-slate-400 hover:text-rose-400"
+              {constraints.length > 0 ? (
+                constraints.map((c, i) => (
+                  <span
+                    key={i}
+                    className="px-3.5 py-1.5 rounded-full bg-[var(--canvas-subtle)] border border-amber-500/30 text-xs font-mono text-slate-200 flex items-center space-x-1.5"
                   >
-                    ×
-                  </button>
-                </span>
-              ))}
+                    <Shield className="w-3 h-3 text-amber-400" />
+                    <span>{c}</span>
+                    <button
+                      onClick={() => setConstraints(constraints.filter((_, idx) => idx !== i))}
+                      className="text-slate-400 hover:text-rose-400"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))
+              ) : (
+                <p className="text-[11px] font-mono text-slate-500 py-1">
+                  No constraints set. If your decision has no hard limits, proceed directly to synthesize.
+                </p>
+              )}
             </div>
 
             <div className="flex items-center justify-center space-x-2 max-w-md mx-auto pt-1">
               <input
                 type="text"
-                placeholder="Add constraint (e.g. Min ₹28L Base)..."
+                placeholder="Add constraint (e.g. Must decide by Friday, Budget ceiling $10k)..."
                 value={customConstraint}
                 onChange={(e) => setCustomConstraint(e.target.value)}
                 onKeyDown={(e) => {

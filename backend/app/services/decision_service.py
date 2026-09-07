@@ -23,15 +23,47 @@ class DecisionService:
         db.commit()
         db.refresh(decision)
 
-        # Add Options
-        for opt in data.options:
-            db.add(DecisionOption(
-                decision_id=decision.id,
-                title=opt.title,
-                description=opt.description,
-                pros=opt.pros,
-                cons=opt.cons
-            ))
+        # Add Options (if none provided, parse real-time options from context/title)
+        if not data.options:
+            parsed = orchestrator.parse_quick_prompt(data.context or data.title)
+            for opt in parsed.get("options", []):
+                db.add(DecisionOption(
+                    decision_id=decision.id,
+                    title=opt["title"],
+                    description=opt.get("description", "")
+                ))
+            if not data.factors and parsed.get("factors"):
+                for f in parsed["factors"]:
+                    db.add(DecisionFactor(
+                        decision_id=decision.id,
+                        name=f["name"],
+                        category=f["category"],
+                        weight=f["weight"]
+                    ))
+            if not data.goals and parsed.get("goals"):
+                for g in parsed["goals"]:
+                    db.add(Goal(
+                        decision_id=decision.id,
+                        description=g["description"],
+                        priority=g["priority"],
+                        weight=g["weight"]
+                    ))
+            if not data.constraints and parsed.get("constraints"):
+                for c in parsed["constraints"]:
+                    db.add(Constraint(
+                        decision_id=decision.id,
+                        description=c["description"],
+                        severity=c["severity"]
+                    ))
+        else:
+            for opt in data.options:
+                db.add(DecisionOption(
+                    decision_id=decision.id,
+                    title=opt.title,
+                    description=opt.description,
+                    pros=opt.pros,
+                    cons=opt.cons
+                ))
 
         # Add Factors
         for f in data.factors:

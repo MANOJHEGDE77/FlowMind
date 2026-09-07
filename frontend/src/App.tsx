@@ -30,10 +30,7 @@ export function AppRoot() {
   // Live thinking field reactive states
   const [activeInputText, setActiveInputText] = useState('');
   const [isInputFocused, setIsInputFocused] = useState(false);
-  const [selectedPriorities, setSelectedPriorities] = useState<string[]>([
-    'Career Velocity & Learning',
-    'Long-Term Equity / Financial Upside',
-  ]);
+  const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
   const [hoveredConcept, setHoveredConcept] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
@@ -91,7 +88,12 @@ export function AppRoot() {
   }) => {
     try {
       setIsAnalyzing(true);
-      const dec = await api.createDecision(data);
+      let dec;
+      if (!data.options || data.options.length === 0) {
+        dec = await api.createQuickDecision(data.context || data.title);
+      } else {
+        dec = await api.createDecision(data);
+      }
       setCurrentDecision(dec);
       await loadData();
       setIsAnalyzing(false);
@@ -235,7 +237,10 @@ export function AppRoot() {
         {/* EXPLORE: CURATED DILEMMAS */}
         {activeView === 'explore' && (
           <div className="w-full">
-            <ExplorerPage onLoadDilemma={handleCloneDilemma} />
+            <ExplorerPage
+              recentDecisions={recentDecisions}
+              onLoadDilemma={handleCloneDilemma}
+            />
           </div>
         )}
       </main>
