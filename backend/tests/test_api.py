@@ -137,4 +137,18 @@ def test_ai_question_answering():
     assert len(dec_q_data["answer"]) > 50
     assert dec_q_data["model_used"] is not None
 
+def test_suggest_pathway_options():
+    # Test open-ended ambition pathway generation
+    resp = client.post("/api/ai/suggest-options", json={
+        "prompt": "I want to become an AI engineer"
+    })
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["options"]) >= 2
+    assert "AI" in data["suggested_title"] or "Engineer" in data["suggested_title"]
+    # Check that each option is a distinct pathway, not just the prompt
+    for opt in data["options"]:
+        assert len(opt["title"]) > 5
+        assert opt["title"].lower() != "i want to become an ai engineer"
+
 

@@ -10,7 +10,8 @@ from app.schemas.schemas import (
     SimulationRequest, SimulationResponse,
     OutcomeCreate, OutcomeResponse,
     EvidenceResponse, AgentRunResponse, DocumentResponse,
-    AskQuestionRequest, AskQuestionResponse
+    AskQuestionRequest, AskQuestionResponse,
+    SuggestOptionsRequest, SuggestOptionsResponse, SuggestedPathwayItem
 )
 from app.services.auth_service import auth_service, get_current_user
 from app.services.decision_service import decision_service
@@ -278,4 +279,23 @@ async def ask_decision_question_endpoint(
         db=db
     )
     return AskQuestionResponse(**result)
+
+@api_router.post("/ai/suggest-options", response_model=SuggestOptionsResponse)
+def suggest_options_endpoint(
+    data: SuggestOptionsRequest,
+    current_user: User = Depends(get_current_user)
+):
+    parsed = orchestrator.parse_quick_prompt(data.prompt)
+    options = [
+        SuggestedPathwayItem(title=o["title"], description=o.get("description", ""))
+        for o in parsed.get("options", [])
+    ]
+    return SuggestOptionsResponse(
+        prompt=data.prompt,
+        suggested_title=parsed.get("title", data.prompt[:60]),
+        options=options,
+        factors=parsed.get("factors", []),
+        goals=parsed.get("goals", []),
+        constraints=parsed.get("constraints", [])
+    )
 

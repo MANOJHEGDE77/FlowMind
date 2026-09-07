@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowRight, Plus, Shield, Sparkles, RefreshCw, X, History, ChevronRight
+  ArrowRight, Plus, Shield, Sparkles, RefreshCw, X, History, ChevronRight, Wand2
 } from 'lucide-react';
 import { DecisionListItem } from '../types';
+import { api } from '../services/api';
 
 interface ThoughtComposerProps {
   onSubmit: (data: {
@@ -111,6 +112,30 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
     if (customConstraint.trim()) {
       setConstraints([...constraints, customConstraint.trim()]);
       setCustomConstraint('');
+    }
+  };
+
+  const [isSuggestingOptions, setIsSuggestingOptions] = useState(false);
+  const [suggestedOptionsList, setSuggestedOptionsList] = useState<Array<{ title: string; description: string }>>([]);
+
+  const handleFetchSuggestedOptions = async () => {
+    if (!dilemma.trim()) return;
+    try {
+      setIsSuggestingOptions(true);
+      const res = await api.suggestOptions(dilemma);
+      if (res.options && res.options.length > 0) {
+        setSuggestedOptionsList(res.options);
+        const titles = res.options.map(o => o.title);
+        setOptions(titles);
+        if (res.goals && res.goals.length > 0 && selectedPriorities.length === 0) {
+          setSelectedPriorities(res.goals.map(g => g.description));
+        }
+        setStage('options');
+      }
+    } catch (e: any) {
+      console.error('Failed to suggest options:', e);
+    } finally {
+      setIsSuggestingOptions(false);
     }
   };
 
@@ -249,10 +274,32 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                     whileTap={{ scale: 0.97 }}
                     onClick={() => setStage('priorities')}
                     disabled={!dilemma.trim()}
-                    className="px-5 py-2.5 rounded-full bg-gradient-to-r from-cyan-400 to-sky-400 hover:from-cyan-300 hover:to-sky-300 text-slate-950 font-semibold shadow-lg shadow-cyan-500/20 transition-all flex items-center space-x-2 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="px-5 py-2.5 rounded-full bg-gradient-to-r from-cyan-400 to-sky-400 hover:from-cyan-300 hover:to-sky-300 text-slate-950 font-semibold shadow-lg shadow-cyan-500/20 transition-all flex items-center space-x-2 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                   >
                     <span>Begin Structuring</span>
                     <ArrowRight className="w-3.5 h-3.5" />
+                  </motion.button>
+
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={handleFetchSuggestedOptions}
+                    disabled={!dilemma.trim() || isSuggestingOptions}
+                    className="px-4 py-2.5 rounded-full bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 transition-all flex items-center space-x-2 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                    title="Let FlowMind AI deconstruct your ambition into competing pathways"
+                  >
+                    {isSuggestingOptions ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-cyan-300" />
+                        <span>Mapping Pathways...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>✨ Suggest Pathways with AI</span>
+                      </>
+                    )}
                   </motion.button>
 
                   <div className="flex items-center space-x-2 text-[11px] text-slate-500">
@@ -361,27 +408,64 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                 COMPETING PATHWAYS UNDER EVALUATION
               </span>
               <p className="text-[11px] font-mono text-slate-400">
-                Identify candidate paths for multi-agent stress testing
+                Identify or select candidate paths for multi-agent stress testing
               </p>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-2 max-w-lg mx-auto">
+            {/* Smart AI Option Suggester Banner */}
+            <div className="p-3.5 rounded-2xl bg-cyan-950/40 border border-cyan-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-left max-w-lg mx-auto">
+              <div className="flex items-start space-x-2.5">
+                <Sparkles className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+                <div className="space-y-0.5">
+                  <span className="text-xs font-mono font-bold text-cyan-200 block">
+                    Unsure what pathways to define?
+                  </span>
+                  <p className="text-[11px] text-slate-400 font-sans">
+                    FlowMind can automatically propose realistic, competing routes for your ambition.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleFetchSuggestedOptions}
+                disabled={isSuggestingOptions}
+                className="px-3.5 py-1.5 rounded-full bg-cyan-400 hover:bg-cyan-300 text-slate-950 text-xs font-mono font-semibold transition-all flex items-center space-x-1.5 shrink-0 cursor-pointer shadow-sm"
+              >
+                {isSuggestingOptions ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
+                <span>{isSuggestingOptions ? 'Mapping...' : '✨ Suggest Pathways'}</span>
+              </button>
+            </div>
+
+            <div className="flex flex-col items-center gap-2 max-w-lg mx-auto w-full">
               {options.length > 0 ? (
-                options.map((opt, i) => (
-                  <div
-                    key={i}
-                    className="px-3.5 py-1.5 rounded-full bg-[var(--canvas-subtle)] border border-cyan-500/30 text-xs font-mono text-white flex items-center space-x-2 shadow-sm"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                    <span>{opt}</span>
-                    <button
-                      onClick={() => setOptions(options.filter((_, idx) => idx !== i))}
-                      className="text-slate-400 hover:text-rose-400 transition-colors"
+                options.map((opt, i) => {
+                  const desc = suggestedOptionsList.find((s) => s.title === opt)?.description;
+                  return (
+                    <div
+                      key={i}
+                      className="px-4 py-2 rounded-xl bg-[var(--canvas-subtle)] border border-cyan-500/30 text-xs font-mono text-white flex flex-col items-start space-y-1 shadow-sm text-left w-full"
                     >
-                      ×
-                    </button>
-                  </div>
-                ))
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center space-x-2">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+                          <span className="font-semibold text-xs text-white">{opt}</span>
+                        </div>
+                        <button
+                          onClick={() => setOptions(options.filter((_, idx) => idx !== i))}
+                          className="text-slate-400 hover:text-rose-400 text-sm ml-2"
+                          title="Remove option"
+                        >
+                          ×
+                        </button>
+                      </div>
+                      {desc && (
+                        <p className="text-[11px] text-slate-400 font-sans pl-4 leading-relaxed">
+                          {desc}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })
               ) : autoExtractedOptions.length > 0 ? (
                 <div className="space-y-2 w-full text-center">
                   <span className="text-[10px] font-mono text-cyan-400/80 uppercase tracking-wider block">
@@ -389,27 +473,31 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                   </span>
                   <div className="flex flex-wrap justify-center gap-2">
                     {autoExtractedOptions.map((opt, i) => (
-                      <div
+                      <button
                         key={i}
-                        className="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-400/30 text-xs font-mono text-cyan-200 flex items-center space-x-2"
+                        type="button"
+                        onClick={() => setOptions([...options, opt])}
+                        className="px-3 py-1.5 rounded-full bg-cyan-500/10 hover:bg-cyan-500/25 border border-cyan-400/30 text-xs font-mono text-cyan-200 flex items-center space-x-2 transition-colors cursor-pointer"
+                        title="Click to add as confirmed option"
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
                         <span>{opt}</span>
-                      </div>
+                        <span className="text-cyan-400 font-bold">+</span>
+                      </button>
                     ))}
                   </div>
                 </div>
               ) : (
                 <p className="text-[11px] font-mono text-slate-500 py-1">
-                  Add candidate options below, or launch directly to let FlowMind extract them in real time.
+                  Click '✨ Suggest Pathways' above, or type custom pathways below.
                 </p>
               )}
             </div>
 
-            <div className="flex items-center justify-center space-x-2 max-w-md mx-auto pt-1">
+            <div className="flex items-center justify-center space-x-2 max-w-md mx-auto pt-1 w-full">
               <input
                 type="text"
-                placeholder="Add custom option (e.g. Option A, Option B)..."
+                placeholder="Or type a custom pathway..."
                 value={customOption}
                 onChange={(e) => setCustomOption(e.target.value)}
                 onKeyDown={(e) => {
@@ -422,7 +510,7 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
               />
               <button
                 onClick={handleAddOption}
-                className="px-3.5 py-1.5 bg-cyan-400 text-slate-950 font-semibold rounded-full text-xs font-mono"
+                className="px-3.5 py-1.5 bg-cyan-400 text-slate-950 font-semibold rounded-full text-xs font-mono cursor-pointer"
               >
                 Add
               </button>
@@ -431,10 +519,10 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
             <div className="pt-3 flex justify-center space-x-3">
               <button
                 onClick={() => setStage('constraints')}
-                className="px-4 py-1.5 rounded-full bg-[var(--canvas-subtle)] hover:bg-cyan-400 hover:text-slate-950 text-xs font-mono text-slate-300 border border-[var(--line-color)] transition-all flex items-center space-x-1.5"
+                className="px-5 py-2 rounded-full bg-gradient-to-r from-cyan-400 to-sky-400 hover:from-cyan-300 hover:to-sky-300 text-slate-950 text-xs font-mono font-semibold transition-all flex items-center space-x-1.5 shadow-md shadow-cyan-500/20 cursor-pointer"
               >
                 <span>Add Constraints & Launch</span>
-                <ArrowRight className="w-3 h-3" />
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </motion.div>

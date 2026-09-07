@@ -39,35 +39,43 @@ class AgentOrchestrator:
                 payload = {
                     "contents": [{
                         "parts": [{
-                            "text": f"""You are the Real-Time Decision Parser for FlowMind Decision Intelligence.
-Parse this user's decision dilemma into genuine, high-fidelity components.
-Do NOT invent unrelated career or job-offer assumptions if the dilemma is about something else.
-Keep all options, factors, goals, and constraints strictly relevant to what the user asked.
+                            "text": f"""You are the Real-Time Strategic Pathway & Decision Intelligence Generator for FlowMind.
+Analyze this user's decision dilemma or life ambition and deconstruct it into high-fidelity competing pathways.
 
-User Dilemma:
+CRITICAL INSTRUCTION:
+If the user states an open-ended ambition or goal (e.g. "I want to become an AI engineer", "I want to start a business", "How do I transition to product management?", "I want to buy a house in 2 years"):
+The user does NOT already know what options to define! You MUST formulate 3 to 4 distinct, realistic, competing strategic pathways/approaches to reach that specific ambition.
+Examples of distinct pathways:
+- Pathway A: Self-directed portfolio, open source contributions, and proof-of-work
+- Pathway B: Internal lateral move / apprenticeship at current organization
+- Pathway C: Formal credential / intensive specialized fellowship program
+- Pathway D: Gateway transition via adjacent hybrid role
+Do NOT simply repeat the user's desire as an option!
+
+User Input:
 "{prompt}"
 
-Respond in valid JSON:
+Respond strictly in valid JSON:
 {{
-  "title": "A concise title (max 75 chars)",
+  "title": "A clear, compelling title (max 75 chars)",
   "options": [
-    {{"title": "Specific option title", "description": "Specific path summary"}}
+    {{"title": "Specific pathway title", "description": "1-2 sentence concrete description of this strategic approach"}}
   ],
   "factors": [
-    {{"name": "Relevant Factor Name", "category": "category", "weight": 1.0}}
+    {{"name": "Relevant Evaluation Factor (e.g., Speed to Goal, Capital Required, Risk, Credibility)", "category": "category", "weight": 1.0}}
   ],
   "goals": [
-    {{"description": "Relevant user objective", "priority": "high", "weight": 1.0}}
+    {{"description": "Core ambition or primary milestone", "priority": "high", "weight": 1.2}}
   ],
   "constraints": [
-    {{"description": "Stated or inherent constraint", "severity": "soft"}}
+    {{"description": "Any stated or inherent constraint", "severity": "soft"}}
   ]
 }}"""
                         }]
                     }],
                     "generationConfig": {
-                        "temperature": 0.2,
-                        "maxOutputTokens": 800,
+                        "temperature": 0.3,
+                        "maxOutputTokens": 900,
                         "responseMimeType": "application/json"
                     }
                 }
@@ -92,18 +100,58 @@ Respond in valid JSON:
                 print(f"[Orchestrator] Real-time Gemini parsing fallback: {e}")
 
         # 2. Dynamic Real-Time Deterministic Parsing Fallback
-        cleaned = re.sub(r"^(should i|shall i|what if i|i need to decide between|deciding between|help me decide between)\s+", "", prompt, flags=re.IGNORECASE).rstrip("?")
-        parts = re.split(r"\s+vs\.?\s+|\s+versus\s+|\s+or\s+|,\s*", cleaned, flags=re.IGNORECASE)
-        options = []
-        for p in parts:
-            cand = p.strip().strip('"').strip("'")
-            if len(cand) > 2 and cand.lower() not in ["accept", "choose", "between", "the", "and", "my", "to", "a", "an"]:
-                options.append(cand.title())
+        is_ambition = bool(re.search(
+            r"\b(i want to become|i want to be|how (can|do) i become|i want to (transition|switch|get into|learn|start|launch|buy|build|achieve)|want to be)\b",
+            prompt,
+            re.IGNORECASE
+        ))
 
-        if not options:
-            options = ["Pathway A: Move Forward with Change", "Pathway B: Preserve Current Trajectory"]
-        elif len(options) == 1:
-            options.append(f"Alternative: Maintain Status Quo / Reject '{options[0]}'")
+        options = []
+        if is_ambition:
+            # Generate 3-4 realistic strategic pathways for achieving this ambition
+            p_clean = re.sub(r"^(i want to become|i want to be|how can i become|how do i become|i want to)\s+", "", prompt, flags=re.IGNORECASE).rstrip("?").strip()
+            target_goal = p_clean.title() if p_clean else "Target Role"
+
+            if any(w in prompt.lower() for w in ["ai", "engineer", "software", "developer", "data", "ml", "tech", "architect", "product", "design"]):
+                options = [
+                    f"Self-Directed Portfolio & Open-Source Proof of Work in {target_goal}",
+                    f"Internal Lateral Transfer & Apprenticeship within Current Organization",
+                    f"Specialized Intensive Fellowship / Credentialing Program",
+                    f"Strategic Transition via Adjacent Gateway Role"
+                ]
+            elif any(w in prompt.lower() for w in ["startup", "business", "founder", "company", "saas", "agency"]):
+                options = [
+                    "Bootstrap with Personal Capital & Early Customer Cash Flow (100% Equity)",
+                    "Raise Angel / Pre-Seed Venture Capital to Maximize Velocity",
+                    "Incubate as a Focused Side Project before Full-Time Leap",
+                    "Join a Founder Fellowship / Venture Studio Ecosystem"
+                ]
+            elif any(w in prompt.lower() for w in ["house", "home", "apartment", "real estate", "property"]):
+                options = [
+                    "Target Primary Residence with Standard First-Time Buyer Mortgage",
+                    "House-Hacking (Multi-Unit Property with Rental Income Offset)",
+                    "Continue Renting & Deploy Down Payment into Liquid Index Assets",
+                    "Target Emerging Satellite / Lower-Cost Suburban Market"
+                ]
+            else:
+                options = [
+                    f"Aggressive Accelerated Pathway toward {target_goal} (High Intensity)",
+                    f"Balanced Parallel Transition toward {target_goal} (Low Risk, Sustainable)",
+                    f"Structured Mentorship & Institutional Apprenticeship",
+                    f"Niche Specialization Strategy to Leapfrog Traditional Gatekeepers"
+                ]
+        else:
+            cleaned = re.sub(r"^(should i|shall i|what if i|i need to decide between|deciding between|help me decide between)\s+", "", prompt, flags=re.IGNORECASE).rstrip("?")
+            parts = re.split(r"\s+vs\.?\s+|\s+versus\s+|\s+or\s+|,\s*", cleaned, flags=re.IGNORECASE)
+            for p in parts:
+                cand = p.strip().strip('"').strip("'")
+                if len(cand) > 2 and cand.lower() not in ["accept", "choose", "between", "the", "and", "my", "to", "a", "an"]:
+                    options.append(cand.title())
+
+            if not options:
+                options = ["Pathway A: Move Forward with Change", "Pathway B: Preserve Current Trajectory"]
+            elif len(options) == 1:
+                options.append(f"Alternative: Maintain Status Quo / Reject '{options[0]}'")
 
         # Dynamically infer domain-appropriate factors from actual prompt keywords
         p_lower = prompt.lower()

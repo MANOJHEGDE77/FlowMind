@@ -266,3 +266,21 @@ class AskQuestionResponse(BaseModel):
     suggested_followups: List[str] = []
     citations: List[str] = []
 
+# ----------------- Real-Time Pathway & Option Suggestion -----------------
+
+class SuggestedPathwayItem(BaseModel):
+    title: str
+    description: str = ""
+
+class SuggestOptionsRequest(BaseModel):
+    prompt: str
+    context: Optional[str] = None
+
+class SuggestOptionsResponse(BaseModel):
+    prompt: str
+    suggested_title: str
+    options: List[SuggestedPathwayItem]
+    factors: List[Dict[str, Any]] = []
+    goals: List[Dict[str, Any]] = []
+    constraints: List[Dict[str, Any]] = []
+

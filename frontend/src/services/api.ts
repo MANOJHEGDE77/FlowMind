@@ -196,6 +196,21 @@ class ApiService {
       }),
     });
   }
+
+  // Real-Time Pathway & Option Suggestion
+  async suggestOptions(prompt: string, context?: string): Promise<{
+    prompt: string;
+    suggested_title: string;
+    options: Array<{ title: string; description: string }>;
+    factors?: Array<{ name: string; category: string; weight: number }>;
+    goals?: Array<{ description: string; priority: string; weight: number }>;
+    constraints?: Array<{ description: string; severity: string }>;
+  }> {
+    return this.request('/ai/suggest-options', {
+      method: 'POST',
+      body: JSON.stringify({ prompt, context }),
+    });
+  }
 }
 
 export const api = new ApiService();
