@@ -36,7 +36,7 @@ export const AskAIModal: React.FC<AskAIModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const suggestedQuestions = decision
@@ -63,7 +63,12 @@ export const AskAIModal: React.FC<AskAIModalProps> = ({
   }, [isOpen, initialQuestion]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTo({
+        top: chatScrollRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
   }, [messages, isLoading]);
 
   useEffect(() => {
@@ -140,8 +145,14 @@ export const AskAIModal: React.FC<AskAIModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-3xl max-h-[90vh] flex flex-col rounded-3xl bg-[var(--surface-blur)] backdrop-blur-2xl border border-cyan-500/30 shadow-[0_20px_70px_rgba(0,0,0,0.85)] overflow-hidden font-sans">
+    <div
+      onWheel={(e) => e.stopPropagation()}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/75 backdrop-blur-md animate-in fade-in duration-200"
+    >
+      <div
+        onWheel={(e) => e.stopPropagation()}
+        className="relative w-full max-w-3xl max-h-[90vh] flex flex-col rounded-3xl bg-[var(--surface-blur)] backdrop-blur-2xl border border-cyan-500/30 shadow-[0_20px_70px_rgba(0,0,0,0.85)] overflow-hidden font-sans"
+      >
         {/* Top Header */}
         <div className="px-6 py-4 border-b border-[var(--line-color)] flex items-center justify-between shrink-0 bg-black/30">
           <div className="flex items-center space-x-3">
@@ -188,7 +199,10 @@ export const AskAIModal: React.FC<AskAIModalProps> = ({
         </div>
 
         {/* Message Thread (Scrollable) */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 min-h-[260px] max-h-[55vh]">
+        <div
+          ref={chatScrollRef}
+          className="flex-1 overflow-y-auto p-6 space-y-6 min-h-[280px] max-h-[62vh]"
+        >
           {messages.length === 0 ? (
             <div className="space-y-6 text-center py-6">
               <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mx-auto shadow-[0_0_20px_rgba(0,240,255,0.15)]">
@@ -329,7 +343,6 @@ export const AskAIModal: React.FC<AskAIModalProps> = ({
               </div>
             </div>
           )}
-          <div ref={messagesEndRef} />
         </div>
 
         {/* Input Bar */}

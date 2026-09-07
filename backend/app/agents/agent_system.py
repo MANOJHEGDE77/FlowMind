@@ -300,21 +300,93 @@ class SynthesizerAgent(BaseAgent):
                 "contradictions": []
             }
 
-        # Calculate multi-agent balanced score for each option
+        # 1. Parse and weight user-defined goals
+        user_goals_descriptions = [g.get("description", "").lower() for g in goals if g.get("description")]
+        goal_weights = [float(g.get("weight", 1.0)) for g in goals]
+        total_goal_weight = sum(goal_weights) if goal_weights else 1.0
+
+        # Primary goal for reasoning articulation
+        primary_goal_name = goals[0].get("description", "Core Strategic Value") if goals else "Primary Objectives"
+
+        # 2. Calculate goal-grounded scores for each candidate option
         scored_options = []
         for idx, opt in enumerate(options):
             title = opt.get("title", f"Option {idx+1}")
-            # Baseline score
-            base = 78.0 + (len(opt.get("pros", [])) * 3.0) - (len(opt.get("cons", [])) * 2.5)
-            # Alignment weights
-            goal_score = 85.0 - (idx * 6.0)
-            cost_score = 75.0 + (idx * 4.0)
-            risk_score = 45.0 + (idx * 8.0) # lower risk is better
-            growth_score = 90.0 - (idx * 7.0)
-            flexibility_score = 80.0 - (idx * 5.0)
+            desc = (opt.get("description") or "").lower()
+            pros = [p.lower() for p in opt.get("pros", [])]
+            cons = [c.lower() for c in opt.get("cons", [])]
+            combined_text = f"{title.lower()} {desc} {' '.join(pros)} {' '.join(cons)}"
 
-            composite = (goal_score * 0.35) + (growth_score * 0.25) + (flexibility_score * 0.20) + ((100 - risk_score) * 0.20)
-            composite = max(40.0, min(96.0, round(composite, 1)))
+            # Direct Goal Alignment Evaluation
+            if user_goals_descriptions:
+                matched_scores = []
+                for g_desc, g_weight in zip(user_goals_descriptions, goal_weights):
+                    score_for_goal = 72.0  # neutral baseline
+
+                    # Heuristic A: Work-Life Sustainability / Balance / Low Burnout / Remote Flexibility
+                    if any(w in g_desc for w in ["work-life", "balance", "sustainab", "burnout", "health", "family", "remote", "flexible"]):
+                        if any(w in combined_text for w in ["remote", "balance", "flexible", "principal", "corporate", "bigtech", "stable", "work-life", "sustainable"]):
+                            score_for_goal = 93.0
+                        elif any(w in combined_text for w in ["startup", "founder", "series b", "crunch", "relocation", "early-stage"]):
+                            score_for_goal = 52.0
+                        else:
+                            score_for_goal = 68.0
+
+                    # Heuristic B: Financial Compensation / Guaranteed Cash / Liquidity / Immediate Salary
+                    elif any(w in g_desc for w in ["financ", "comp", "salary", "cash", "pay", "liquidity", "money", "capital"]):
+                        if any(w in combined_text for w in ["bigtech", "principal", "salary", "bonus", "cash", "compensation", "guaranteed"]):
+                            score_for_goal = 94.0
+                        elif any(w in combined_text for w in ["equity", "startup", "venture", "upside", "series b"]):
+                            score_for_goal = 84.0
+                        elif any(w in combined_text for w in ["studies", "ms", "phd", "academic", "fellowship", "bootstrapped"]):
+                            score_for_goal = 45.0
+                        else:
+                            score_for_goal = 72.0
+
+                    # Heuristic C: Learning Velocity / Rapid Career Compounding / Skill Acquisition
+                    elif any(w in g_desc for w in ["learn", "velocit", "growth", "career", "skill", "accelerat", "compounding", "mentorship"]):
+                        if any(w in combined_text for w in ["startup", "founder", "venture", "accelerat", "lead", "series b", "early-stage"]):
+                            score_for_goal = 95.0
+                        elif any(w in combined_text for w in ["studies", "ms", "phd", "research"]):
+                            score_for_goal = 89.0
+                        else:
+                            score_for_goal = 74.0
+
+                    # Heuristic D: Autonomy / Cultural Agency / Ownership / Founder Track
+                    elif any(w in g_desc for w in ["autonom", "agency", "freedom", "cultur", "owner", "founder", "leadership"]):
+                        if any(w in combined_text for w in ["founder", "startup", "self-funded", "lead", "venture", "ownership"]):
+                            score_for_goal = 96.0
+                        else:
+                            score_for_goal = 65.0
+
+                    # Heuristic E: Exit Optionality / Mobility / Pedigree / Brand
+                    elif any(w in g_desc for w in ["exit", "optionalit", "mobilit", "prestige", "brand", "pedigree", "reversib"]):
+                        if any(w in combined_text for w in ["bigtech", "principal", "ms", "studies", "stanford", "mit", "mobility"]):
+                            score_for_goal = 92.0
+                        else:
+                            score_for_goal = 73.0
+
+                    # General semantic token overlap
+                    else:
+                        tokens = [t for t in g_desc.split() if len(t) > 3]
+                        matches = sum(1 for t in tokens if t in combined_text)
+                        score_for_goal = min(96.0, 70.0 + (matches * 12.0))
+
+                    matched_scores.append(score_for_goal * g_weight)
+
+                goal_score = round(sum(matched_scores) / total_goal_weight, 1)
+            else:
+                goal_score = 75.0
+
+            # Derive factor dimensions based on option characteristics
+            growth_score = 92.0 if any(w in combined_text for w in ["startup", "venture", "lead", "founder", "series b"]) else 76.0
+            cost_score = 90.0 if any(w in combined_text for w in ["bigtech", "principal", "salary", "bonus"]) else 70.0
+            risk_score = 65.0 if any(w in combined_text for w in ["startup", "venture", "founder", "bootstrapped"]) else 35.0
+            flexibility_score = 88.0 if any(w in combined_text for w in ["remote", "flexible", "reversible", "two-way"]) else 72.0
+
+            # Composite Score: Heavily driven by user's defined goals (50% weight to goals)
+            composite = (goal_score * 0.50) + (growth_score * 0.20) + (flexibility_score * 0.15) + ((100.0 - risk_score) * 0.15)
+            composite = max(40.0, min(97.0, round(composite, 1)))
 
             scored_options.append({
                 "title": title,
@@ -328,28 +400,29 @@ class SynthesizerAgent(BaseAgent):
                 }
             })
 
+        # Sort strictly by calibrated composite score
         scored_options.sort(key=lambda x: x["score"], reverse=True)
         top = scored_options[0]
         alt = scored_options[1] if len(scored_options) > 1 else scored_options[0]
 
-        confidence = round(min(94.0, max(65.0, top["score"] * 0.95)), 1)
+        confidence = round(min(95.0, max(65.0, top["score"] * 0.95)), 1)
 
         contradictions = [
-            f"Analyst confirms high growth in '{top['title']}', but Skeptic warns of burnout and role ambiguity.",
-            f"Financial Analyst rates immediate compensation highly, while Long-Term Planner emphasizes exit optionality."
+            f"Analyst confirms strong upside in '{top['title']}', but Skeptic highlights risk friction.",
+            f"Financial perspective notes variance across options, while Long-Term Planner emphasizes goal congruence."
         ]
 
         what_could_change = [
-            f"A 20%+ compensation counteroffer on '{alt['title']}'.",
-            f"Confirmed remote flexibility or reduced commute constraints.",
-            f"Direct insight from a current team member revealing internal team attrition."
+            f"A 25%+ counteroffer or structural shift regarding '{alt['title']}'.",
+            f"Explicit confirmation of remote / flexibility agreements.",
+            f"New evidence regarding team retention or milestone runway."
         ]
 
         reasoning = (
-            f"After cross-examining Analyst, Optimist, Skeptic, Financial, and Long-Term perspectives, "
-            f"'{top['title']}' achieves the highest decision index ({top['score']}/100). "
-            f"It provides superior upside leverage and aligns most cleanly with primary goals while maintaining "
-            f"manageable reversibility. '{alt['title']}' remains a formidable fallback ({alt['score']}/100)."
+            f"Calibrated Goal Synthesis: Based on your defined goals—specifically '{primary_goal_name}'—'{top['title']}' "
+            f"emerges as the highest-conviction pathway (Decision Score: {top['score']}/100 with {top['alignment_scores']['goal']}% goal congruence). "
+            f"It delivers the strongest alignment with your stated priorities while maintaining acceptable risk asymmetry. "
+            f"'{alt['title']}' serves as the primary alternate ({alt['score']}/100)."
         )
 
         return {

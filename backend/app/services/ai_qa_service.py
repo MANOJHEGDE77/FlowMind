@@ -19,6 +19,8 @@ class AIQAService:
         decision_title = ""
         options_info = []
         evidence_snippets = []
+        goals_snippets = []
+        constraints_snippets = []
 
         # 1. Retrieve decision details if decision_id is provided
         if decision_id and db:
@@ -28,6 +30,14 @@ class AIQAService:
                 options_info = [
                     f"- **{o.title}**: {o.description or 'Evaluated path'} (Score: {int((o.score or 0.0) * 100)}%, Recommended: {o.is_recommended})"
                     for o in decision.options
+                ]
+                goals_snippets = [
+                    f"- **{g.description}** (Priority: {g.priority}, Weight: {g.weight})"
+                    for g in decision.goals
+                ]
+                constraints_snippets = [
+                    f"- [{c.severity.upper()}] {c.description}"
+                    for c in decision.constraints
                 ]
                 evidence_snippets = [
                     f"- [{e.source_title or 'Context'}] {e.quote or e.claim}"
@@ -42,6 +52,12 @@ Current Recommendation: {decision.recommendation or 'Evaluating'}
 Confidence: {int(decision.confidence_score * 100)}%
 Synthesized Reasoning: {decision.reasoning_summary or 'In progress'}
 
+User's Defined Goals & Explicit Priorities:
+{chr(10).join(goals_snippets) if goals_snippets else 'No specific goals pre-defined.'}
+
+User's Stated Constraints:
+{chr(10).join(constraints_snippets) if constraints_snippets else 'No hard constraints attached.'}
+
 Options Evaluated:
 {chr(10).join(options_info)}
 
@@ -54,10 +70,11 @@ Supporting Grounded Evidence:
 Your purpose is to answer the user's strategic questions with exceptional clarity, rigor, and calibration.
 
 Guidelines:
-1. Provide a direct, authoritative, and nuanced answer to the question.
-2. Ground your reasoning in decision science principles (e.g. Expected Value, Regret Minimization, One-way vs Two-way doors, Asymmetric Upside, Opportunity Cost).
-3. If decision context is provided below, reference the specific pathways, trade-offs, and evidence directly.
-4. Format your output cleanly in Markdown with bold points, bullet points for trade-offs, and an actionable bottom line.
+1. Provide a direct, authoritative, and calibrated answer to the question.
+2. CRITICAL: Strictly align your recommendation and evaluations with the User's Defined Goals & Explicit Priorities above. Prioritize pathways that maximize alignment with those specific goals.
+3. Ground your reasoning in decision science principles (e.g. Expected Value, Regret Minimization, One-way vs Two-way doors, Asymmetric Upside, Opportunity Cost).
+4. If decision context is provided below, reference the specific pathways, trade-offs, and evidence directly.
+5. Format your output cleanly in Markdown with bold points, bullet points for trade-offs, and an actionable bottom line.
 
 {decision_context}
 {f"Additional User Context: {context}" if context else ""}
@@ -146,7 +163,7 @@ Guidelines:
                 print(f"[AIQAService] LLM fallback call error: {e}")
 
         # 5. Local Cognitive Synthesizer (Zero external dependency, deterministic, highly structured)
-        answer = self._synthesize_local_response(question, decision_title, options_info, evidence_snippets)
+        answer = self._synthesize_local_response(question, decision_title, options_info, evidence_snippets, goals_snippets)
         return {
             "question": question,
             "answer": answer,
@@ -162,15 +179,18 @@ Guidelines:
         question: str,
         title: str,
         options: List[str],
-        evidence: List[str]
+        evidence: List[str],
+        goals: Optional[List[str]] = None
     ) -> str:
         q_lower = question.lower()
+        goals = goals or []
+        primary_goal_note = f"\n- **User Defined Goal Focus**: {goals[0].replace('- **', '').replace('**', '')}" if goals else ""
 
         # Check question intent
         if "risk" in q_lower or "worst" in q_lower or "downside" in q_lower or "threat" in q_lower:
             return f"""### Strategic Downside & Vulnerability Assessment
 
-When evaluating **"{question}"**{f" in relation to *{title}*" if title else ""}, the primary risks originate from asymmetry and reversibility constraints:
+When evaluating **"{question}"**{f" in relation to *{title}*" if title else ""}:{primary_goal_note}
 
 1. **Irreversibility Bias (One-Way Door Risks)**:
    - High-commitment pathways lock up cognitive and operational capital. If market conditions shift or cultural fit degrades, the friction of exiting is non-trivial.
@@ -182,25 +202,28 @@ When evaluating **"{question}"**{f" in relation to *{title}*" if title else ""},
 **Calibrated Recommendation**:
 Stress-test your assumptions via the **Red Team Mode** in FlowMind to uncover unstated optimism biases before committing irreversible capital."""
 
-        elif "why" in q_lower or "recommend" in q_lower or "best" in q_lower or "choose" in q_lower:
+        elif "why" in q_lower or "recommend" in q_lower or "best" in q_lower or "choose" in q_lower or "goal" in q_lower:
             options_text = "\n".join(options[:3]) if options else "Candidate pathways"
-            return f"""### Multi-Agent Synthesis & Trade-Off Analysis
+            goals_text = "\n".join(goals) if goals else "Maximize expected value and strategic optionality"
+            return f"""### Goal-Calibrated Synthesis & Recommendation
 
 Regarding **"{question}"**:
 
-FlowMind’s multi-agent council weights pathways using **compounding leverage over short-term certainty**:
+FlowMind’s multi-agent council evaluates all candidate paths against your **explicitly defined goals**:
 
-- **Core Asymmetry**:
-  The optimal option maximizes **optionality and learning velocity** rather than just nominal compensation or prestige.
-- **Pathways in Play**:
+**Your Defined Goals**:
+{goals_text}
+
+**Option Evaluations**:
 {options_text}
 
-- **Decisive Differentiators**:
-  1. **Autonomy & Agency**: Direct ownership of high-impact decisions accelerates compounding intuition faster than linear roles.
-  2. **Two-Way Door Flexibility**: Maintaining transferable skills guarantees higher terminal equity regardless of intermediate outcomes.
+**Key Strategic Factors**:
+1. **Goal Alignment**: The recommended path was selected because it scores highest in direct alignment with your stated priorities, rather than generic default assumptions.
+2. **Asymmetric Leverage**: The optimal option maximizes your primary target while keeping downside risks bounded and manageable.
+3. **Two-Way Door Flexibility**: Maintaining exit optionality ensures you can adapt if circumstances evolve over the next 12–18 months.
 
 **Bottom Line**:
-Anchor your decision on whether the pathway expands or contracts your future options 24 months from now."""
+Commit with conviction to the pathway that most cleanly satisfies your explicit core goal."""
 
         elif "remote" in q_lower or "location" in q_lower or "relocat" in q_lower or "city" in q_lower:
             return f"""### Geographic Arbitrage & Network Density Synthesis

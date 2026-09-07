@@ -26,9 +26,8 @@ export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
   onOpenAskAI,
 }) => {
   const [zoom, setZoom] = useState(1);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
-  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const [panStart, setPanStart] = useState({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
   const [activePathOptionId, setActivePathOptionId] = useState<number | null>(
     decision.options.find(o => o.is_recommended)?.id || decision.options[0]?.id || null
   );
@@ -39,19 +38,24 @@ export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest('.spatial-node') || (e.target as HTMLElement).closest('button')) {
+    if ((e.target as HTMLElement).closest('.spatial-node') || (e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('input')) {
       return;
     }
     setIsPanning(true);
-    setPanStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+    setPanStart({
+      x: e.clientX,
+      y: e.clientY,
+      scrollLeft: canvasRef.current?.scrollLeft || 0,
+      scrollTop: canvasRef.current?.scrollTop || 0,
+    });
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isPanning) return;
-    setPan({
-      x: e.clientX - panStart.x,
-      y: e.clientY - panStart.y,
-    });
+    if (!isPanning || !canvasRef.current) return;
+    const dx = e.clientX - panStart.x;
+    const dy = e.clientY - panStart.y;
+    canvasRef.current.scrollLeft = panStart.scrollLeft - dx;
+    canvasRef.current.scrollTop = panStart.scrollTop - dy;
   };
 
   const handleMouseUp = () => {
@@ -60,18 +64,14 @@ export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
 
   const resetView = () => {
     setZoom(1);
-    setPan({ x: 0, y: 0 });
+    canvasRef.current?.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   };
 
   const handleWheel = (e: React.WheelEvent) => {
     if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
       const zoomDelta = e.deltaY < 0 ? 0.08 : -0.08;
-      setZoom((prev) => Math.min(Math.max(prev + zoomDelta, 0.5), 1.8));
-    } else {
-      setPan((prev) => ({
-        x: prev.x - e.deltaX * 0.8,
-        y: prev.y - e.deltaY * 0.8,
-      }));
+      setZoom((prev) => Math.min(Math.max(prev + zoomDelta, 0.6), 1.6));
     }
   };
 
@@ -84,8 +84,8 @@ export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onWheel={handleWheel}
-      className={`fixed inset-0 w-screen h-screen bg-[var(--canvas-bg)] spatial-grid select-none overflow-hidden cursor-${
-        isPanning ? 'grabbing' : 'grab'
+      className={`fixed inset-0 w-screen h-screen bg-[var(--canvas-bg)] spatial-grid select-none overflow-y-auto overflow-x-auto cursor-${
+        isPanning ? 'grabbing' : 'default'
       }`}
     >
       {/* First-Use Contextual Guidance Hint */}
@@ -200,12 +200,12 @@ export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
 
       {/* FULL VIEWPORT SPATIAL CANVAS LAYER */}
       <div
-        className="w-full h-full transition-transform duration-75 origin-top-left"
+        className="w-full min-h-full transition-transform duration-100 origin-top flex justify-center"
         style={{
-          transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+          transform: `scale(${zoom})`,
         }}
       >
-        <div className="flex flex-col items-center pt-28 pb-48 px-12 min-w-[1000px]">
+        <div className="flex flex-col items-center pt-28 pb-56 px-8 min-w-[950px] max-w-5xl">
           {/* 1. TOP NODE: OVERARCHING GOAL & DILEMMA */}
           <div className="text-center mb-1">
             <span className="text-[9px] font-mono tracking-widest text-slate-500/60 uppercase">
