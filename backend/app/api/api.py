@@ -133,7 +133,7 @@ async def run_analysis(
     return updated
 
 @api_router.post("/decisions/{decision_id}/challenge", response_model=ChallengeResponse)
-def challenge_decision_endpoint(
+async def challenge_decision_endpoint(
     decision_id: int,
     data: ChallengeRequest,
     current_user: User = Depends(get_current_user),
@@ -147,7 +147,7 @@ def challenge_decision_endpoint(
     if not decision:
         raise HTTPException(status_code=404, detail="Decision not found")
     
-    return decision_service.challenge_decision(db, decision.id, data)
+    return await decision_service.challenge_decision(db, decision.id, data)
 
 @api_router.post("/decisions/{decision_id}/simulate", response_model=SimulationResponse)
 def simulate_what_if_endpoint(
