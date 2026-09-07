@@ -13,6 +13,7 @@ import { ContextInspector } from './components/ContextInspector';
 import { DecisionArchive } from './components/DecisionArchive';
 import { ExplorerPage } from './pages/ExplorerPage';
 import { OmniCommand } from './components/OmniCommand';
+import { HelpGuideModal } from './components/HelpGuideModal';
 import { AuthModal } from './pages/AuthPage';
 import { EvidenceDropZone } from './components/EvidenceDropZone';
 import { ThemeProvider } from './context/ThemeContext';
@@ -37,6 +38,7 @@ export function AppRoot() {
 
   // Overlays and modals
   const [isCommandOpen, setIsCommandOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isCouncilOpen, setIsCouncilOpen] = useState(false);
   const [isSignalOpen, setIsSignalOpen] = useState(false);
@@ -145,6 +147,7 @@ export function AppRoot() {
           setActiveView('home');
         }}
         onOpenCommandPalette={() => setIsCommandOpen(true)}
+        onOpenHelp={() => setIsHelpOpen(true)}
         onOpenAuth={() => setIsAuthOpen(true)}
         currentDecision={currentDecision}
         currentUser={currentUser}
@@ -337,6 +340,16 @@ export function AppRoot() {
           api.logout();
           setCurrentUser(null);
           loadData();
+        }}
+      />
+
+      {/* 12. How FlowMind Works Modal */}
+      <HelpGuideModal
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
+        onStartDecision={() => {
+          setCurrentDecision(null);
+          setActiveView('home');
         }}
       />
     </div>

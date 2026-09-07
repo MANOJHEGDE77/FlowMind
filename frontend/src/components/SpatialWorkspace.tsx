@@ -31,6 +31,9 @@ export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
     decision.options.find(o => o.is_recommended)?.id || decision.options[0]?.id || null
   );
 
+  const [showFirstUseHint, setShowFirstUseHint] = useState(true);
+  const [hoveredAction, setHoveredAction] = useState<string | null>(null);
+
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -70,39 +73,73 @@ export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
         isPanning ? 'grabbing' : 'grab'
       }`}
     >
+      {/* First-Use Contextual Guidance Hint */}
+      {showFirstUseHint && (
+        <div className="fixed top-20 inset-x-0 z-30 flex justify-center pointer-events-none">
+          <div className="pointer-events-auto flex items-center space-x-3 px-4 py-2 rounded-full bg-[var(--surface-blur)] backdrop-blur-2xl border border-cyan-500/40 text-xs font-mono text-cyan-200 shadow-2xl animate-in fade-in slide-in-from-top-2">
+            <span className="font-bold text-cyan-400">✦ YOUR DECISION SPACE:</span>
+            <span className="text-slate-300">Explore how options, evidence citations, and risks connect into a unified signal.</span>
+            <button
+              onClick={() => setShowFirstUseHint(false)}
+              className="text-slate-400 hover:text-white ml-2 p-0.5"
+              title="Dismiss hint"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Floating Spatial Action HUD (Translucent minimal pill dock) */}
-      <div className="fixed top-16 left-6 z-30 flex items-center space-x-2 bg-[var(--surface-blur)] backdrop-blur-xl border border-[var(--line-color)] p-1.5 rounded-full shadow-2xl">
-        <button
-          onClick={onOpenChallenge}
-          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs font-mono transition-all"
-        >
-          <Swords className="w-3.5 h-3.5" />
-          <span>⚔️ Red Team Mode</span>
-        </button>
+      <div className="fixed top-16 left-6 z-30 flex flex-col space-y-2">
+        <div className="flex items-center space-x-2 bg-[var(--surface-blur)] backdrop-blur-xl border border-[var(--line-color)] p-1.5 rounded-full shadow-2xl">
+          <button
+            onClick={onOpenChallenge}
+            onMouseEnter={() => setHoveredAction('Challenge recommendation: Run Devil’s Advocate stress-test on assumptions')}
+            onMouseLeave={() => setHoveredAction(null)}
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs font-mono transition-all"
+          >
+            <Swords className="w-3.5 h-3.5" />
+            <span>⚔️ Red Team Mode</span>
+          </button>
 
-        <button
-          onClick={onOpenSimulator}
-          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 text-xs font-mono transition-all"
-        >
-          <SlidersHorizontal className="w-3.5 h-3.5" />
-          <span>What-If Lab</span>
-        </button>
+          <button
+            onClick={onOpenSimulator}
+            onMouseEnter={() => setHoveredAction('Test different scenarios: Adjust compensation, remote flexibility & tenure levers')}
+            onMouseLeave={() => setHoveredAction(null)}
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 text-xs font-mono transition-all"
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            <span>What-If Lab</span>
+          </button>
 
-        <button
-          onClick={onOpenCouncil}
-          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 text-xs font-mono transition-all"
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>AI Council Orbit</span>
-        </button>
+          <button
+            onClick={onOpenCouncil}
+            onMouseEnter={() => setHoveredAction('AI Council Orbit: See how the 7 specialized agents debate & reason')}
+            onMouseLeave={() => setHoveredAction(null)}
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 text-xs font-mono transition-all"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>AI Council Orbit</span>
+          </button>
 
-        <button
-          onClick={onOpenEvidence}
-          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs font-mono transition-all"
-        >
-          <BookOpen className="w-3.5 h-3.5" />
-          <span>Evidence ({decision.evidence_items.length})</span>
-        </button>
+          <button
+            onClick={onOpenEvidence}
+            onMouseEnter={() => setHoveredAction('Inspect grounded evidence: View verified PDF/DOCX citations & clauses')}
+            onMouseLeave={() => setHoveredAction(null)}
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs font-mono transition-all"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Evidence ({decision.evidence_items.length})</span>
+          </button>
+        </div>
+
+        {/* Hover micro-description tooltip */}
+        {hoveredAction && (
+          <div className="px-3.5 py-1.5 rounded-xl bg-black/80 backdrop-blur-md border border-slate-800 text-[11px] font-mono text-slate-300 shadow-xl max-w-sm">
+            {hoveredAction}
+          </div>
+        )}
       </div>
 
       {/* Floating Zoom HUD in Bottom-Right */}
@@ -143,6 +180,12 @@ export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
       >
         <div className="flex flex-col items-center pt-28 pb-48 px-12 min-w-[1000px]">
           {/* 1. TOP NODE: OVERARCHING GOAL & DILEMMA */}
+          <div className="text-center mb-1">
+            <span className="text-[9px] font-mono tracking-widest text-slate-500/60 uppercase">
+              ZONE 01 • CORE AMBITION & CONSTRAINTS
+            </span>
+          </div>
+
           <div
             onClick={() => onSelectNode('goal', {
               title: decision.title,
@@ -182,6 +225,12 @@ export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
           </svg>
 
           {/* 2. COMPETING OPTION NODES (Borderless, Physical, Typography-First) */}
+          <div className="w-full text-center mb-2">
+            <span className="text-[9px] font-mono tracking-widest text-slate-500/60 uppercase">
+              ZONE 02 • COMPETING PATHWAYS UNDER EVALUATION
+            </span>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-5xl z-20">
             {decision.options.map((opt) => {
               const isWinner = opt.is_recommended;
@@ -285,6 +334,12 @@ export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
           </svg>
 
           {/* 3. AI COUNCIL CONVERGENCE NODE */}
+          <div className="w-full text-center my-1.5">
+            <span className="text-[9px] font-mono tracking-widest text-slate-500/60 uppercase">
+              ZONE 03 • MULTI-AGENT COUNCIL SYNTHESIS
+            </span>
+          </div>
+
           <div
             onClick={onOpenCouncil}
             className="spatial-node relative z-20 cursor-pointer p-4 rounded-full bg-[var(--surface-blur)] backdrop-blur-md border border-purple-500/30 hover:border-purple-400 text-center transition-all flex items-center space-x-3 shadow-xl"
@@ -306,6 +361,12 @@ export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
           <div className="w-px h-10 bg-gradient-to-b from-purple-500/60 to-emerald-400" />
 
           {/* 4. THE SIGNAL (RECOMMENDATION CLIMAX) */}
+          <div className="w-full text-center my-1.5">
+            <span className="text-[9px] font-mono tracking-widest text-slate-500/60 uppercase">
+              ZONE 04 • THE SIGNAL (CALIBRATED RECOMMENDATION)
+            </span>
+          </div>
+
           <div
             onClick={() => onSelectNode('signal', {
               recommendation: decision.recommendation,

@@ -142,9 +142,15 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
             className="flex items-center justify-center space-x-2"
           >
             <span className="text-[10px] font-mono tracking-widest text-cyan-400 font-bold uppercase">
-              ✦ THINKING ABOUT
+              ✦ {dilemma ? 'THINKING ABOUT' : 'START A DECISION'}
             </span>
           </motion.div>
+
+          {!dilemma && (
+            <p className="text-xs text-slate-400 font-sans max-w-md mx-auto">
+              Describe what you're trying to figure out in plain language. FlowMind will deconstruct it into a structured decision model.
+            </p>
+          )}
 
           {/* Central User Thought (The core centerpiece of the entire app) */}
           <div className="relative pt-2">
@@ -172,6 +178,24 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                     }
                   }}
                 />
+
+                {/* What you can provide helper chips when empty */}
+                {!dilemma && (
+                  <div className="flex flex-wrap items-center justify-center gap-2 pt-2 text-[10px] font-mono text-slate-500">
+                    <span className="px-2.5 py-0.5 rounded-full bg-black/40 border border-slate-800 text-slate-400">
+                      • Competing Pathways
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full bg-black/40 border border-slate-800 text-slate-400">
+                      • Core Priorities
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full bg-black/40 border border-slate-800 text-slate-400">
+                      • Non-Negotiables
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full bg-black/40 border border-slate-800 text-slate-400">
+                      • Evidence Sources
+                    </span>
+                  </div>
+                )}
 
                 {/* Subtle intelligent cursor representation */}
                 {!dilemma && (

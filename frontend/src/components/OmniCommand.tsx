@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Plus, Swords, SlidersHorizontal, UploadCloud,
   History, Compass, X, Sparkles, Scale, BookOpen, Sun, Moon,
-  ChevronRight, ArrowRight
+  ChevronRight, ArrowRight, FileText, CheckCircle2, Lightbulb
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { DecisionListItem } from '../types';
@@ -60,100 +60,134 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Actions
+  // Dynamic search items across decisions, evidence topics, and actions
+  const q = query.trim().toLowerCase();
+
+  // 1. Quick Actions
   const baseActions = [
     {
       id: 'new',
+      type: 'action',
       title: 'Create New Decision',
-      subtitle: 'Start structured thinking from free-form thought',
+      subtitle: 'Start structured thinking from a free-form thought',
       icon: Plus,
       color: 'text-cyan-400',
+      keywords: 'create new start decision dilemma prompt question',
       action: () => { onNewDecision(); onClose(); },
     },
     ...(recentDecisions.length > 0
       ? [{
           id: 'resume',
+          type: 'action',
           title: `Resume Thinking: ${recentDecisions[0].title}`,
-          subtitle: `${recentDecisions[0].confidence_score}% Signal model`,
+          subtitle: `${recentDecisions[0].confidence_score}% Signal model • Continue unfinished analysis`,
           icon: History,
           color: 'text-sky-400',
+          keywords: 'resume latest recent unfinished thinking ' + recentDecisions[0].title.toLowerCase(),
           action: () => { onSelectDecision(recentDecisions[0].id); onClose(); },
         }]
       : []),
     {
       id: 'archive',
-      title: 'Search Decision Archive',
-      subtitle: 'View historical decisions & calibrate lived outcomes',
+      type: 'action',
+      title: 'Open Decision Memory',
+      subtitle: 'Review past decisions, actual outcomes & calibrated accuracy',
       icon: History,
-      color: 'text-slate-400',
+      color: 'text-indigo-400',
+      keywords: 'archive memory history past previous decisions log outcomes calibrate',
       action: () => { onNavigate('archive'); onClose(); },
     },
     ...(hasActiveDecision
       ? [
           {
             id: 'challenge',
+            type: 'action',
             title: 'Challenge Decision (Red Team Mode)',
-            subtitle: "Devil's Advocate stress-testing & bias interrogation",
+            subtitle: "Devil's Advocate bias interrogation & stress-testing",
             icon: Swords,
             color: 'text-rose-400',
+            keywords: 'challenge red team devil advocate bias attack stress test',
             action: () => { onChallenge(); onClose(); },
           },
           {
             id: 'simulate',
+            type: 'action',
             title: 'Run What-If Scenario Lab',
-            subtitle: 'Dynamic parameter levers & sensitivity analysis',
+            subtitle: 'Adjust compensation, remote flexibility & tenure levers',
             icon: SlidersHorizontal,
             color: 'text-amber-400',
+            keywords: 'what-if what if simulation levers scenario salary remote tenure parameter',
             action: () => { onSimulate(); onClose(); },
           },
           {
             id: 'upload',
+            type: 'action',
             title: 'Ingest Evidence / Document',
-            subtitle: 'Upload PDF/DOCX to extract grounded citations',
+            subtitle: 'Upload PDF/DOCX offer letters, contracts & notes for RAG grounding',
             icon: UploadCloud,
             color: 'text-emerald-400',
+            keywords: 'evidence document upload pdf docx contract notes rag citations',
             action: () => { onUploadDoc(); onClose(); },
           },
         ]
       : []),
     {
       id: 'explore',
-      title: 'Explore Curated Dilemmas',
-      subtitle: 'Template libraries for career, investment, and tech stack',
+      type: 'action',
+      title: 'Explore Patterns & Starter Templates',
+      subtitle: 'Personal priority analytics and curated decision starters',
       icon: Compass,
-      color: 'text-indigo-400',
+      color: 'text-teal-400',
+      keywords: 'explore patterns templates starters career relocation startup fellowship',
       action: () => { onNavigate('explore'); onClose(); },
     },
     {
       id: 'theme',
-      title: `Toggle Theme (${theme === 'dark' ? 'Light Paper' : 'Dark Void'})`,
-      subtitle: 'Switch visual contrast modes',
+      type: 'action',
+      title: `Toggle Theme (${theme === 'dark' ? 'Light Paper Mode' : 'Dark Void Mode'})`,
+      subtitle: 'Switch application color contrast',
       icon: theme === 'dark' ? Sun : Moon,
       color: 'text-amber-300',
+      keywords: 'theme dark light mode appearance contrast',
       action: () => { toggleTheme(); onClose(); },
     },
   ];
 
-  const filteredActions = baseActions.filter(a =>
-    a.title.toLowerCase().includes(query.toLowerCase()) ||
-    a.subtitle.toLowerCase().includes(query.toLowerCase())
+  // 2. Decision Items
+  const decisionItems = recentDecisions.map((d) => ({
+    id: `dec-${d.id}`,
+    type: 'decision',
+    title: d.title,
+    subtitle: `${d.confidence_score}% Signal • Recommendation: ${d.recommendation || 'Evaluated'}`,
+    icon: Lightbulb,
+    color: 'text-cyan-400',
+    keywords: `${d.title} ${d.recommendation || ''} decision past`,
+    action: () => { onSelectDecision(d.id); onClose(); },
+  }));
+
+  // Filter actions & decisions based on query
+  const filteredActions = baseActions.filter((a) =>
+    q === '' ? true : a.title.toLowerCase().includes(q) || a.subtitle.toLowerCase().includes(q) || a.keywords.includes(q)
   );
 
-  const filteredDecisions = recentDecisions.filter(d =>
-    d.title.toLowerCase().includes(query.toLowerCase())
+  const filteredDecisions = decisionItems.filter((d) =>
+    q === '' ? false : d.title.toLowerCase().includes(q) || d.keywords.toLowerCase().includes(q)
   );
+
+  // Combined flat list for keyboard arrow navigation
+  const allResults = [...filteredDecisions, ...filteredActions];
 
   const handleKeyDownList = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev + 1) % (filteredActions.length || 1));
+      setSelectedIndex((prev) => (prev + 1) % (allResults.length || 1));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev - 1 + filteredActions.length) % (filteredActions.length || 1));
+      setSelectedIndex((prev) => (prev - 1 + allResults.length) % (allResults.length || 1));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      if (filteredActions[selectedIndex]) {
-        filteredActions[selectedIndex].action();
+      if (allResults[selectedIndex]) {
+        allResults[selectedIndex].action();
       }
     }
   };
@@ -161,28 +195,28 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 px-4 bg-black/75 backdrop-blur-xl select-none animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-black/80 backdrop-blur-xl select-none animate-in fade-in duration-150">
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: -10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.98, y: -5 }}
         transition={{ duration: 0.16 }}
-        className="relative w-full max-w-2xl rounded-2xl bg-[var(--surface-blur)] backdrop-blur-2xl border border-cyan-500/30 shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden"
+        className="relative w-full max-w-2xl rounded-3xl bg-[var(--surface-blur)] backdrop-blur-2xl border border-cyan-500/30 shadow-[0_20px_60px_rgba(0,0,0,0.85)] overflow-hidden"
       >
         {/* Search Input Bar */}
-        <div className="p-4 border-b border-[var(--line-color)] flex items-center space-x-3">
+        <div className="p-4 border-b border-[var(--line-color)] flex items-center space-x-3 bg-black/30">
           <Search className="w-5 h-5 text-cyan-400 shrink-0" />
           <input
             ref={inputRef}
             type="text"
-            placeholder="Search FlowMind or ask anything..."
+            placeholder="Search FlowMind or ask anything... (e.g. 'career decisions', 'challenge', 'remote work')"
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
               setSelectedIndex(0);
             }}
             onKeyDown={handleKeyDownList}
-            className="w-full bg-transparent text-base font-sans text-white placeholder-slate-500 focus:outline-none"
+            className="w-full bg-transparent text-sm sm:text-base font-sans text-white placeholder-slate-500 focus:outline-none"
           />
           <button
             onClick={onClose}
@@ -192,76 +226,115 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
           </button>
         </div>
 
-        {/* Action List */}
-        <div className="max-h-96 overflow-y-auto p-2 space-y-1">
-          {filteredActions.map((action, idx) => {
-            const Icon = action.icon;
-            const isSelected = idx === selectedIndex;
-            return (
-              <div
-                key={action.id}
-                onClick={action.action}
-                onMouseEnter={() => setSelectedIndex(idx)}
-                className={`p-3 rounded-xl cursor-pointer flex items-center justify-between transition-all ${
-                  isSelected
-                    ? 'bg-cyan-500/15 border border-cyan-400/40 text-white'
-                    : 'text-slate-300 hover:bg-white/5 border border-transparent'
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <div className={`p-2 rounded-lg bg-black/40 ${action.color}`}>
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-mono font-medium flex items-center space-x-2">
-                      <span>{action.title}</span>
-                      {isSelected && (
-                        <span className="text-[9px] font-mono text-cyan-400">✦ Trigger</span>
-                      )}
-                    </div>
-                    <div className="text-[11px] text-slate-400 font-sans">
-                      {action.subtitle}
-                    </div>
-                  </div>
-                </div>
-                <ArrowRight className={`w-3.5 h-3.5 ${isSelected ? 'text-cyan-400' : 'text-transparent'}`} />
-              </div>
-            );
-          })}
-
-          {/* If there are matched past decisions */}
-          {filteredDecisions.length > 0 && query.trim().length > 0 && (
-            <div className="pt-2 border-t border-[var(--line-color)] mt-2">
-              <span className="px-3 text-[9px] font-mono uppercase tracking-widest text-slate-500 block mb-1">
-                PAST DECISIONS
+        {/* Results Container */}
+        <div className="max-h-[65vh] overflow-y-auto p-3 space-y-4 font-mono text-xs">
+          {/* Matched Decisions if searching */}
+          {filteredDecisions.length > 0 && (
+            <div className="space-y-1">
+              <span className="px-3 text-[10px] uppercase tracking-widest text-cyan-400 font-bold block mb-1">
+                ✦ MATCHED DECISIONS
               </span>
-              {filteredDecisions.slice(0, 3).map((d) => (
+              {filteredDecisions.map((item, idx) => {
+                const isSelected = idx === selectedIndex;
+                return (
+                  <div
+                    key={item.id}
+                    onClick={item.action}
+                    onMouseEnter={() => setSelectedIndex(idx)}
+                    className={`p-3 rounded-2xl cursor-pointer flex items-center justify-between transition-all ${
+                      isSelected
+                        ? 'bg-cyan-500/20 border border-cyan-400/50 text-white shadow-md'
+                        : 'text-slate-300 hover:bg-white/5 border border-transparent'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 rounded-xl bg-cyan-950/60 text-cyan-400 border border-cyan-500/30">
+                        <Lightbulb className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-white text-xs">{item.title}</div>
+                        <div className="text-[11px] text-slate-400 font-sans">{item.subtitle}</div>
+                      </div>
+                    </div>
+                    <ArrowRight className={`w-3.5 h-3.5 ${isSelected ? 'text-cyan-400' : 'text-transparent'}`} />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Quick Actions & System Commands */}
+          <div className="space-y-1">
+            <span className="px-3 text-[10px] uppercase tracking-widest text-slate-500 font-bold block mb-1">
+              {q ? 'ACTIONS & COMMANDS' : 'QUICK ACTIONS'}
+            </span>
+            {filteredActions.map((action, idx) => {
+              const actualIdx = filteredDecisions.length + idx;
+              const isSelected = actualIdx === selectedIndex;
+              const Icon = action.icon;
+
+              return (
                 <div
-                  key={d.id}
-                  onClick={() => {
-                    onSelectDecision(d.id);
-                    onClose();
-                  }}
-                  className="p-2.5 rounded-lg hover:bg-white/5 cursor-pointer flex items-center justify-between text-xs font-mono text-slate-300"
+                  key={action.id}
+                  onClick={action.action}
+                  onMouseEnter={() => setSelectedIndex(actualIdx)}
+                  className={`p-3 rounded-2xl cursor-pointer flex items-center justify-between transition-all ${
+                    isSelected
+                      ? 'bg-cyan-500/15 border border-cyan-400/40 text-white shadow-md'
+                      : 'text-slate-300 hover:bg-white/5 border border-transparent'
+                  }`}
                 >
-                  <span className="truncate">{d.title}</span>
-                  <span className="text-cyan-400 text-[10px] shrink-0 ml-2">
-                    {d.confidence_score}%
-                  </span>
+                  <div className="flex items-center space-x-3">
+                    <div className={`p-2 rounded-xl bg-black/40 border border-white/5 ${action.color}`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-mono font-medium flex items-center space-x-2">
+                        <span>{action.title}</span>
+                        {isSelected && (
+                          <span className="text-[9px] font-mono text-cyan-400 bg-cyan-950/60 px-1.5 py-0.2 rounded border border-cyan-500/30">
+                            ↵ Enter
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-slate-400 font-sans">
+                        {action.subtitle}
+                      </div>
+                    </div>
+                  </div>
+                  <ArrowRight className={`w-3.5 h-3.5 ${isSelected ? 'text-cyan-400' : 'text-transparent'}`} />
                 </div>
-              ))}
+              );
+            })}
+          </div>
+
+          {/* If query has no matches */}
+          {allResults.length === 0 && (
+            <div className="py-12 text-center space-y-2">
+              <span className="text-xs font-mono text-slate-400 block">
+                No matching decisions or commands for "{query}"
+              </span>
+              <button
+                onClick={() => {
+                  onNewDecision();
+                  onClose();
+                }}
+                className="px-4 py-2 rounded-full bg-cyan-400 text-slate-950 font-bold text-xs font-mono"
+              >
+                Create a decision about "{query}" →
+              </button>
             </div>
           )}
         </div>
 
         {/* Command Footer */}
-        <div className="px-4 py-2.5 bg-black/40 border-t border-[var(--line-color)] flex items-center justify-between text-[10px] font-mono text-slate-500">
-          <div className="flex items-center space-x-3">
+        <div className="px-4 py-2.5 bg-black/50 border-t border-[var(--line-color)] flex items-center justify-between text-[10px] font-mono text-slate-500">
+          <div className="flex items-center space-x-4">
             <span>[↑↓] Navigate</span>
             <span>[↵] Execute</span>
             <span>[ESC] Close</span>
           </div>
-          <span className="text-cyan-400/80">FLOWMIND COGNITIVE OS</span>
+          <span className="text-cyan-400/80">FLOWMIND COMMAND LAYER</span>
         </div>
       </motion.div>
     </div>
