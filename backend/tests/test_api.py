@@ -99,11 +99,16 @@ def test_create_and_orchestrate_quick_decision():
     o_data = outcome_resp.json()
     assert o_data["satisfaction_score"] == 9
 
+    # Verify decision is marked resolved and contains outcomes
+    dec_check = client.get(f"/api/decisions/{decision_id}").json()
+    assert dec_check["status"] == "resolved"
+    assert len(dec_check["outcomes"]) >= 1
+
 def test_upload_document_rag():
-    # Test document upload and RAG text extraction
+    # Test document upload and RAG text extraction with decision link
     file_content = b"Candidate Offer: Senior Architect. Base salary: $260,000 USD. Equity: 40,000 ISOs. Remote work: approved."
     files = {"file": ("test_offer.txt", file_content, "text/plain")}
-    resp = client.post("/api/documents/upload", files=files)
+    resp = client.post("/api/documents/upload", files=files, data={"decision_id": 1})
     assert resp.status_code == 200
     doc_data = resp.json()
     assert doc_data["id"] is not None

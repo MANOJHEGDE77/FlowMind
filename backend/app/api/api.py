@@ -233,6 +233,23 @@ async def upload_document(
     # Chunk and generate embeddings
     rag_service.chunk_and_store(db, document.id, extracted)
 
+    if decision_id:
+        pages_count = len(extracted.get("pages", [1])) or 1
+        full_text = extracted.get("full_text", "").strip()
+        snippet = full_text[:400] if full_text else f"Extracted contents from {file.filename}"
+        evidence_item = Evidence(
+            decision_id=decision_id,
+            claim=f"Verified Source: {file.filename}",
+            source_document_id=document.id,
+            source_title=file.filename,
+            page_or_section=f"Section 1 / {pages_count} pages",
+            quote=snippet,
+            relevance_explanation=f"Direct factual evidence extracted from user-supplied {file.filename}",
+            agent_name="Evidence Engine"
+        )
+        db.add(evidence_item)
+        db.commit()
+
     return DocumentResponse(
         id=document.id,
         filename=document.filename,

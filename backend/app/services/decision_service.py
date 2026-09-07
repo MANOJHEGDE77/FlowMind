@@ -359,6 +359,11 @@ Respond strictly in valid JSON format:
             ai_accuracy_rating=data.ai_accuracy_rating
         )
         db.add(outcome)
+
+        decision = db.query(Decision).filter(Decision.id == decision_id).first()
+        if decision:
+            decision.status = "resolved"
+
         db.commit()
         db.refresh(outcome)
         return outcome

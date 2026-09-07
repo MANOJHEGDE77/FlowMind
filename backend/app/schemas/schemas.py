@@ -136,6 +136,26 @@ class DecisionCreate(BaseModel):
 class DecisionQuickPrompt(BaseModel):
     prompt: str
 
+# ----------------- Decision Outcome -----------------
+
+class OutcomeCreate(BaseModel):
+    chosen_option_title: str
+    actual_outcome_notes: Optional[str] = None
+    satisfaction_score: int = Field(5, ge=1, le=10)
+    ai_accuracy_rating: int = Field(5, ge=1, le=10)
+
+class OutcomeResponse(BaseModel):
+    id: int
+    decision_id: int
+    chosen_option_title: str
+    actual_outcome_notes: Optional[str] = None
+    satisfaction_score: int
+    ai_accuracy_rating: int
+    recorded_at: datetime.datetime
+
+    class Config:
+        from_attributes = True
+
 class DecisionResponse(BaseModel):
     id: int
     user_id: int
@@ -156,6 +176,7 @@ class DecisionResponse(BaseModel):
     constraints: List[ConstraintResponse] = []
     evidence_items: List[EvidenceResponse] = []
     agent_runs: List[AgentRunResponse] = []
+    outcomes: List[OutcomeResponse] = []
     created_at: datetime.datetime
     updated_at: datetime.datetime
 
@@ -214,26 +235,6 @@ class SimulationResponse(BaseModel):
     key_drivers: List[str]
     diff_explanation: str
     updated_option_scores: Dict[str, float]
-
-# ----------------- Decision Outcome -----------------
-
-class OutcomeCreate(BaseModel):
-    chosen_option_title: str
-    actual_outcome_notes: Optional[str] = None
-    satisfaction_score: int = Field(5, ge=1, le=10)
-    ai_accuracy_rating: int = Field(5, ge=1, le=10)
-
-class OutcomeResponse(BaseModel):
-    id: int
-    decision_id: int
-    chosen_option_title: str
-    actual_outcome_notes: Optional[str] = None
-    satisfaction_score: int
-    ai_accuracy_rating: int
-    recorded_at: datetime.datetime
-
-    class Config:
-        from_attributes = True
 
 # ----------------- Document / RAG -----------------
 

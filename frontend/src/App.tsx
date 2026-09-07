@@ -17,11 +17,14 @@ import { HelpGuideModal } from './components/HelpGuideModal';
 import { AskAIModal } from './components/AskAIModal';
 import { AuthModal } from './pages/AuthPage';
 import { EvidenceDropZone } from './components/EvidenceDropZone';
+import { ExportDecisionModal } from './components/ExportDecisionModal';
 import { ThemeProvider } from './context/ThemeContext';
+import { ToastProvider, useToast } from './context/ToastContext';
 import { Decision, DecisionListItem, User } from './types';
 import { api } from './services/api';
 
 export function AppRoot() {
+  const { showToast } = useToast();
   const [activeView, setActiveView] = useState<'home' | 'workspace' | 'archive' | 'explore'>('home');
   const [currentDecision, setCurrentDecision] = useState<Decision | null>(null);
   const [recentDecisions, setRecentDecisions] = useState<DecisionListItem[]>([]);
@@ -43,6 +46,7 @@ export function AppRoot() {
   const [isRedTeamOpen, setIsRedTeamOpen] = useState(false);
   const [isWhatIfOpen, setIsWhatIfOpen] = useState(false);
   const [isEvidenceOpen, setIsEvidenceOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [isAskAIOpen, setIsAskAIOpen] = useState(false);
   const [askAIQuestion, setAskAIQuestion] = useState('');
   const [inspectedNode, setInspectedNode] = useState<{ type: string; data: any } | null>(null);
@@ -98,9 +102,10 @@ export function AppRoot() {
       await loadData();
       setIsAnalyzing(false);
       setActiveView('workspace');
+      showToast('Synthesis complete. Welcome to your Decision Space.', 'success');
     } catch (err: any) {
       setIsAnalyzing(false);
-      alert(err.message || 'Analysis failed');
+      showToast(err.message || 'Analysis failed', 'error');
     }
   };
 
@@ -110,7 +115,7 @@ export function AppRoot() {
       setCurrentDecision(dec);
       setActiveView('workspace');
     } catch (err: any) {
-      alert('Could not load decision: ' + err.message);
+      showToast('Could not load decision: ' + err.message, 'error');
     }
   };
 
@@ -122,9 +127,10 @@ export function AppRoot() {
       await loadData();
       setIsAnalyzing(false);
       setActiveView('workspace');
+      showToast('Dilemma launched into workspace!', 'success');
     } catch (err: any) {
       setIsAnalyzing(false);
-      alert(err.message || 'Clone failed');
+      showToast(err.message || 'Clone failed', 'error');
     }
   };
 
@@ -196,6 +202,7 @@ export function AppRoot() {
             onOpenSimulator={() => setIsWhatIfOpen(true)}
             onOpenEvidence={() => setIsEvidenceOpen(true)}
             onOpenCouncil={() => setIsCouncilOpen(true)}
+            onOpenExport={() => setIsExportOpen(true)}
             onOpenAskAI={() => {
               setAskAIQuestion('');
               setIsAskAIOpen(true);
@@ -294,6 +301,7 @@ export function AppRoot() {
           onChallenge={() => setIsRedTeamOpen(true)}
           onSimulate={() => setIsWhatIfOpen(true)}
           onOpenEvidence={() => setIsEvidenceOpen(true)}
+          onExport={() => setIsExportOpen(true)}
           onOpenWhy={() => {
             setInspectedNode({
               type: 'signal',
@@ -391,6 +399,13 @@ export function AppRoot() {
         decision={currentDecision}
         initialQuestion={askAIQuestion}
       />
+
+      {/* 14. Executive Decision Memo Exporter */}
+      <ExportDecisionModal
+        decision={currentDecision}
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+      />
     </div>
   );
 }
@@ -398,7 +413,9 @@ export function AppRoot() {
 export default function App() {
   return (
     <ThemeProvider>
-      <AppRoot />
+      <ToastProvider>
+        <AppRoot />
+      </ToastProvider>
     </ThemeProvider>
   );
 }

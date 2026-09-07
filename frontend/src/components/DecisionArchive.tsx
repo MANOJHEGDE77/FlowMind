@@ -2,10 +2,11 @@ import React, { useState, useMemo } from 'react';
 import {
   Calendar, Star, ChevronRight, Sparkles, Trash2,
   Crown, ArrowRight, CheckCircle2, Search, Filter,
-  Check, History, ArrowUpRight, TrendingUp
+  Check, History, ArrowUpRight, TrendingUp, AlertTriangle, X
 } from 'lucide-react';
 import { DecisionListItem } from '../types';
 import { api } from '../services/api';
+import { useToast } from '../context/ToastContext';
 
 interface DecisionArchiveProps {
   decisions: DecisionListItem[];
@@ -23,12 +24,15 @@ export const DecisionArchive: React.FC<DecisionArchiveProps> = ({
   const [sortBy, setSortBy] = useState<'recent' | 'confidence' | 'title'>('recent');
 
   const [selectedForOutcome, setSelectedForOutcome] = useState<DecisionListItem | null>(null);
+  const [decisionToDelete, setDecisionToDelete] = useState<DecisionListItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [chosenOption, setChosenOption] = useState('');
   const [outcomeNotes, setOutcomeNotes] = useState('');
   const [satisfaction, setSatisfaction] = useState(8);
   const [accuracy, setAccuracy] = useState(8);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const { showToast } = useToast();
 
   const avgConfidence = useMemo(() => {
     if (decisions.length === 0) return 0;
@@ -78,23 +82,36 @@ export const DecisionArchive: React.FC<DecisionArchiveProps> = ({
         ai_accuracy_rating: accuracy,
       });
       setSuccess(true);
+      showToast('Outcome recorded! Decision model marked as resolved & calibrated.', 'success');
       setTimeout(() => {
         setSelectedForOutcome(null);
         setSuccess(false);
         onRefresh();
       }, 900);
     } catch (err: any) {
-      alert(err.message || 'Outcome logging failed');
+      showToast(err.message || 'Outcome logging failed', 'error');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDelete = async (id: number, e: React.MouseEvent) => {
+  const handleDeleteClick = (d: DecisionListItem, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (confirm('Permanently remove this decision model from memory?')) {
-      await api.deleteDecision(id);
+    setDecisionToDelete(d);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!decisionToDelete) return;
+    try {
+      setIsDeleting(true);
+      await api.deleteDecision(decisionToDelete.id);
+      showToast(`Decision "${decisionToDelete.title}" deleted from memory.`, 'info');
+      setDecisionToDelete(null);
       onRefresh();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete decision', 'error');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -211,7 +228,7 @@ export const DecisionArchive: React.FC<DecisionArchiveProps> = ({
                       {d.confidence_score}% Signal
                     </span>
                     <button
-                      onClick={(e) => handleDelete(d.id, e)}
+                      onClick={(e) => handleDeleteClick(d, e)}
                       className="p-1 rounded text-slate-600 hover:text-rose-400 transition-colors"
                       title="Delete decision"
                     >
@@ -366,6 +383,55 @@ export const DecisionArchive: React.FC<DecisionArchiveProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* In-App Deletion Confirmation Modal */}
+      {decisionToDelete && (
+        <div
+          onClick={() => setDecisionToDelete(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl select-none animate-in fade-in duration-200"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md bg-[var(--surface-blur)] border border-rose-500/30 rounded-3xl p-6 shadow-2xl space-y-4 font-sans"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-white">
+                  Remove Decision Model?
+                </h3>
+                <p className="text-xs text-slate-400 font-mono">
+                  Irreversible action
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed font-sans bg-black/40 p-3.5 rounded-2xl border border-white/5">
+              Permanently remove <strong className="text-white">"{decisionToDelete.title}"</strong> and all its agent deliberations, stress-test logs, and grounded evidence?
+            </p>
+
+            <div className="flex items-center justify-end space-x-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setDecisionToDelete(null)}
+                className="px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-mono transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 rounded-full bg-rose-500 hover:bg-rose-400 text-white font-bold text-xs font-mono transition-colors shadow-lg shadow-rose-500/20 disabled:opacity-50"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Permanently'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Crown, Swords, SlidersHorizontal, BookOpen,
-  ArrowRight, X, Sparkles, TrendingUp, ShieldAlert
+  ArrowRight, X, Sparkles, TrendingUp, ShieldAlert, Share2
 } from 'lucide-react';
 import { Decision } from '../types';
 
@@ -13,6 +13,7 @@ interface SignalMomentProps {
   onSimulate: () => void;
   onOpenEvidence: () => void;
   onOpenWhy: () => void;
+  onExport?: () => void;
 }
 
 export const SignalMoment: React.FC<SignalMomentProps> = ({
@@ -23,7 +24,20 @@ export const SignalMoment: React.FC<SignalMomentProps> = ({
   onSimulate,
   onOpenEvidence,
   onOpenWhy,
+  onExport,
 }) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const winner = decision.options.find(o => o.is_recommended) || decision.options[0];
@@ -36,7 +50,12 @@ export const SignalMoment: React.FC<SignalMomentProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-space-950/90 backdrop-blur-2xl select-none animate-in fade-in duration-300">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-space-950/90 backdrop-blur-2xl select-none animate-in fade-in duration-300"
+    >
       <div className="relative w-full max-w-2xl text-center space-y-6">
         {/* Close trigger */}
         <button
@@ -145,6 +164,16 @@ export const SignalMoment: React.FC<SignalMomentProps> = ({
             <BookOpen className="w-3.5 h-3.5" />
             <span>Evidence</span>
           </button>
+
+          {onExport && (
+            <button
+              onClick={() => { onClose(); onExport(); }}
+              className="px-4 py-2 rounded-full bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 text-xs font-mono border border-cyan-500/30 transition-all flex items-center space-x-1.5"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>Export Memo</span>
+            </button>
+          )}
         </div>
       </div>
     </div>

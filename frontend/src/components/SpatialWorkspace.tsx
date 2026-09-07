@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import {
   ZoomIn, ZoomOut, Maximize2, Swords, SlidersHorizontal,
   Scale, BookOpen, Crown, TrendingUp, ShieldAlert,
-  Sparkles, ArrowRight, Layers, Eye, MessageSquare
+  Sparkles, ArrowRight, Layers, Eye, MessageSquare, Share2
 } from 'lucide-react';
 import { Decision, DecisionOption } from '../types';
 
@@ -14,6 +14,7 @@ interface SpatialWorkspaceProps {
   onSelectNode: (type: string, data: any) => void;
   onOpenCouncil: () => void;
   onOpenAskAI?: () => void;
+  onOpenExport?: () => void;
 }
 
 export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
@@ -24,6 +25,7 @@ export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
   onSelectNode,
   onOpenCouncil,
   onOpenAskAI,
+  onOpenExport,
 }) => {
   const [zoom, setZoom] = useState(1);
   const [isPanning, setIsPanning] = useState(false);
@@ -157,6 +159,18 @@ export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
             >
               <MessageSquare className="w-3.5 h-3.5" />
               <span>✦ Ask AI</span>
+            </button>
+          )}
+
+          {onOpenExport && (
+            <button
+              onClick={onOpenExport}
+              onMouseEnter={() => setHoveredAction('Export Decision Memo: Generate Markdown/JSON memo for documentation & sharing')}
+              onMouseLeave={() => setHoveredAction(null)}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-slate-300 border border-white/15 text-xs font-mono transition-all"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>Export Memo</span>
             </button>
           )}
         </div>

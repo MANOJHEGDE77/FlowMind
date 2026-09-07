@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { ChallengeResult, Decision } from '../types';
 import { api } from '../services/api';
+import { useToast } from '../context/ToastContext';
 
 interface RedTeamModeProps {
   decision: Decision;
@@ -20,6 +21,7 @@ export const RedTeamMode: React.FC<RedTeamModeProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const { showToast } = useToast();
   const defaultTarget = decision.recommendation || decision.options[0]?.title || 'Leading Option';
   const [targetOption, setTargetOption] = useState<string>(defaultTarget);
 
@@ -101,8 +103,9 @@ export const RedTeamMode: React.FC<RedTeamModeProps> = ({
       setResult(res);
       const fresh = await api.getDecision(decision.id);
       onSuccess(fresh);
+      showToast("Devil's Advocate challenge complete. Stress-test critique generated!", 'warning');
     } catch (err: any) {
-      alert(err.message || 'Red team attack failed');
+      showToast(err.message || 'Red team attack failed', 'error');
     } finally {
       setIsLoading(false);
     }

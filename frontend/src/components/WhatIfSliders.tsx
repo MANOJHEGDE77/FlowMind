@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SlidersHorizontal, X, ArrowRight, RefreshCw,
   DollarSign, Clock, Laptop, Sparkles
 } from 'lucide-react';
 import { Decision, SimulationResult } from '../types';
 import { api } from '../services/api';
+import { useToast } from '../context/ToastContext';
 
 interface WhatIfSlidersProps {
   decision: Decision;
@@ -24,6 +25,20 @@ export const WhatIfSliders: React.FC<WhatIfSlidersProps> = ({
   const [timeHorizon, setTimeHorizon] = useState<number>(3);
   const [isSimulating, setIsSimulating] = useState(false);
   const [result, setResult] = useState<SimulationResult | null>(null);
+  const { showToast } = useToast();
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -41,15 +56,21 @@ export const WhatIfSliders: React.FC<WhatIfSlidersProps> = ({
       setResult(res);
       const fresh = await api.getDecision(decision.id);
       onSuccess(fresh);
+      showToast('What-If simulation completed! Decision topology updated.', 'success');
     } catch (err: any) {
-      alert(err.message || 'Simulation failed');
+      showToast(err.message || 'Simulation failed', 'error');
     } finally {
       setIsSimulating(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-space-950/85 backdrop-blur-xl select-none animate-in fade-in duration-200">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-space-950/85 backdrop-blur-xl select-none animate-in fade-in duration-200"
+    >
       <div className="relative w-full max-w-xl bg-[var(--surface-blur)] border border-amber-500/30 rounded-3xl p-6 md:p-8 shadow-2xl space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-[var(--line-color)]">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sparkles, X, CheckCircle2, ShieldAlert, TrendingUp,
   DollarSign, Compass, Flame, Clock, Users, ArrowRight
@@ -21,6 +21,19 @@ export const AICouncilOrbit: React.FC<AICouncilOrbitProps> = ({
   const [selectedAgentName, setSelectedAgentName] = useState<string>(
     agents[0]?.agent_name || 'Analyst'
   );
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -50,7 +63,12 @@ export const AICouncilOrbit: React.FC<AICouncilOrbitProps> = ({
   const selectedTheme = selectedAgent ? getAgentTheme(selectedAgent.agent_name) : getAgentTheme('Analyst');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-space-950/85 backdrop-blur-xl select-none animate-in fade-in duration-200">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-space-950/85 backdrop-blur-xl select-none animate-in fade-in duration-200"
+    >
       <div className="relative w-full max-w-4xl bg-[var(--surface-blur)] border border-[var(--line-color)] rounded-3xl p-6 md:p-8 shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[var(--line-color)]">

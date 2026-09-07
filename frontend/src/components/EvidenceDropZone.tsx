@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   UploadCloud, X, FileText, CheckCircle2,
   RefreshCw, ArrowRight, BookOpen, Layers
 } from 'lucide-react';
 import { api } from '../services/api';
+import { useToast } from '../context/ToastContext';
 
 interface EvidenceDropZoneProps {
   decisionId?: number;
@@ -21,6 +22,20 @@ export const EvidenceDropZone: React.FC<EvidenceDropZoneProps> = ({
   const [file, setFile] = useState<File | null>(null);
   const [stage, setStage] = useState<'idle' | 'uploading' | 'extracting' | 'chunking' | 'done'>('idle');
   const [statusMessage, setStatusMessage] = useState<string>('');
+  const { showToast } = useToast();
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -51,6 +66,7 @@ export const EvidenceDropZone: React.FC<EvidenceDropZoneProps> = ({
 
       setStage('done');
       setStatusMessage('Evidence grounded into decision topology!');
+      showToast(`Grounding completed: ${file.name} attached as verified evidence!`, 'success');
       setTimeout(() => {
         onSuccess();
         onClose();
@@ -58,13 +74,18 @@ export const EvidenceDropZone: React.FC<EvidenceDropZoneProps> = ({
         setFile(null);
       }, 1000);
     } catch (err: any) {
-      alert(err.message || 'Evidence ingestion failed');
+      showToast(err.message || 'Evidence ingestion failed', 'error');
       setStage('idle');
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-space-950/80 backdrop-blur-md select-none">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-space-950/80 backdrop-blur-md select-none"
+    >
       <div className="w-full max-w-lg bg-[var(--bg-surface)] border border-emerald-500/40 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="px-6 py-4 border-b border-emerald-500/20 bg-emerald-500/5 flex items-center justify-between">
