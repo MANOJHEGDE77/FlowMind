@@ -51,7 +51,7 @@ export const SignalMoment: React.FC<SignalMomentProps> = ({
           <span className="text-[11px] font-mono uppercase tracking-widest text-emerald-400 font-bold block">
             ✦ THE SIGNAL
           </span>
-          <h1 className="text-3xl sm:text-5xl font-serif text-[var(--text-vivid)] tracking-tight">
+          <h1 className="text-3xl sm:text-5xl font-editorial text-[var(--text-vivid)] tracking-tight">
             {decision.recommendation || winner?.title}
           </h1>
           <div className="inline-flex items-center space-x-2 text-xs font-mono text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20 mt-1">

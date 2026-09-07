@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ThinkingField } from './components/ThinkingField';
+import { FloatingConceptLabels } from './components/FloatingConceptLabels';
+import { AIThinkingState } from './components/AIThinkingState';
 import { FloatingNav } from './components/FloatingNav';
 import { ThoughtComposer } from './components/ThoughtComposer';
 import { SpatialWorkspace } from './components/SpatialWorkspace';
@@ -23,8 +25,14 @@ export function AppRoot() {
   const [recentDecisions, setRecentDecisions] = useState<DecisionListItem[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  // Live thinking field input reflection
+  // Live thinking field reactive states
   const [activeInputText, setActiveInputText] = useState('');
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const [selectedPriorities, setSelectedPriorities] = useState<string[]>([
+    'Career Velocity & Learning',
+    'Long-Term Equity / Financial Upside',
+  ]);
+  const [hoveredConcept, setHoveredConcept] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Overlays and modals
@@ -104,13 +112,31 @@ export function AppRoot() {
 
   return (
     <div className="relative min-h-screen w-screen bg-[var(--canvas-bg)] text-[var(--text-vivid)] overflow-hidden">
-      {/* 1. Subtle Animated Thinking Field Background */}
+      {/* 1. Subtle Animated Thinking Field Background with Living Constellation */}
       <ThinkingField
         inputText={activeInputText}
         isAnalyzing={isAnalyzing}
+        isInputFocused={isInputFocused}
+        selectedPriorities={selectedPriorities}
+        hoveredConcept={hoveredConcept}
       />
 
-      {/* 2. Floating Non-Invasive Navigation */}
+      {/* 2. Floating Strategic Concept Labels (AMBITION, TRADE-OFFS, VELOCITY, LEVERAGE, OPTIONALITY) */}
+      {activeView === 'home' && !isAnalyzing && (
+        <FloatingConceptLabels
+          onHoverConcept={setHoveredConcept}
+          onSelectConcept={(conceptName) => {
+            if (!selectedPriorities.includes(conceptName)) {
+              setSelectedPriorities([...selectedPriorities, conceptName]);
+            }
+          }}
+        />
+      )}
+
+      {/* 3. AI Cognitive Thinking State (Concentric rings & dynamic signal emergence) */}
+      <AIThinkingState isAnalyzing={isAnalyzing} />
+
+      {/* 4. Floating Minimal Top Controls & Bottom Command Dock */}
       <FloatingNav
         activeView={activeView}
         onNavigate={setActiveView}
@@ -124,7 +150,7 @@ export function AppRoot() {
         currentUser={currentUser}
       />
 
-      {/* 3. Main Views */}
+      {/* 5. Main Views */}
       <main className="relative z-10 w-full h-full">
         {/* HOME: BORDERLESS LIVING THOUGHT COMPOSER */}
         {activeView === 'home' && (
@@ -132,6 +158,8 @@ export function AppRoot() {
             onSubmit={handleCreateDecision}
             isAnalyzing={isAnalyzing}
             onInputChange={setActiveInputText}
+            onFocusChange={setIsInputFocused}
+            onPrioritiesChange={setSelectedPriorities}
             recentDecisions={recentDecisions}
             onSelectDecision={handleSelectDecision}
           />

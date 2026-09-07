@@ -65,7 +65,7 @@ export const DecisionArchive: React.FC<DecisionArchiveProps> = ({
         <span className="text-[10px] font-mono uppercase tracking-widest text-sky-400 font-bold block">
           ARCHIVE OF YOUR THINKING
         </span>
-        <h1 className="text-3xl font-serif text-[var(--text-vivid)]">
+        <h1 className="text-3xl font-editorial text-[var(--text-vivid)]">
           Decisions & Retrospective Outcomes
         </h1>
         <p className="text-xs text-[var(--text-faint)] font-mono">

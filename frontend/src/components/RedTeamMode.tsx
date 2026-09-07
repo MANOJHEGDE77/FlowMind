@@ -59,7 +59,7 @@ export const RedTeamMode: React.FC<RedTeamModeProps> = ({
             <Swords className="w-3.5 h-3.5" />
             <span>RED TEAM INTERROGATION MODE</span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-serif text-white tracking-tight">
+          <h1 className="text-2xl sm:text-4xl font-editorial text-white tracking-tight">
             Stress-Testing: "{decision.recommendation}"
           </h1>
           <p className="text-xs text-rose-200/70 max-w-lg mx-auto font-sans">

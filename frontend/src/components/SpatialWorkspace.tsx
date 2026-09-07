@@ -155,7 +155,7 @@ export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
             <span className="text-[10px] font-mono uppercase tracking-widest text-sky-400 font-bold block mb-1">
               ✦ CORE AMBITION
             </span>
-            <h1 className="text-xl sm:text-2xl font-serif text-[var(--text-vivid)] tracking-tight group-hover:text-sky-400 transition-colors">
+            <h1 className="text-xl sm:text-2xl font-editorial text-[var(--text-vivid)] tracking-tight group-hover:text-sky-400 transition-colors">
               "{decision.title}"
             </h1>
             <p className="text-xs text-[var(--text-body)] mt-1.5 max-w-lg mx-auto font-sans leading-relaxed">
@@ -322,7 +322,7 @@ export const SpatialWorkspace: React.FC<SpatialWorkspaceProps> = ({
               <span>THE SIGNAL</span>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl font-serif text-[var(--text-vivid)] tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-editorial text-[var(--text-vivid)] tracking-tight">
               {decision.recommendation || winnerOption.title}
             </h2>
 

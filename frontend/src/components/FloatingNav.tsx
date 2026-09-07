@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import {
-  Sparkles, Command, Sun, Moon,
-  Compass, Layers, Archive, Plus, ArrowLeft
+  Sparkles, Command, Sun, Moon, Plus,
+  Layers, Compass, Archive, ChevronRight
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { User, Decision } from '../types';
@@ -16,6 +17,13 @@ interface FloatingNavProps {
   currentUser: User | null;
 }
 
+const NAV_ITEMS = [
+  { id: 'home', label: 'Thinking', shortcut: '1', hint: 'Core thought stream & unstructured inputs' },
+  { id: 'workspace', label: 'Workspace', shortcut: '2', hint: 'Full-viewport spatial decision canvas' },
+  { id: 'archive', label: 'Archive', shortcut: '3', hint: 'Tree timeline of human decisions' },
+  { id: 'explore', label: 'Explore', shortcut: '4', hint: 'Curated high-stakes dilemma templates' },
+] as const;
+
 export const FloatingNav: React.FC<FloatingNavProps> = ({
   activeView,
   onNavigate,
@@ -26,128 +34,168 @@ export const FloatingNav: React.FC<FloatingNavProps> = ({
   currentUser,
 }) => {
   const { theme, toggleTheme } = useTheme();
-  const [isHovered, setIsHovered] = useState(false);
+  const [hoveredNav, setHoveredNav] = useState<string | null>(null);
+
+  // Keyboard shortcut listener for 1, 2, 3, 4
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger if user is typing in an input/textarea
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+      if (e.key === '1') onNavigate('home');
+      if (e.key === '2' && currentDecision) onNavigate('workspace');
+      if (e.key === '3') onNavigate('archive');
+      if (e.key === '4') onNavigate('explore');
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onNavigate, currentDecision]);
 
   return (
     <>
-      {/* Top Floating Anchors (Completely borderless, non-invasive) */}
-      <header className="fixed top-0 inset-x-0 z-40 px-6 py-5 flex items-center justify-between pointer-events-none select-none">
-        {/* Top-Left: Ethereal Logo Mark */}
-        <div className="pointer-events-auto flex items-center space-x-3">
+      {/* Top Floating Controls (Completely borderless, minimalist) */}
+      <header className="fixed top-0 inset-x-0 z-40 px-8 py-5 flex items-center justify-between pointer-events-none select-none">
+        {/* Top-Left: Refined Logo Mark */}
+        <div className="pointer-events-auto flex items-center space-x-3.5">
           <button
             onClick={() => onNavigate('home')}
-            className="flex items-center space-x-2 text-left focus:outline-none group opacity-85 hover:opacity-100 transition-opacity"
+            className="flex items-center space-x-2.5 text-left focus:outline-none group opacity-90 hover:opacity-100 transition-opacity"
           >
-            <span className="text-sky-400 font-serif text-sm">✦</span>
-            <span className="text-xs font-mono font-bold tracking-widest text-[var(--text-vivid)]">
+            {/* Geometric Glowing Emblem */}
+            <div className="relative flex items-center justify-center w-5 h-5">
+              <span className="text-cyan-400 text-sm font-serif group-hover:scale-110 transition-transform">
+                ✦
+              </span>
+              <div className="absolute inset-0 rounded-full border border-cyan-400/30 group-hover:border-cyan-400/70 transition-colors animate-pulse" />
+            </div>
+
+            <span className="text-xs font-mono font-bold tracking-widest text-white drop-shadow-[0_0_8px_rgba(0,240,255,0.2)]">
               FLOWMIND
             </span>
           </button>
 
+          <span className="hidden sm:inline-block text-[9px] font-mono text-cyan-400/70 bg-cyan-950/40 px-2 py-0.5 rounded-full border border-cyan-500/20">
+            ENGINE v2.4 • LIVE
+          </span>
+
           {activeView === 'workspace' && currentDecision && (
-            <div className="flex items-center space-x-2 text-[11px] font-mono text-[var(--text-faint)]">
-              <span>/</span>
-              <span className="text-[var(--text-body)] truncate max-w-xs">
+            <div className="flex items-center space-x-2 text-[11px] font-mono text-slate-400 pl-2 border-l border-slate-800">
+              <span className="text-slate-300 truncate max-w-xs font-medium">
                 {currentDecision.title}
               </span>
-              <span className="px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px]">
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold">
                 {currentDecision.confidence_score}% SIGNAL
               </span>
             </div>
           )}
         </div>
 
-        {/* Top-Right: Quick Actions */}
+        {/* Top-Right Controls: Command, Theme, Profile */}
         <div className="pointer-events-auto flex items-center space-x-2.5">
           {activeView === 'workspace' && (
-            <button
-              onClick={() => onNavigate('home')}
-              className="text-[11px] font-mono text-[var(--text-body)] hover:text-[var(--text-vivid)] bg-[var(--surface-blur)] backdrop-blur-md px-2.5 py-1 rounded-full border border-[var(--line-color)] transition-all flex items-center space-x-1"
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={onNewDecision}
+              className="text-[11px] font-mono text-slate-300 hover:text-white bg-[var(--surface-blur)] backdrop-blur-xl px-3 py-1.5 rounded-full border border-[var(--line-color)] hover:border-cyan-500/40 transition-all flex items-center space-x-1.5 shadow-sm"
             >
-              <Plus className="w-3 h-3 text-sky-400" />
+              <Plus className="w-3 h-3 text-cyan-400" />
               <span>New Dilemma</span>
-            </button>
+            </motion.button>
           )}
 
-          <button
+          {/* Command Palette Trigger (⌘K) */}
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             onClick={onOpenCommandPalette}
-            className="text-[11px] font-mono text-[var(--text-body)] hover:text-[var(--text-vivid)] bg-[var(--surface-blur)] backdrop-blur-md px-2.5 py-1 rounded-full border border-[var(--line-color)] transition-all flex items-center space-x-1.5"
-            title="Open Command Center (⌘K)"
+            className="text-[11px] font-mono text-slate-300 hover:text-white bg-[var(--surface-blur)] backdrop-blur-xl px-3 py-1.5 rounded-full border border-[var(--line-color)] hover:border-cyan-500/40 transition-all flex items-center space-x-2 shadow-sm"
+            title="Open Command Layer (⌘K)"
           >
-            <Command className="w-3 h-3 text-[var(--text-faint)]" />
-            <kbd className="text-[9px] text-[var(--text-faint)]">⌘K</kbd>
-          </button>
+            <Command className="w-3.5 h-3.5 text-cyan-400" />
+            <kbd className="text-[10px] font-mono text-slate-400 font-semibold">⌘K</kbd>
+          </motion.button>
 
-          <button
+          {/* Theme Toggle */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={toggleTheme}
-            className="p-1.5 rounded-full text-[var(--text-faint)] hover:text-[var(--text-vivid)] bg-[var(--surface-blur)] backdrop-blur-md border border-[var(--line-color)] transition-colors"
+            className="p-2 rounded-full text-slate-400 hover:text-white bg-[var(--surface-blur)] backdrop-blur-xl border border-[var(--line-color)] hover:border-slate-600 transition-colors shadow-sm"
             title="Toggle theme"
           >
-            {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-amber-300" /> : <Moon className="w-3.5 h-3.5 text-slate-600" />}
-          </button>
+            {theme === 'dark' ? (
+              <Sun className="w-3.5 h-3.5 text-amber-300" />
+            ) : (
+              <Moon className="w-3.5 h-3.5 text-slate-600" />
+            )}
+          </motion.button>
 
-          <button
+          {/* Profile / User */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={onOpenAuth}
-            className="w-6 h-6 rounded-full bg-[var(--surface-blur)] backdrop-blur-md border border-[var(--line-color)] flex items-center justify-center text-[10px] font-mono font-semibold text-[var(--text-body)] hover:border-sky-400 transition-colors"
+            className="w-7 h-7 rounded-full bg-[var(--surface-blur)] backdrop-blur-xl border border-[var(--line-color)] hover:border-cyan-400 flex items-center justify-center text-[11px] font-mono font-bold text-white shadow-sm"
           >
-            {currentUser?.full_name ? currentUser.full_name[0].toUpperCase() : 'U'}
-          </button>
+            {currentUser?.full_name ? currentUser.full_name[0].toUpperCase() : '✦'}
+          </motion.button>
         </div>
       </header>
 
-      {/* Floating Bottom Spatial Switcher (Emerges seamlessly) */}
-      <div
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        className="fixed bottom-6 inset-x-0 z-40 flex justify-center pointer-events-none select-none"
-      >
-        <div className="pointer-events-auto flex items-center space-x-1 p-1 rounded-full bg-[var(--surface-blur)] backdrop-blur-xl border border-[var(--line-color)] shadow-2xl transition-all duration-300">
-          <button
-            onClick={() => onNavigate('home')}
-            className={`px-3 py-1 rounded-full text-xs font-mono transition-colors ${
-              activeView === 'home'
-                ? 'bg-sky-500/20 text-sky-400 font-semibold'
-                : 'text-[var(--text-faint)] hover:text-[var(--text-body)]'
-            }`}
+      {/* Floating Bottom Command Dock */}
+      <div className="fixed bottom-6 inset-x-0 z-40 flex flex-col items-center pointer-events-none select-none">
+        {/* Contextual Hover Preview Tooltip */}
+        {hoveredNav && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 2 }}
+            className="mb-2 px-3 py-1 rounded-full bg-[var(--surface-blur)] backdrop-blur-xl border border-[var(--line-color)] text-[10px] font-mono text-slate-300 shadow-xl pointer-events-auto"
           >
-            Thinking
-          </button>
+            {NAV_ITEMS.find((item) => item.id === hoveredNav)?.hint}
+          </motion.div>
+        )}
 
-          <button
-            onClick={() => onNavigate('workspace')}
-            className={`px-3 py-1 rounded-full text-xs font-mono transition-colors flex items-center space-x-1.5 ${
-              activeView === 'workspace'
-                ? 'bg-sky-500/20 text-sky-400 font-semibold'
-                : 'text-[var(--text-faint)] hover:text-[var(--text-body)]'
-            }`}
-          >
-            <span>Workspace</span>
-            {currentDecision && (
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            )}
-          </button>
+        {/* The Dock */}
+        <div className="pointer-events-auto relative flex items-center space-x-1 p-1.5 rounded-full bg-[var(--surface-blur)] backdrop-blur-2xl border border-[var(--line-color)] shadow-[0_12px_40px_rgba(0,0,0,0.5)]">
+          {NAV_ITEMS.map((item) => {
+            const isActive = activeView === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => onNavigate(item.id as any)}
+                onMouseEnter={() => setHoveredNav(item.id)}
+                onMouseLeave={() => setHoveredNav(null)}
+                className={`relative px-4 py-1.5 rounded-full text-xs font-mono transition-colors flex items-center space-x-1.5 z-10 ${
+                  isActive
+                    ? 'text-cyan-300 font-bold'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                {/* Sliding active pill indicator */}
+                {isActive && (
+                  <motion.div
+                    layoutId="activeDockIndicator"
+                    transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                    className="absolute inset-0 rounded-full bg-cyan-500/15 border border-cyan-400/40 shadow-[0_0_12px_rgba(0,240,255,0.2)] -z-10"
+                  />
+                )}
 
-          <button
-            onClick={() => onNavigate('archive')}
-            className={`px-3 py-1 rounded-full text-xs font-mono transition-colors ${
-              activeView === 'archive'
-                ? 'bg-sky-500/20 text-sky-400 font-semibold'
-                : 'text-[var(--text-faint)] hover:text-[var(--text-body)]'
-            }`}
-          >
-            Archive
-          </button>
+                <span>{item.label}</span>
 
-          <button
-            onClick={() => onNavigate('explore')}
-            className={`px-3 py-1 rounded-full text-xs font-mono transition-colors ${
-              activeView === 'explore'
-                ? 'bg-sky-500/20 text-sky-400 font-semibold'
-                : 'text-[var(--text-faint)] hover:text-[var(--text-body)]'
-            }`}
-          >
-            Explore
-          </button>
+                {item.id === 'workspace' && currentDecision && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
+                )}
+
+                <kbd className="hidden md:inline-block text-[9px] font-mono text-slate-500">
+                  {item.shortcut}
+                </kbd>
+              </button>
+            );
+          })}
         </div>
       </div>
     </>
