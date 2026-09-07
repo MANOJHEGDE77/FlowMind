@@ -30,7 +30,9 @@ class DecisionService:
                 db.add(DecisionOption(
                     decision_id=decision.id,
                     title=opt["title"],
-                    description=opt.get("description", "")
+                    description=opt.get("description", ""),
+                    pros=opt.get("pros", []),
+                    cons=opt.get("cons", [])
                 ))
             if not data.factors and parsed.get("factors"):
                 for f in parsed["factors"]:
@@ -110,7 +112,13 @@ class DecisionService:
         db.refresh(decision)
 
         for opt in parsed["options"]:
-            db.add(DecisionOption(decision_id=decision.id, title=opt["title"], description=opt["description"]))
+            db.add(DecisionOption(
+                decision_id=decision.id,
+                title=opt["title"],
+                description=opt.get("description", ""),
+                pros=opt.get("pros", []),
+                cons=opt.get("cons", [])
+            ))
 
         for f in parsed["factors"]:
             db.add(DecisionFactor(decision_id=decision.id, name=f["name"], category=f["category"], weight=f["weight"]))

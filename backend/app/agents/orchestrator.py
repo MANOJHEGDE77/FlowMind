@@ -106,52 +106,186 @@ Respond strictly in valid JSON:
             re.IGNORECASE
         ))
 
-        options = []
+        options_data = []
         if is_ambition:
             # Generate 3-4 realistic strategic pathways for achieving this ambition
             p_clean = re.sub(r"^(i want to become|i want to be|how can i become|how do i become|i want to)\s+", "", prompt, flags=re.IGNORECASE).rstrip("?").strip()
             target_goal = p_clean.title() if p_clean else "Target Role"
 
             if any(w in prompt.lower() for w in ["ai", "engineer", "software", "developer", "data", "ml", "tech", "architect", "product", "design"]):
-                options = [
-                    f"Self-Directed Portfolio & Open-Source Proof of Work in {target_goal}",
-                    f"Internal Lateral Transfer & Apprenticeship within Current Organization",
-                    f"Specialized Intensive Fellowship / Credentialing Program",
-                    f"Strategic Transition via Adjacent Gateway Role"
+                options_data = [
+                    {
+                        "title": f"Self-Directed Portfolio & Open-Source Proof of Work in {target_goal}",
+                        "description": f"Build high-impact public repositories, fine-tuned models, and deployed apps to bypass credential gatekeepers and prove technical mastery directly.",
+                        "pros": [
+                            "Immediate execution with zero institutional gatekeepers or tuition debt",
+                            "Public GitHub commits and live demos provide 3x higher hiring conviction than resumes",
+                            "Full autonomous control over project scope, architecture, and technology stack"
+                        ],
+                        "cons": [
+                            "Demands intense self-directed discipline without external structure",
+                            "Lacks formal institutional alumni networks or on-campus recruiter pipelines",
+                            "Cold outreach requires proactive distribution to get discovered"
+                        ]
+                    },
+                    {
+                        "title": "Internal Lateral Transfer & Apprenticeship within Current Organization",
+                        "description": "Transition into AI/ML initiatives inside your current employer by shadowing data teams and delivering high-leverage internal proof-of-concepts.",
+                        "pros": [
+                            "Zero salary interruption and preservation of accumulated company equity/trust",
+                            "Real-world production data access and internal senior engineering mentorship",
+                            "Significantly lower transition risk than external technical interviews"
+                        ],
+                        "cons": [
+                            "Strictly dependent on current manager approval and organizational headcount",
+                            "May be constrained to legacy company tech stacks and corporate red tape",
+                            "Transition timeline is dictated by company pace rather than personal velocity"
+                        ]
+                    },
+                    {
+                        "title": "Specialized Intensive Fellowship / Credentialing Program",
+                        "description": "Enroll in a top-tier immersive AI fellowship or graduate specialization offering structured deep learning curriculum and direct recruiter pipelines.",
+                        "pros": [
+                            "Curated cutting-edge curriculum with verified industry mentors and code reviews",
+                            "Direct hiring partnerships and formal interview days with partner companies",
+                            "Tight peer cohort provides accountability, study groups, and long-term network"
+                        ],
+                        "cons": [
+                            "Significant financial tuition cost or income share agreement (ISA) burden",
+                            "Pauses or strains full-time earned income during program duration",
+                            "Certificates alone do not compensate for lack of unique production code"
+                        ]
+                    },
+                    {
+                        "title": "Strategic Transition via Adjacent Gateway Role",
+                        "description": "Secure a bridge position (such as Data Engineer, Solutions Architect, or AI Product Specialist) to work adjacent to production models while transitioning.",
+                        "pros": [
+                            "Lower entry bar than senior core ML/AI researcher roles",
+                            "Direct daily exposure to production AI infrastructure, pipelines, and tooling",
+                            "Earns competitive market compensation while mastering production systems"
+                        ],
+                        "cons": [
+                            "Indirect trajectory that requires a second internal pivot to reach pure modeling",
+                            "Day-to-day responsibilities may pull focus away from deep AI technical learning",
+                            "Risk of being anchored to data piping or deployment maintenance"
+                        ]
+                    }
                 ]
             elif any(w in prompt.lower() for w in ["startup", "business", "founder", "company", "saas", "agency"]):
-                options = [
-                    "Bootstrap with Personal Capital & Early Customer Cash Flow (100% Equity)",
-                    "Raise Angel / Pre-Seed Venture Capital to Maximize Velocity",
-                    "Incubate as a Focused Side Project before Full-Time Leap",
-                    "Join a Founder Fellowship / Venture Studio Ecosystem"
-                ]
-            elif any(w in prompt.lower() for w in ["house", "home", "apartment", "real estate", "property"]):
-                options = [
-                    "Target Primary Residence with Standard First-Time Buyer Mortgage",
-                    "House-Hacking (Multi-Unit Property with Rental Income Offset)",
-                    "Continue Renting & Deploy Down Payment into Liquid Index Assets",
-                    "Target Emerging Satellite / Lower-Cost Suburban Market"
+                options_data = [
+                    {
+                        "title": "Bootstrap with Personal Capital & Early Customer Cash Flow (100% Equity)",
+                        "description": "Retain total equity and creative control by building a lean MVP and charging paying customers from day one.",
+                        "pros": [
+                            "100% equity ownership and zero investor dilution or board interference",
+                            "Forces brutal focus on real customer willingness-to-pay and unit economics",
+                            "High operational autonomy and sustainable long-term business resilience"
+                        ],
+                        "cons": [
+                            "Growth velocity is bounded by operational cash flow reinvestment",
+                            "Personal financial risk during the initial un-monetized iteration phase",
+                            "Resource constraints limit ability to outspend competitors on paid acquisition"
+                        ]
+                    },
+                    {
+                        "title": "Raise Angel / Pre-Seed Venture Capital to Maximize Velocity",
+                        "description": "Secure institutional or angel funding to build full-time, hire key talent, and aggressively capture market share.",
+                        "pros": [
+                            "Substantial upfront capital runway removes immediate personal financial strain",
+                            "Accelerates hiring and marketing to achieve market dominance rapidly",
+                            "Investor networks unlock enterprise sales channels and follow-on financing"
+                        ],
+                        "cons": [
+                            "Equity dilution and surrender of unilateral decision-making authority",
+                            "Imposes hyper-growth venture timeline (risk of premature scaling and burn)",
+                            "Fundraising cycle consumes significant founder time away from product"
+                        ]
+                    },
+                    {
+                        "title": "Incubate as a Focused Side Project before Full-Time Leap",
+                        "description": "Validate demand, build product-market fit, and secure initial recurring revenue while maintaining day-job stability.",
+                        "pros": [
+                            "Two-way door flexibility with zero personal downside risk during validation",
+                            "Takes pressure off early monetization, allowing organic experimentation",
+                            "De-risks the full-time leap once monthly recurring revenue hits living baseline"
+                        ],
+                        "cons": [
+                            "Split focus and context switching slows overall execution velocity",
+                            "Burnout risk from balancing demanding day job with evening startup work",
+                            "Customer responsiveness may suffer during standard business hours"
+                        ]
+                    },
+                    {
+                        "title": "Join a Founder Fellowship / Venture Studio Ecosystem",
+                        "description": "Partner with an accelerator (e.g., Y Combinator, Techstars) or venture studio for structured validation, co-founder matching, and instant credibility.",
+                        "pros": [
+                            "Instant brand signaling and warm introductions to tier-1 customers and VCs",
+                            "Intensive milestone accountability and access to experienced founder mentors",
+                            "Access to shared legal, design, and technical infrastructure"
+                        ],
+                        "cons": [
+                            "Substantial equity cost (typically 7-10%) for early-stage participation",
+                            "Conforming to batch cohort rhythms may diverge from your specific business needs",
+                            "High competition for partner attention within large cohorts"
+                        ]
+                    }
                 ]
             else:
-                options = [
-                    f"Aggressive Accelerated Pathway toward {target_goal} (High Intensity)",
-                    f"Balanced Parallel Transition toward {target_goal} (Low Risk, Sustainable)",
-                    f"Structured Mentorship & Institutional Apprenticeship",
-                    f"Niche Specialization Strategy to Leapfrog Traditional Gatekeepers"
+                options_data = [
+                    {
+                        "title": f"Focused High-Intensity Sprint toward {target_goal}",
+                        "description": f"Immerse fully into {target_goal} with rapid execution cycles and time-boxed validation milestones.",
+                        "pros": ["Maximum learning velocity and shortest time to breakthrough", "Concentrates energy on the highest-leverage tasks", "Early discovery of whether this path fits long-term"],
+                        "cons": ["Higher immediate cognitive fatigue and opportunity cost", "Requires personal runway or tolerance for uncertainty", "Less room for parallel obligations"]
+                    },
+                    {
+                        "title": f"Balanced Reversible Transition toward {target_goal}",
+                        "description": f"Pursue {target_goal} incrementally in structured phases, maintaining current baseline safety until validation is reached.",
+                        "pros": ["Preserves downside stability and financial security", "Two-way door: easy to pivot or reverse if assumptions fail", "Sustainable pace that prevents burnout"],
+                        "cons": ["Slower compounding speed compared to full immersion", "Risk of prolonged hesitation and delayed commitment", "Divided cognitive focus"]
+                    },
+                    {
+                        "title": "Structured Mentorship & Apprenticeship Route",
+                        "description": "Align with established practitioners in the field to learn through hands-on collaboration and apprentice under expert guidance.",
+                        "pros": ["Bypasses common novice mistakes through direct feedback", "Builds deep network credibility with respected leaders", "Shortcuts the tacit knowledge learning curve"],
+                        "cons": ["Requires finding and convincing top mentors to invest time", "Must adapt to mentor's operational framework and schedule", "May limit personal brand independence initially"]
+                    }
                 ]
         else:
             cleaned = re.sub(r"^(should i|shall i|what if i|i need to decide between|deciding between|help me decide between)\s+", "", prompt, flags=re.IGNORECASE).rstrip("?")
             parts = re.split(r"\s+vs\.?\s+|\s+versus\s+|\s+or\s+|,\s*", cleaned, flags=re.IGNORECASE)
+            raw_options = []
             for p in parts:
                 cand = p.strip().strip('"').strip("'")
                 if len(cand) > 2 and cand.lower() not in ["accept", "choose", "between", "the", "and", "my", "to", "a", "an"]:
-                    options.append(cand.title())
+                    raw_options.append(cand.title())
 
-            if not options:
-                options = ["Pathway A: Move Forward with Change", "Pathway B: Preserve Current Trajectory"]
-            elif len(options) == 1:
-                options.append(f"Alternative: Maintain Status Quo / Reject '{options[0]}'")
+            if not raw_options:
+                raw_options = ["Pathway A: Move Forward with Change", "Pathway B: Preserve Current Trajectory"]
+            elif len(raw_options) == 1:
+                raw_options.append(f"Alternative: Maintain Status Quo / Reject '{raw_options[0]}'")
+
+            for opt_title in raw_options:
+                t_low = opt_title.lower()
+                pros = ["High asymmetric upside if execution milestones are met", "Expands strategic optionality and future compounding"]
+                cons = ["Execution friction and switching cost during initial transition", "Uncertainty regarding immediate return on invested energy"]
+
+                if any(w in t_low for w in ["startup", "build", "lead", "founder", "venture", "new", "change", "quit"]):
+                    pros = ["Higher upside potential and personal agency", "Direct ownership of outcomes and accelerated learning"]
+                    cons = ["Higher initial variance and execution risk", "Requires building momentum without institutional safety nets"]
+                elif any(w in t_low for w in ["stay", "keep", "corporate", "bigtech", "current", "stable", "preserve"]):
+                    pros = ["Predictable stability, established compensation, and lower stress", "Preserves existing social and professional capital"]
+                    cons = ["Risk of skill plateau and opportunity cost of inaction", "Lower equity ownership and slower long-term upside"]
+                elif any(w in t_low for w in ["remote", "travel", "relocate", "move"]):
+                    pros = ["Geographic autonomy and enhanced living environment", "Arbitrage between local cost of living and global income"]
+                    cons = ["Logistical complexity and temporary disruption of habits", "Potential reduction in spontaneous in-person network density"]
+
+                options_data.append({
+                    "title": opt_title,
+                    "description": f"Strategic pathway focused on {opt_title}.",
+                    "pros": pros,
+                    "cons": cons
+                })
 
         # Dynamically infer domain-appropriate factors from actual prompt keywords
         p_lower = prompt.lower()
@@ -185,7 +319,7 @@ Respond strictly in valid JSON:
         return {
             "title": title,
             "context": prompt,
-            "options": [{"title": opt, "description": f"Pathway evaluating {opt}"} for opt in options],
+            "options": options_data,
             "factors": factors,
             "goals": goals,
             "constraints": constraints

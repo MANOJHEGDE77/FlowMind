@@ -55,6 +55,49 @@ export const ContextInspector: React.FC<ContextInspectorProps> = ({
           </p>
         </div>
 
+        {/* Option Pros & Cons */}
+        {((nodeData.pros && nodeData.pros.length > 0) || (nodeData.cons && nodeData.cons.length > 0)) && (
+          <div className="space-y-4">
+            {nodeData.pros && nodeData.pros.length > 0 && (
+              <div className="space-y-1.5">
+                <span className="text-[10px] text-emerald-400 uppercase tracking-wider font-semibold block">
+                  ✦ STRATEGIC ADVANTAGES (PROS)
+                </span>
+                <div className="space-y-1.5">
+                  {nodeData.pros.map((p: string, idx: number) => (
+                    <div
+                      key={idx}
+                      className="p-2.5 rounded-xl bg-emerald-950/20 border border-emerald-500/20 text-emerald-300/90 text-xs font-sans flex items-start space-x-2"
+                    >
+                      <span className="text-emerald-400 font-bold shrink-0 mt-0.5">✓</span>
+                      <span>{p}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {nodeData.cons && nodeData.cons.length > 0 && (
+              <div className="space-y-1.5">
+                <span className="text-[10px] text-rose-400 uppercase tracking-wider font-semibold block">
+                  ▲ RISKS & BOTTLENECKS (CONS)
+                </span>
+                <div className="space-y-1.5">
+                  {nodeData.cons.map((c: string, idx: number) => (
+                    <div
+                      key={idx}
+                      className="p-2.5 rounded-xl bg-rose-950/20 border border-rose-500/20 text-rose-300/90 text-xs font-sans flex items-start space-x-2"
+                    >
+                      <span className="text-rose-400 font-bold shrink-0 mt-0.5">✕</span>
+                      <span>{c}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Alignment Metrics */}
         {nodeData.alignment_scores && Object.keys(nodeData.alignment_scores).length > 0 && (
           <div className="space-y-2">

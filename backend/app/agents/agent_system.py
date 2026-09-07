@@ -404,25 +404,40 @@ class SynthesizerAgent(BaseAgent):
         scored_options.sort(key=lambda x: x["score"], reverse=True)
         top = scored_options[0]
         alt = scored_options[1] if len(scored_options) > 1 else scored_options[0]
-
         confidence = round(min(95.0, max(65.0, top["score"] * 0.95)), 1)
 
+        # Extract specific strengths of the top option and weaknesses of alternate
+        top_opt_obj = next((o for o in options if o.get("title") == top["title"]), {})
+        alt_opt_obj = next((o for o in options if o.get("title") == alt["title"]), {})
+
+        top_pros = top_opt_obj.get("pros", [])
+        alt_cons = alt_opt_obj.get("cons", [])
+        
+        decisive_edge = top_pros[0] if top_pros else f"delivers maximum direct velocity toward '{primary_goal_name}' with minimal gatekeeper dependence"
+        secondary_edge = top_pros[1] if len(top_pros) > 1 else "secures high execution agency and asymmetric upside"
+        runner_up_drawback = alt_cons[0] if alt_cons else f"introduces greater friction and delayed iteration cycles"
+
         contradictions = [
-            f"Analyst confirms strong upside in '{top['title']}', but Skeptic highlights risk friction.",
-            f"Financial perspective notes variance across options, while Long-Term Planner emphasizes goal congruence."
+            f"Analyst confirms strong execution velocity in '{top['title']}', while Skeptic warns of self-discipline load.",
+            f"Financial perspective notes potential capital variance, but Long-Term Planner validates strategic optionality in '{top['title']}'."
         ]
 
         what_could_change = [
-            f"A 25%+ counteroffer or structural shift regarding '{alt['title']}'.",
-            f"Explicit confirmation of remote / flexibility agreements.",
-            f"New evidence regarding team retention or milestone runway."
+            f"A concrete breakthrough or sponsor agreement accelerating '{alt['title']}'.",
+            f"Shift in personal runway or timeline constraints requiring an immediate liquidity bridge.",
+            f"New verified evidence proving lower friction in alternative pathways."
         ]
 
         reasoning = (
-            f"Calibrated Goal Synthesis: Based on your defined goals—specifically '{primary_goal_name}'—'{top['title']}' "
-            f"emerges as the highest-conviction pathway (Decision Score: {top['score']}/100 with {top['alignment_scores']['goal']}% goal congruence). "
-            f"It delivers the strongest alignment with your stated priorities while maintaining acceptable risk asymmetry. "
-            f"'{alt['title']}' serves as the primary alternate ({alt['score']}/100)."
+            f"**Decisive Signal Recommendation**: FlowMind's multi-agent council converges on **{top['title']}** as the highest-conviction strategic pathway (Decision Score: {top['score']}/100, {confidence}% calibrated confidence).\n\n"
+            f"**Why This Pathway Won with Conviction**:\n"
+            f"1. **Direct Goal Congruence**: It scores {top['alignment_scores']['goal']}% in direct alignment with your stated priority ('{primary_goal_name}').\n"
+            f"2. **The Decisive Factor**: {decisive_edge}. Unlike paths that require institutional permission or multi-year delays, this maximizes immediate leverage and {secondary_edge.lower()}.\n"
+            f"3. **Two-Way Door Optionality**: This approach preserves your strategic flexibility, allowing you to pivot without uncompensated switching costs if market conditions evolve.\n\n"
+            f"**Why '{alt['title']}' Was Ranked Lower**:\n"
+            f"While '{alt['title']}' is a viable secondary alternative (Score: {alt['score']}/100), {runner_up_drawback.lower()}. It carries heavier structural friction and deprioritizes your primary velocity target.\n\n"
+            f"**Immediate 30-Day Execution Directive**:\n"
+            f"Commit full focused attention to the initial sprint of {top['title']}. Measure empirical progress at Day 30 before allocating irreversible capital."
         )
 
         return {
