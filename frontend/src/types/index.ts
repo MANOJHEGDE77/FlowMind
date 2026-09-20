@@ -176,3 +176,81 @@ export interface DocumentItem {
   chunk_count: number;
   created_at: string;
 }
+
+// ----------------- FlowMind Thought Flow Architecture -----------------
+
+export type FlowNodeType = 'core' | 'idea' | 'decision' | 'task' | 'goal' | 'result' | 'resource';
+
+export interface FlowNode {
+  id: string;
+  type: FlowNodeType;
+  title: string;
+  description?: string;
+  x: number;
+  y: number;
+  parentId?: string;
+  tags?: string[];
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  progress?: number;
+  status?: 'pending' | 'in-progress' | 'completed' | 'blocked';
+  aiSummary?: string;
+  suggestedActions?: string[];
+  relatedThoughts?: string[];
+}
+
+export interface FlowEdge {
+  id: string;
+  source: string;
+  target: string;
+  label?: string;
+  animated?: boolean;
+  color?: string;
+}
+
+export interface FlowGraph {
+  id: string;
+  title: string;
+  description: string;
+  category: 'Learning' | 'Career' | 'Projects' | 'Personal Goals' | 'Ideas';
+  createdAt: string;
+  updatedAt: string;
+  nodes: FlowNode[];
+  edges: FlowEdge[];
+  progress: number;
+  starred?: boolean;
+}
+
+export interface ConnectedTask {
+  id: string;
+  title: string;
+  flowId: string;
+  flowTitle: string;
+  nodeId?: string;
+  nodeTitle?: string;
+  completed: boolean;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  dueDate?: string;
+  estimatedMinutes?: number;
+}
+
+export interface KnowledgeItem {
+  id: string;
+  title: string;
+  type: 'note' | 'document' | 'link' | 'bookmark' | 'ai_summary';
+  connectedFlows: string[];
+  snippet: string;
+  url?: string;
+  tags: string[];
+  updatedAt: string;
+}
+
+export interface ThinkingPattern {
+  id: string;
+  type: 'pattern' | 'next_move' | 'connection';
+  title: string;
+  insight: string;
+  actionText: string;
+  flowId?: string;
+  targetNodeId?: string;
+}
+
