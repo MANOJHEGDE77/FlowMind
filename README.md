@@ -1,17 +1,17 @@
-# FlowMind — AI Decision Intelligence Platform
+# FlowMind — AI-Powered Thinking & Mind Flow Platform
 
 <div align="center">
 
-**Think clearly. Decide intelligently.**
+**Turn thoughts into structured flow.**
 
-*An AI-native decision workspace transforming complex dilemmas, offer letters, documents, and trade-offs into an interactive, explainable, and stress-tested decision model.*
+*An AI-powered thinking, learning, planning, and productivity platform visually communicating the flow of a human mind — connected, expandable, dynamic, intelligent, and alive.*
 
+[![React](https://img.shields.io/badge/React-19.0-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-8.2-646CFF?style=flat&logo=vite&logoColor=white)](https://vite.dev)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat&logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![React](https://img.shields.io/badge/React-18.3-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![TailwindCSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat&logo=docker&logoColor=white)](https://docker.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 </div>
@@ -20,218 +20,125 @@
 
 ## 1. Executive Summary
 
-Real-world decisions (career transitions, venture investments, technical architectures, business pivots) are rarely linear. Traditional LLM chats provide generic bullet points that suffer from confirmation bias and lack grounded citations.
+Traditional productivity apps force thoughts into flat lists, isolated cards, or generic SaaS dashboards. LLM chatbots generate unstructured text bubbles that get lost in infinite chat histories.
 
-**FlowMind** is a new category of **AI-native decision workspace**. It replaces conventional dashboards and chat windows with an interactive spatial decision canvas, a 7-agent adversarial reasoning council, grounded RAG document intelligence, a dynamic "What-If" simulator, and an adversarial "Challenge My Decision" engine.
+**FlowMind** is a new category of **visual thinking and cognitive productivity workspace**. It turns raw thoughts into structured, living graphs where:
+- **Core Thoughts** anchor strategic direction
+- **Ideas & Sub-branches** expand and connect across domains
+- **Decisions** evaluate trade-offs and bifurcations
+- **Tasks** emerge directly connected to their parent thoughts
+- **Progress** flows back into the living mind map
 
 ---
 
 ## 2. Core Capabilities
 
-### 🌌 1. Focused Entry Workspace
-- **Zero-form friction**: Begin with free-form thought: *"Should I accept Job A at a high-growth startup, Job B at BigTech, or pursue higher studies?"*
-- One-click additions for options, constraints, goals, and evidence documents.
+### 🌌 1. Command Center & Thought Capture
+- **Universal Thought Capture**: Enter unstructured thoughts, goals, or problems via keyboard or voice.
+- **Quick Capture Chips**: One-click generation for common workflows:
+  - *"Plan my project"*
+  - *"Study Computer Networks"*
+  - *"Prepare for interview"*
+  - *"Build my portfolio"*
+  - *"Organize my week"*
+- **Cognitive Ecosystem Overview**: High-level telemetry of all connected flows, completion sync rates, and high-leverage focus candidates.
 
-### 🗺️ 2. Interactive Spatial Decision Space
-- Spatial node graph with pan, zoom, expand/collapse, and inspect capabilities.
-- Visual hierarchy connecting Root Dilemmas → Evaluation Factors → Option Branches → Grounded Citations → Contradictions.
+### 🗺️ 2. The Signature Flow Canvas
+- **Infinite Interactive Canvas**: Smooth pan, zoom (`40%` to `220%`), and real-time node dragging.
+- **Curved Bezier Filaments**: Elegant connections with **animated particles traveling along active paths**.
+- **Visual Node Hierarchy**:
+  - **Core Thought**: Dominant central anchor with cyan aura and multi-layer depth.
+  - **Ideas**: Translucent frosted cards with indigo accents.
+  - **Decisions**: Amber-faceted cards representing strategic trade-offs.
+  - **Tasks**: Action nodes with direct focus launching.
+  - **Results**: High-contrast emerald outcome badges.
+- **Living Graph Lighting**: Hovering over any node softly illuminates connected thoughts while fading unrelated nodes.
+- **Integrated Minimap & Floating Controls**: Real-time canvas orientation and viewport controls.
 
-### 🤖 3. Multi-Agent Reasoning Council
-A dedicated team of 7 specialized AI agents operates in iterative debate:
-1. **Analyst Agent**: Deconstructs objective structure, facts, constraints, and identifies missing information.
-2. **Optimist Agent**: Models upside acceleration, skill multipliers, and positive asymmetrical outcomes.
-3. **Skeptic Agent**: Interrogates failure modes, weak assumptions, hidden costs, and operational friction.
-4. **Financial Analyst**: Evaluates compensation certainty, cash flow, opportunity costs, and ROI.
-5. **Long-Term Planner**: Evaluates reversibility (Type 1 vs Type 2 decisions), 5-year trajectories, and compounding optionality.
-6. **Devil's Advocate**: Contrarian stress-tester that attacks confirmation bias and hunts for fragilities.
-7. **Synthesizer Agent**: Arbitrates debates, balances multi-factor scores, and derives final and alternative recommendations.
+### ✦ 3. 4-Stage Progressive AI Generation
+Capturing any thought triggers an animated 4-stage neural transition:
+1. **Thought Captured**
+2. **AI Understanding & Semantic Mapping**
+3. **Building Neural Connections**
+4. **Flow Generated** with an interactive tree projection preview.
 
-### ⚔️ 4. "Challenge My Decision" Engine
-- An adversarial stress-test that actively attacks the prevailing recommendation.
-- Exposes hidden vulnerabilities, executes a confidence haircut (e.g., `82%` → `68%`), and delivers a model fragility verdict (`Robust`, `Moderately Sensitive`, or `Fragile`).
+### 📋 4. Thought-Connected Tasks
+- **Zero Orphan Tasks**: Every task explicitly displays its parent thought origin:
+  `↳ from Java & Distributed Systems Interview`
+- **Focus Launch**: One-click transition into deep work directly from any task.
+- **Bi-directional Sync**: Completing a task ripples completion status back into the graph.
 
-### 🎛️ 5. Dynamic "What-If" Simulator
-- Tweak real-world parameters: salary shifts (`-30%` to `+50%`), remote work priority, and time horizons (1 to 7 years).
-- Live recalculation displaying a before-vs-after delta explanation with updated scores.
+### ⏳ 5. Distraction-Free Focus Mode
+- Full-screen takeover removing all navigation rails and inspector panels.
+- Giant futuristic `25:00` countdown timer with ambient breathing halo.
+- **Thought Chain Lineage**: Always displays where your current action fits in the bigger picture:
+  `Java Interview → Strategic Pillar → Current Action`
 
-### 📑 6. Document Intelligence & Grounded Citations (RAG)
-- Ingest PDFs, DOCX, TXT, and CSV files (offer letters, contracts, thesis notes).
-- Chunks text, builds vector embeddings, and links every critical claim directly to source excerpts and page numbers.
+### 🧠 6. AI Intelligence & Pattern Observations
+- **Structured Intelligence Panels**: Structured intelligence cards instead of endless message bubbles.
+- **Autonomous Observations**: Detects thinking patterns, bottlenecks, and cross-flow cognitive linkages.
+- **Direct Graph Actions**: `Build Flow`, `Expand Sub-branches`, `Synthesize Strategy`.
 
-### ⏱️ 7. Decision History & Outcome Feedback Loop
-- Log real decisions and return 6-12 months later to record actual lived outcomes.
-- Compares AI accuracy ratings with personal satisfaction scores to calibrate strategic intuition over time.
-
-### ⌨️ 8. Global Command Palette (`⌘K` / `Ctrl+K`)
-- Instant keyboard-driven navigation for creating decisions, uploading documents, launching simulations, and challenging recommendations.
-
----
-
-## 3. Architecture
-
-```
-                                  FLOWMIND ARCHITECTURE
-                                  
-    +-------------------------------------------------------------------------+
-    |                             FRONTEND (SPA)                              |
-    |   React 18 + TypeScript + Vite + Tailwind CSS + Lucide Icons            |
-    |   Spatial Canvas  |  Agent Council  |  What-If Lab  |  Evidence Drawer  |
-    +-------------------------------------------------------------------------+
-                                         │  (HTTP / JSON REST)
-                                         ▼
-    +-------------------------------------------------------------------------+
-    |                             BACKEND API                                 |
-    |                   FastAPI + Pydantic v2 + Uvicorn                       |
-    |                                                                         |
-    |   [/api/auth]    [/api/decisions]    [/api/documents]    [/api/simulate] |
-    +-------------------------------------------------------------------------+
-          │                                                  │
-          ▼                                                  ▼
-+───────────────────────────+                     +───────────────────────────+
-|   MULTI-AGENT PIPELINE    |                     |     RAG VECTOR ENGINE     |
-| • Analyst Agent           |                     | • Text Extractor (PDF/DOC)|
-| • Optimist Agent          |                     | • Semantic Text Chunker   |
-| • Skeptic Agent           |                     | • Vector Normalizer       |
-| • Financial Analyst       |                     | • Cosine Similarity Index |
-| • Long-Term Planner       |                     +───────────────────────────+
-| • Devil's Advocate (⚔️)   |                                    │
-| • Synthesizer Agent       |                                    ▼
-+───────────────────────────+                     +───────────────────────────+
-          │                                       |      DATABASE LAYER       |
-          └──────────────────────────────────────►|  PostgreSQL / SQLite      |
-                                                  |  SQLAlchemy 2.0 ORM       |
-                                                  +───────────────────────────+
-```
+### 📚 7. Personal Knowledge Graph (Library)
+- Organizes notes, documents, links, and AI summaries linked directly to active flows.
+- Visual citation cards connecting verified documentation to real projects and goals.
 
 ---
 
-## 4. Tech Stack
+## 3. Keyboard Shortcuts
 
-| Layer | Technology | Purpose |
-|---|---|---|
-| **Backend** | Python 3.11+, FastAPI | Asynchronous high-performance REST API |
-| **Data Validation** | Pydantic v2, email-validator | Strict request/response serialization |
-| **Database & ORM** | SQLAlchemy 2.0, SQLite / PostgreSQL | Relational modeling, migrations, session pooling |
-| **Security** | PBKDF2-SHA256, Python-Jose (JWT) | Secure password hashing, token verification |
-| **Document RAG** | PyPDF, python-docx, In-Memory Cosine Engine | Multi-format text extraction and semantic search |
-| **AI Agents** | Async Orchestrator (Multi-Provider: Gemini / Groq / OpenAI / Deterministic) | Multi-stage parallel debate & synthesis |
-| **Frontend** | React 18, TypeScript, Vite | Fast, type-safe client application |
-| **Styling & Theme** | Tailwind CSS v4, Custom Spatial Obsidian Palette | Premium, dark-mode native interface |
-| **Icons & Motion** | Lucide React | Clean, scalable visual language |
-| **Containerization** | Docker, Docker Compose, Nginx | Multi-stage production deployment |
+| Shortcut | Action |
+|:---|:---|
+| `1` | Navigate to **Home** (Command Center) |
+| `2` | Navigate to **My Flow** (Ecosystem Overview) |
+| `3` | Navigate to **Mind Canvas** (Interactive Infinite Canvas) |
+| `4` | Navigate to **AI Think** (FlowMind Intelligence) |
+| `5` | Navigate to **Tasks** (Thought-Connected Tasks) |
+| `6` | Navigate to **Focus** (Distraction-Free 25:00 Session) |
+| `7` | Navigate to **Library** (Knowledge Graph) |
+| `⌘ + K` / `Ctrl + K` | Global Search & Omni Thought Capture |
 
 ---
 
-## 5. Relational Database Schema
-
-```mermaid
-erDiagram
-    USERS ||--o{ DECISIONS : owns
-    USERS ||--o{ DOCUMENTS : uploads
-    DECISIONS ||--o{ DECISION_OPTIONS : contains
-    DECISIONS ||--o{ DECISION_FACTORS : evaluates
-    DECISIONS ||--o{ GOALS : prioritizes
-    DECISIONS ||--o{ CONSTRAINTS : restricts
-    DECISIONS ||--o{ AGENT_RUNS : records
-    DECISIONS ||--o{ EVIDENCE : grounds
-    DECISIONS ||--o{ SCENARIOS : simulates
-    DECISIONS ||--o{ DECISION_OUTCOMES : tracks
-    DOCUMENTS ||--o{ DOCUMENT_CHUNKS : splits
-```
-
----
-
-## 6. Installation & Local Development
+## 4. Getting Started
 
 ### Prerequisites
-- **Python**: 3.11 or higher
-- **Node.js**: v18 or higher (v22 recommended)
-- **npm**: 9+ or yarn
+- Node.js 18+
+- Python 3.11+
+- Git
 
-### 1. Clone Repository
-```bash
-git clone https://github.com/your-username/FlowMind.git
-cd FlowMind
-```
-
-### 2. Configure Environment
-```bash
-cp .env.example .env
-```
-*(Default settings use local SQLite with instant zero-configuration setup).*
-
-### 3. Setup & Run Backend
-```bash
-# Install dependencies
-pip install -r backend/requirements.txt
-
-# Run automated tests
-python -m pytest backend/tests/test_api.py
-
-# Start FastAPI server
-uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
-```
-API Documentation will be live at: `http://localhost:8000/docs`.
-
-### 4. Setup & Run Frontend
+### Frontend Setup
 ```bash
 cd frontend
 npm install
-
-# Test production build
-npm run build
-
-# Start Vite dev server
 npm run dev
 ```
-FlowMind workspace will be live at: `http://localhost:5173`.
+Visit `http://localhost:5173` to launch FlowMind.
 
----
-
-## 7. Running with Docker Compose
-
-To launch PostgreSQL, the FastAPI backend, and the Nginx frontend bundle with a single command:
-
+### Backend Setup (Optional API Services)
 ```bash
-docker compose up --build
-```
-- **Frontend**: `http://localhost:3000`
-- **Backend API**: `http://localhost:8000`
-- **PostgreSQL**: `localhost:5432`
+cd backend
+python -m venv venv
+# On Windows:
+.\venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
 
----
-
-## 8. API Reference Summary
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/api/auth/register` | Register a new user |
-| `POST` | `/api/auth/login` | Authenticate and obtain JWT token |
-| `GET` | `/api/auth/me` | Retrieve active profile & scoped preferences |
-| `GET` | `/api/decisions` | List decisions for current user |
-| `POST` | `/api/decisions/quick` | Fast free-form prompt creation & auto-orchestration |
-| `GET` | `/api/decisions/{id}` | Fetch full decision model, options, and agent runs |
-| `DELETE`| `/api/decisions/{id}` | Delete decision model |
-| `POST` | `/api/decisions/{id}/analyze` | Trigger full 7-agent orchestration cycle |
-| `POST` | `/api/decisions/{id}/challenge` | Run Devil's Advocate adversarial challenge (⚔️) |
-| `POST` | `/api/decisions/{id}/simulate` | Run dynamic What-If parameter simulation |
-| `POST` | `/api/decisions/{id}/outcomes` | Log real-world outcome and satisfaction ratings |
-| `POST` | `/api/documents/upload` | Ingest PDF/DOCX document into RAG vector memory |
-
----
-
-## 9. Testing
-
-```bash
-# Run backend pytest suite
-python -m pytest backend/tests/test_api.py -v
-
-# Run frontend build and type checks
-cd frontend && npm run build
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
 ```
 
 ---
 
-## 10. License
+## 5. Architecture & Tech Stack
 
-This project is licensed under the [MIT License](LICENSE).
+- **Frontend**: React 19, TypeScript, Vite 8, TailwindCSS 4, Framer Motion, Lucide Icons.
+- **Audio Synthesizer**: Custom Web Audio API frequency tone generator for real-time tactical acoustic feedback.
+- **State & Persistence**: LocalStorage sync with seamless state hydration in `FlowContext`.
+- **Backend**: FastAPI, Pydantic, SQLAlchemy, LangChain / Gemini 1.5 Pro, FAISS vector search.
+
+---
+
+## 6. License
+
+MIT License — see [LICENSE](LICENSE) for details.
