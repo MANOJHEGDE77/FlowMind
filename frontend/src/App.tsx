@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { ThinkingField } from './components/ThinkingField';
-import { FloatingConceptLabels } from './components/FloatingConceptLabels';
 import { AIThinkingState } from './components/AIThinkingState';
 import { FloatingNav } from './components/FloatingNav';
 import { ThoughtComposer } from './components/ThoughtComposer';
@@ -18,6 +17,7 @@ import { AskAIModal } from './components/AskAIModal';
 import { AuthModal } from './pages/AuthPage';
 import { EvidenceDropZone } from './components/EvidenceDropZone';
 import { ExportDecisionModal } from './components/ExportDecisionModal';
+import { LandingPage } from './pages/LandingPage';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { Decision, DecisionListItem, User } from './types';
@@ -25,7 +25,7 @@ import { api } from './services/api';
 
 export function AppRoot() {
   const { showToast } = useToast();
-  const [activeView, setActiveView] = useState<'home' | 'workspace' | 'archive' | 'explore'>('home');
+  const [activeView, setActiveView] = useState<'landing' | 'home' | 'workspace' | 'archive' | 'explore'>('landing');
   const [currentDecision, setCurrentDecision] = useState<Decision | null>(null);
   const [recentDecisions, setRecentDecisions] = useState<DecisionListItem[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -145,17 +145,7 @@ export function AppRoot() {
         hoveredConcept={hoveredConcept}
       />
 
-      {/* 2. Floating Strategic Concept Labels (AMBITION, TRADE-OFFS, VELOCITY, LEVERAGE, OPTIONALITY) */}
-      {activeView === 'home' && !isAnalyzing && (
-        <FloatingConceptLabels
-          onHoverConcept={setHoveredConcept}
-          onSelectConcept={(conceptName) => {
-            if (!selectedPriorities.includes(conceptName)) {
-              setSelectedPriorities([...selectedPriorities, conceptName]);
-            }
-          }}
-        />
-      )}
+      {/* 2. AI Cognitive Thinking State (Concentric rings & dynamic signal emergence) */}
 
       {/* 3. AI Cognitive Thinking State (Concentric rings & dynamic signal emergence) */}
       <AIThinkingState isAnalyzing={isAnalyzing} />
@@ -181,6 +171,19 @@ export function AppRoot() {
 
       {/* 5. Main Views */}
       <main className="relative z-10 w-full min-h-screen">
+        {/* LANDING: BEST-IN-CLASS ARCHITECTURE & SHOWCASE */}
+        {activeView === 'landing' && (
+          <LandingPage
+            onGetStarted={() => setActiveView('home')}
+            onExplore={() => setActiveView('explore')}
+            onOpenAskAI={(q) => {
+              setAskAIQuestion(q || '');
+              setIsAskAIOpen(true);
+            }}
+            onSelectStarterDilemma={handleCreateDecision}
+          />
+        )}
+
         {/* HOME: BORDERLESS LIVING THOUGHT COMPOSER */}
         {activeView === 'home' && (
           <ThoughtComposer
@@ -225,7 +228,7 @@ export function AppRoot() {
             </p>
             <button
               onClick={() => setActiveView('home')}
-              className="px-4 py-2 rounded-full bg-sky-400 text-space-950 font-mono text-xs font-semibold"
+              className="px-4 py-2 rounded-full bg-sky-400 text-slate-950 font-mono text-xs font-bold"
             >
               Start Thinking →
             </button>

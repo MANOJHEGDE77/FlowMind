@@ -136,6 +136,7 @@ class Evidence(Base):
     id = Column(Integer, primary_key=True, index=True)
     decision_id = Column(Integer, ForeignKey("decisions.id", ondelete="CASCADE"), nullable=False, index=True)
     claim = Column(Text, nullable=False)
+    source_type = Column(String(50), default="FACT_FROM_DOCUMENT")  # FACT_FROM_DOCUMENT, AI_INFERENCE, USER_ASSUMPTION
     source_document_id = Column(Integer, ForeignKey("documents.id", ondelete="SET NULL"), nullable=True)
     chunk_id = Column(Integer, nullable=True)
     source_title = Column(String(255), default="Direct User Context")
@@ -185,6 +186,11 @@ class DecisionOutcome(Base):
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     chosen_option_title = Column(String(255), nullable=False)
     actual_outcome_notes = Column(Text, nullable=True)
+    expected_outcome = Column(Text, nullable=True)
+    what_went_right = Column(JSON, default=list)
+    what_went_wrong = Column(JSON, default=list)
+    incorrect_assumptions = Column(JSON, default=list)
+    lessons_learned = Column(Text, nullable=True)
     satisfaction_score = Column(Integer, default=5)  # 1 to 10
     ai_accuracy_rating = Column(Integer, default=5)  # 1 to 10
     recorded_at = Column(DateTime, default=datetime.datetime.utcnow)

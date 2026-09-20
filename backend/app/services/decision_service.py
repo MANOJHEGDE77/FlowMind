@@ -158,11 +158,30 @@ class DecisionService:
         attack_vector = focus
         fragility_verdict = "Moderately Sensitive"
 
-        vulnerabilities = [
-            f"Over-reliance on near-term stability in '{target}', discounting unexpected market or execution shocks.",
-            f"Unproven assumption that '{target}' provides superior compounding advantage over '{alt}'.",
-            f"High friction and lock-in switching costs if circumstances force a reversal within 12 months."
+        critical_assumptions = [
+            f"Presumes '{target}' maintains full leadership sponsor support without organizational turnover.",
+            f"Assumes daily cognitive overhead and burnout friction remain within tolerable buffers.",
+            f"Underweights unstated switching penalties and one-way door exit friction if a reversal is needed after 12 months."
         ]
+
+        failure_scenarios = [
+            f"Worst-Case Lock-In: Uncompensated operational drag slows learning velocity while exit barriers increase.",
+            f"Opportunity Cost Disadvantage: Alternative '{alt}' outperforms on compounding optionality while time is sunk.",
+            f"Execution Bottleneck: Promised autonomy fails to materialize under organizational pressure."
+        ]
+
+        counter_arguments = [
+            f"Committing fully to '{target}' discounts near-term downside volatility in favor of optimistic best-case projections.",
+            f"Contrarian posture indicates '{alt}' preserves significantly higher asymmetric agility and downside protection."
+        ]
+
+        questions_to_validate = [
+            f"What empirical 90-day milestone will definitively confirm whether '{target}' is delivering on its premise?",
+            f"If equity or total compensation drops by 20%, does '{target}' remain the superior strategic choice?",
+            f"What specific warning signal would trigger an immediate, orderly pivot to '{alt}'?"
+        ]
+
+        vulnerabilities = list(critical_assumptions)
 
         critique = (
             f"Adversarial Stress-Test ({focus}): Committing to '{target}' leaves you exposed if baseline conditions shift. "
@@ -175,7 +194,7 @@ class DecisionService:
         if settings.GEMINI_API_KEY:
             try:
                 adversarial_prompt = f"""You are the Red Team Devil's Advocate for FlowMind Decision Intelligence.
-Your role is to rigorously stress-test and interrogate the user's favored recommendation with intellectual brutality, sharp clarity, and contrarian logic. Expose hidden confirmation bias and fragile assumptions.
+Your role is to rigorously stress-test and interrogate the user's favored recommendation with intellectual brutality, sharp clarity, and contrarian logic. Expose hidden confirmation bias, switching costs, lock-in, and fragile assumptions.
 
 Decision Context:
 - Dilemma Title: {decision.title}
@@ -186,23 +205,29 @@ Decision Context:
 - Stated Constraints: {constraints_text}
 - User's Chosen Attack Angle: {focus}
 
-Requirements:
-1. Attack the recommendation "{target}" directly on the chosen attack angle "{focus}".
-2. Expose 3 specific, non-trivial vulnerable assumptions that could cause this decision to fail or produce regret.
-3. Write a potent 2-3 sentence Devil's Advocate critique explaining why "{alt}" or another path might be safer or offer better asymmetric payoff if things go wrong.
-4. Assess fragility verdict as one of: "Moderately Sensitive", "Fragile Under Stress", or "Critically Fragile".
-5. Recommend a confidence haircut percentage between 10.0 and 22.0.
-
 Respond strictly in valid JSON format:
 {{
-  "critique": "A sharp, persuasive counter-argument.",
-  "vulnerabilities": [
-    "First vulnerable assumption or hidden risk",
-    "Second vulnerable assumption or hidden risk",
-    "Third vulnerable assumption or hidden risk"
+  "attackedOption": "{target}",
+  "criticalAssumptions": [
+    "First hidden or fragile assumption",
+    "Second hidden or fragile assumption",
+    "Third hidden or fragile assumption"
   ],
-  "fragility_verdict": "Moderately Sensitive",
-  "confidence_haircut": 14.0
+  "failureScenarios": [
+    "Worst-case failure scenario A",
+    "Worst-case failure scenario B"
+  ],
+  "counterArguments": [
+    "Sharp contrarian argument 1",
+    "Sharp contrarian argument 2"
+  ],
+  "questionsToValidate": [
+    "Critical validation question 1",
+    "Critical validation question 2"
+  ],
+  "confidenceAdjustment": -14.0,
+  "critique": "A sharp, persuasive counter-argument.",
+  "fragility_verdict": "Moderately Sensitive"
 }}"""
 
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={settings.GEMINI_API_KEY}"
@@ -210,7 +235,7 @@ Respond strictly in valid JSON format:
                     "contents": [{"parts": [{"text": adversarial_prompt}]}],
                     "generationConfig": {
                         "temperature": 0.45,
-                        "maxOutputTokens": 800,
+                        "maxOutputTokens": 900,
                         "responseMimeType": "application/json"
                     }
                 }
@@ -222,11 +247,19 @@ Respond strictly in valid JSON format:
                         if candidates and "content" in candidates[0]:
                             raw_text = candidates[0]["content"]["parts"][0]["text"].strip()
                             parsed = json.loads(raw_text)
-                            if "critique" in parsed and "vulnerabilities" in parsed:
+                            if "critique" in parsed:
                                 critique = parsed["critique"]
-                                vulnerabilities = parsed["vulnerabilities"][:4]
+                                if parsed.get("criticalAssumptions"):
+                                    critical_assumptions = parsed["criticalAssumptions"][:4]
+                                    vulnerabilities = list(critical_assumptions)
+                                if parsed.get("failureScenarios"):
+                                    failure_scenarios = parsed["failureScenarios"][:3]
+                                if parsed.get("counterArguments"):
+                                    counter_arguments = parsed["counterArguments"][:3]
+                                if parsed.get("questionsToValidate"):
+                                    questions_to_validate = parsed["questionsToValidate"][:3]
                                 fragility_verdict = parsed.get("fragility_verdict", fragility_verdict)
-                                haircut = float(parsed.get("confidence_haircut", 14.0))
+                                haircut = abs(float(parsed.get("confidenceAdjustment", -14.0)))
                                 recalculated_confidence = round(max(35.0, original_confidence - haircut), 1)
                                 delta = round(recalculated_confidence - original_confidence, 1)
             except Exception as e:
@@ -239,7 +272,13 @@ Respond strictly in valid JSON format:
             "recalculated_confidence": recalculated_confidence,
             "delta": delta,
             "critique": critique,
-            "focus_area": focus
+            "focus_area": focus,
+            "attackedOption": target,
+            "criticalAssumptions": critical_assumptions,
+            "failureScenarios": failure_scenarios,
+            "counterArguments": counter_arguments,
+            "questionsToValidate": questions_to_validate,
+            "confidenceAdjustment": delta
         }
 
         # Store in decision challenge history
@@ -259,12 +298,19 @@ Respond strictly in valid JSON format:
             "attack_vector": attack_vector,
             "devil_advocate_critique": critique,
             "alternative_scenario": f"Pivot conviction toward '{alt}' if downside risks of '{target}' materialize.",
-            "fragility_verdict": fragility_verdict
+            "fragility_verdict": fragility_verdict,
+            "attackedOption": target,
+            "criticalAssumptions": critical_assumptions,
+            "failureScenarios": failure_scenarios,
+            "counterArguments": counter_arguments,
+            "questionsToValidate": questions_to_validate,
+            "confidenceAdjustment": delta
         }
 
     @staticmethod
     def simulate_what_if(db: Session, decision_id: int, req: SimulationRequest) -> Dict[str, Any]:
-        """Simulates what-if changes (e.g. salary +20%, remote priority) and generates a differential model."""
+        """Simulates what-if changes and executes a 1,000-iteration Monte Carlo sensitivity analysis."""
+        import random
         decision = db.query(Decision).filter(Decision.id == decision_id).first()
         if not decision:
             raise ValueError("Decision not found")
@@ -274,9 +320,7 @@ Respond strictly in valid JSON format:
         if not options:
             raise ValueError("No options found on this decision")
 
-        scores_before = {opt.title: opt.score for opt in options}
         scores_after = {}
-        
         salary_pct = mods.get("salary_change_pct", 0)
         prioritize_remote = mods.get("prioritize_remote", False)
         tenure_years = mods.get("tenure_horizon_years", 3)
@@ -314,6 +358,47 @@ Respond strictly in valid JSON format:
             f"and a {tenure_years}-year time horizon."
         )
 
+        # 1,000-Run Monte Carlo Sensitivity Engine (reproducible seed = 42 for testing)
+        rng = random.Random(42 + decision_id)
+        runs = 1000
+        winner_simulated_scores = []
+        option_win_counts = {opt.title: 0 for opt in options}
+
+        for _ in range(runs):
+            market_shock = rng.uniform(-14.0, 14.0)
+            execution_friction = rng.uniform(-12.0, 8.0)
+            cost_variance = rng.uniform(-10.0, 10.0)
+            revenue_growth_variance = rng.uniform(-8.0, 15.0)
+
+            iteration_scores = {}
+            for opt in options:
+                base_score = scores_after.get(opt.title, 75.0)
+                is_startup = any(w in opt.title.lower() for w in ["startup", "venture", "founder"])
+                beta_market = 1.3 if is_startup else 0.7
+                beta_execution = 1.2 if is_startup else 0.8
+                
+                sim_score = base_score + (market_shock * beta_market) + (execution_friction * beta_execution) + (cost_variance * 0.4) + (revenue_growth_variance * 0.5)
+                sim_score = max(20.0, min(99.0, sim_score))
+                iteration_scores[opt.title] = sim_score
+
+            best_opt = max(iteration_scores.items(), key=lambda x: x[1])
+            option_win_counts[best_opt[0]] += 1
+            winner_simulated_scores.append(iteration_scores[winner_after])
+
+        winner_simulated_scores.sort()
+        p10 = round(winner_simulated_scores[int(runs * 0.10)], 1)
+        p25 = round(winner_simulated_scores[int(runs * 0.25)], 1)
+        p50 = round(winner_simulated_scores[int(runs * 0.50)], 1)
+        p75 = round(winner_simulated_scores[int(runs * 0.75)], 1)
+        p90 = round(winner_simulated_scores[int(runs * 0.90)], 1)
+        expected_outcome = round(sum(winner_simulated_scores) / runs, 1)
+
+        variance = sum((s - expected_outcome) ** 2 for s in winner_simulated_scores) / runs
+        volatility = round(variance ** 0.5, 2)
+        downside_risk = round(winner_simulated_scores[int(runs * 0.05)], 1)
+        upside_potential = round(winner_simulated_scores[int(runs * 0.95)], 1)
+        win_rates = {k: round((v / runs) * 100.0, 1) for k, v in option_win_counts.items()}
+
         scenario = Scenario(
             decision_id=decision.id,
             title=req.scenario_title,
@@ -325,7 +410,14 @@ Respond strictly in valid JSON format:
                 "score_delta": score_delta,
                 "impact_reason": diff_explanation,
                 "winner_before": decision.recommendation,
-                "winner_after": winner_after
+                "winner_after": winner_after,
+                "monte_carlo": {
+                    "expected_outcome": expected_outcome,
+                    "volatility": volatility,
+                    "p50": p50,
+                    "downside_risk": downside_risk,
+                    "upside_potential": upside_potential
+                }
             }
         )
         db.add(scenario)
@@ -345,7 +437,21 @@ Respond strictly in valid JSON format:
                 f"Assumption modifier: {k} = {v}" for k, v in mods.items()
             ],
             "diff_explanation": diff_explanation,
-            "updated_option_scores": scores_after
+            "updated_option_scores": scores_after,
+            "monte_carlo_runs": runs,
+            "outcome_distribution": {
+                "p10": p10,
+                "p25": p25,
+                "p50": p50,
+                "p75": p75,
+                "p90": p90
+            },
+            "expected_outcome": expected_outcome,
+            "downside_risk": downside_risk,
+            "upside_potential": upside_potential,
+            "volatility": volatility,
+            "probability_ranges": win_rates,
+            "disclaimer": "Scenario-based sensitivity analysis. Not guaranteed prediction."
         }
 
     @staticmethod
@@ -355,6 +461,11 @@ Respond strictly in valid JSON format:
             user_id=user_id,
             chosen_option_title=data.chosen_option_title,
             actual_outcome_notes=data.actual_outcome_notes,
+            expected_outcome=data.expected_outcome,
+            what_went_right=data.what_went_right,
+            what_went_wrong=data.what_went_wrong,
+            incorrect_assumptions=data.incorrect_assumptions,
+            lessons_learned=data.lessons_learned,
             satisfaction_score=data.satisfaction_score,
             ai_accuracy_rating=data.ai_accuracy_rating
         )

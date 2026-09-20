@@ -2,86 +2,164 @@
 @config "../tailwind.config.js";
 
 :root {
-  --canvas-bg: #030407;
-  --canvas-subtle: #090B12;
-  --text-vivid: #FFFFFF;
+  --canvas-bg: #030408;
+  --canvas-subtle: #070911;
+  --canvas-elevated: #0C101C;
+  --text-vivid: #F8FAFC;
   --text-body: #94A3B8;
   --text-faint: #475569;
   --accent-cyan: #00F0FF;
-  --accent-blue: #38BDF8;
+  --accent-indigo: #6366F1;
+  --accent-violet: #8B5CF6;
   --accent-emerald: #10B981;
   --accent-rose: #F43F5E;
   --accent-amber: #F59E0B;
-  --line-color: rgba(255, 255, 255, 0.06);
-  --line-active: rgba(0, 240, 255, 0.5);
-  --surface-blur: rgba(6, 9, 15, 0.75);
-  --halo-glow: rgba(0, 240, 255, 0.05);
+  --line-color: rgba(255, 255, 255, 0.07);
+  --line-active: rgba(0, 240, 255, 0.55);
+  --surface-blur: rgba(7, 9, 17, 0.82);
+  --halo-glow: rgba(99, 102, 241, 0.08);
 
   /* Component semantic aliases */
-  --bg-surface: #090B12;
+  --bg-surface: #070911;
   --bg-surface-subtle: rgba(255, 255, 255, 0.03);
-  --bg-surface-elevated: rgba(255, 255, 255, 0.07);
+  --bg-surface-elevated: rgba(255, 255, 255, 0.06);
   --border-subtle: rgba(255, 255, 255, 0.08);
-  --text-primary: #FFFFFF;
+  --text-primary: #F8FAFC;
   --text-secondary: #94A3B8;
   --text-muted: #64748B;
 }
 
 html.light {
-  --canvas-bg: #FBFBFA;
-  --canvas-subtle: #F1F1EF;
-  --text-vivid: #0F172A;
-  --text-body: #475569;
-  --text-faint: #94A3B8;
-  --accent-cyan: #0284C7;
-  --accent-blue: #2563EB;
-  --accent-emerald: #059669;
-  --accent-rose: #E11D48;
-  --accent-amber: #D97706;
-  --line-color: rgba(0, 0, 0, 0.07);
-  --line-active: rgba(2, 132, 199, 0.6);
-  --surface-blur: rgba(251, 251, 250, 0.88);
-  --halo-glow: rgba(2, 132, 199, 0.06);
+  --canvas-bg: #030408;
+  --canvas-subtle: #070911;
+  --canvas-elevated: #0C101C;
+  --text-vivid: #F8FAFC;
+  --text-body: #94A3B8;
+  --text-faint: #475569;
+  --accent-cyan: #00F0FF;
+  --accent-indigo: #6366F1;
+  --accent-violet: #8B5CF6;
+  --accent-emerald: #10B981;
+  --accent-rose: #F43F5E;
+  --accent-amber: #F59E0B;
+  --line-color: rgba(255, 255, 255, 0.07);
+  --line-active: rgba(0, 240, 255, 0.55);
+  --surface-blur: rgba(7, 9, 17, 0.82);
+  --halo-glow: rgba(99, 102, 241, 0.08);
 
-  /* Component semantic aliases */
-  --bg-surface: #F1F1EF;
-  --bg-surface-subtle: rgba(0, 0, 0, 0.03);
-  --bg-surface-elevated: rgba(0, 0, 0, 0.06);
-  --border-subtle: rgba(0, 0, 0, 0.08);
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-muted: #94A3B8;
+  --bg-surface: #070911;
+  --bg-surface-subtle: rgba(255, 255, 255, 0.03);
+  --bg-surface-elevated: rgba(255, 255, 255, 0.06);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
 }
 
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
+  background-color: #030408;
 }
 
 body {
   background-color: var(--canvas-bg);
   color: var(--text-vivid);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
   overflow-y: auto;
   user-select: none;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Editorial typography for user thoughts and core dilemmas */
-.font-editorial {
-  font-family: 'Newsreader', 'Instrument Serif', Georgia, serif;
-  letter-spacing: -0.015em;
+/* Typography styles */
+.font-sans-ui {
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 }
 
-/* Technical typography for metrics, system signals, and floating labels */
+.font-editorial {
+  font-family: 'Plus Jakarta Sans', 'Inter', Georgia, serif;
+  letter-spacing: -0.02em;
+}
+
 .font-mono {
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
-/* Atmospheric noise/grain overlay */
-.bg-noise {
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+/* Premium Glassmorphism & Materials */
+.glass-panel-luxury {
+  background: linear-gradient(180deg, rgba(12, 16, 28, 0.82) 0%, rgba(6, 8, 15, 0.92) 100%);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 24px 60px -15px rgba(0, 0, 0, 0.75);
+}
+
+.glass-card-premium {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.015) 100%);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 14px 36px -8px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card-premium:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.18), 0 18px 45px -8px rgba(99, 102, 241, 0.22);
+}
+
+/* Atmospheric Subtle Dot-Matrix Grid with Vignette */
+.grid-mesh-ambient {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, black 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, black 40%, transparent 100%);
+}
+
+/* Ambient Floating Cognitive Halos */
+@keyframes cognitive-pulse-1 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.32;
+  }
+  50% {
+    transform: translate(30px, -20px) scale(1.1);
+    opacity: 0.5;
+  }
+}
+
+@keyframes cognitive-pulse-2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+    opacity: 0.22;
+  }
+  50% {
+    transform: translate(-25px, 20px) scale(1.08);
+    opacity: 0.4;
+  }
+}
+
+.animate-aurora-1 {
+  animation: cognitive-pulse-1 14s infinite ease-in-out;
+}
+
+.animate-aurora-2 {
+  animation: cognitive-pulse-2 18s infinite ease-in-out;
+}
+
+/* Flowing Neural Signal Line Animation */
+@keyframes flow-dash {
+  0% {
+    stroke-dashoffset: 60;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-flow-dash {
+  animation: flow-dash 3s linear infinite;
 }
 
 /* Radial thinking halo behind central thoughts */
@@ -91,15 +169,18 @@ body {
 
 /* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--line-color);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* Smooth pulsating signal keyframe */
@@ -108,7 +189,7 @@ body {
     box-shadow: 0 0 15px rgba(0, 240, 255, 0.2), inset 0 0 10px rgba(0, 240, 255, 0.1);
   }
   50% {
-    box-shadow: 0 0 30px rgba(0, 240, 255, 0.45), inset 0 0 16px rgba(0, 240, 255, 0.25);
+    box-shadow: 0 0 32px rgba(0, 240, 255, 0.45), inset 0 0 16px rgba(0, 240, 255, 0.25);
   }
 }
 

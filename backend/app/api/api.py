@@ -11,8 +11,10 @@ from app.schemas.schemas import (
     OutcomeCreate, OutcomeResponse,
     EvidenceResponse, AgentRunResponse, DocumentResponse,
     AskQuestionRequest, AskQuestionResponse,
+    GeminiKeyConfigRequest, GeminiKeyConfigResponse, AIStatusResponse,
     SuggestOptionsRequest, SuggestOptionsResponse, SuggestedPathwayItem
 )
+from app.core.config import settings, save_gemini_api_key
 from app.services.auth_service import auth_service, get_current_user
 from app.services.decision_service import decision_service
 from app.agents.orchestrator import orchestrator
@@ -240,6 +242,7 @@ async def upload_document(
         evidence_item = Evidence(
             decision_id=decision_id,
             claim=f"Verified Source: {file.filename}",
+            source_type="FACT_FROM_DOCUMENT",
             source_document_id=document.id,
             source_title=file.filename,
             page_or_section=f"Section 1 / {pages_count} pages",
@@ -260,7 +263,39 @@ async def upload_document(
         created_at=document.created_at
     )
 
-# ----------------- AI Question Answering -----------------
+# ----------------- AI Question Answering & Configuration -----------------
+
+@api_router.get("/ai/config", response_model=AIStatusResponse)
+def get_ai_config():
+    """Returns the current Gemini AI connection status and model capabilities."""
+    return AIStatusResponse(
+        gemini_configured=bool(settings.GEMINI_API_KEY),
+        model="gemini-1.5-flash",
+        provider="Google DeepMind Gemini",
+        free_tier_url="https://aistudio.google.com/app/apikey"
+    )
+
+@api_router.post("/ai/config", response_model=GeminiKeyConfigResponse)
+async def configure_gemini_key(data: GeminiKeyConfigRequest):
+    """Saves and verifies a user-provided Google Gemini API key."""
+    key = data.gemini_api_key.strip()
+    if not key:
+        raise HTTPException(status_code=400, detail="Gemini API key cannot be empty.")
+    
+    # Test key against Google Gemini API
+    is_valid = await ai_qa_service.verify_gemini_key(key)
+    if not is_valid:
+        raise HTTPException(
+            status_code=400,
+            detail="Could not verify Gemini API key with Google AI Studio. Please check the key and try again."
+        )
+    
+    save_gemini_api_key(key)
+    return GeminiKeyConfigResponse(
+        success=True,
+        message="Free Google Gemini API key connected and verified successfully!",
+        model="gemini-1.5-flash"
+    )
 
 @api_router.post("/ai/ask", response_model=AskQuestionResponse)
 async def ask_question_endpoint(
@@ -273,6 +308,7 @@ async def ask_question_endpoint(
         decision_id=data.decision_id,
         context=data.context,
         history=data.history,
+        api_key=data.api_key,
         db=db
     )
     return AskQuestionResponse(**result)
@@ -293,6 +329,7 @@ async def ask_decision_question_endpoint(
         decision_id=decision_id,
         context=data.context,
         history=data.history,
+        api_key=data.api_key,
         db=db
     )
     return AskQuestionResponse(**result)

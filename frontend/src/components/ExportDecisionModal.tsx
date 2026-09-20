@@ -134,31 +134,31 @@ export const ExportDecisionModal: React.FC<ExportDecisionModalProps> = ({
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-xl animate-in fade-in duration-200 select-none"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/70 backdrop-blur-xl animate-in fade-in duration-200 select-none"
     >
-      <div className="relative w-full max-w-3xl max-h-[90vh] flex flex-col rounded-3xl bg-[var(--surface-blur)] border border-cyan-500/30 shadow-2xl overflow-hidden font-sans">
+      <div className="relative w-full max-w-3xl max-h-[90vh] flex flex-col rounded-3xl bg-[var(--surface-blur)] border border-[var(--line-color)] shadow-2xl overflow-hidden font-sans">
         {/* Top Header */}
-        <div className="px-6 py-4 border-b border-[var(--line-color)] flex items-center justify-between shrink-0 bg-black/40">
+        <div className="px-6 py-4 border-b border-[var(--line-color)] flex items-center justify-between shrink-0 bg-[var(--canvas-subtle)]">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-cyan-500/20 text-cyan-500 flex items-center justify-center">
               <Share2 className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white">
+              <h3 className="text-sm font-semibold text-[var(--text-vivid)]">
                 Export Executive Decision Memo
               </h3>
-              <p className="text-[11px] text-slate-400 font-mono">
+              <p className="text-[11px] text-[var(--text-muted)] font-mono">
                 Share full synthesis, 7-agent debate consensus, and calibrated confidence
               </p>
             </div>
           </div>
 
           <div className="flex items-center space-x-2">
-            <div className="flex bg-white/5 p-0.5 rounded-full border border-white/10 text-xs font-mono">
+            <div className="flex bg-[var(--canvas-subtle)] p-0.5 rounded-full border border-[var(--line-color)] text-xs font-mono">
               <button
                 onClick={() => setActiveTab('memo')}
                 className={`px-3 py-1 rounded-full transition-colors ${
-                  activeTab === 'memo' ? 'bg-cyan-500 text-space-950 font-semibold' : 'text-slate-400 hover:text-white'
+                  activeTab === 'memo' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-[var(--text-muted)] hover:text-[var(--text-vivid)]'
                 }`}
               >
                 Markdown Memo
@@ -166,7 +166,7 @@ export const ExportDecisionModal: React.FC<ExportDecisionModalProps> = ({
               <button
                 onClick={() => setActiveTab('json')}
                 className={`px-3 py-1 rounded-full transition-colors ${
-                  activeTab === 'json' ? 'bg-cyan-500 text-space-950 font-semibold' : 'text-slate-400 hover:text-white'
+                  activeTab === 'json' ? 'bg-cyan-500 text-slate-950 font-bold' : 'text-[var(--text-muted)] hover:text-[var(--text-vivid)]'
                 }`}
               >
                 Raw JSON
@@ -175,7 +175,7 @@ export const ExportDecisionModal: React.FC<ExportDecisionModalProps> = ({
 
             <button
               onClick={onClose}
-              className="p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/10"
+              className="p-1.5 rounded-full text-[var(--text-muted)] hover:text-[var(--text-vivid)] hover:bg-[var(--canvas-subtle)]"
               title="Close (Esc)"
             >
               <X className="w-4 h-4" />
@@ -186,35 +186,35 @@ export const ExportDecisionModal: React.FC<ExportDecisionModalProps> = ({
         {/* Preview Body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 text-xs font-mono text-cyan-300">
-              <Crown className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="flex items-center space-x-2 text-xs font-mono text-cyan-500">
+              <Crown className="w-3.5 h-3.5 text-emerald-500" />
               <span>Calibrated Signal: {decision.recommendation || winnerOption?.title} ({decision.confidence_score}%)</span>
             </div>
-            <span className="text-[10px] font-mono text-slate-500">
+            <span className="text-[10px] font-mono text-[var(--text-muted)]">
               {decision.options.length} Pathways • {decision.agent_runs.length} Agents
             </span>
           </div>
 
-          <pre className="p-4 rounded-2xl bg-black/50 border border-[var(--line-color)] text-xs text-slate-300 font-mono overflow-x-auto whitespace-pre-wrap max-h-[50vh] leading-relaxed select-text">
+          <pre className="p-4 rounded-2xl bg-[var(--canvas-subtle)] border border-[var(--line-color)] text-xs text-[var(--text-body)] font-mono overflow-x-auto whitespace-pre-wrap max-h-[50vh] leading-relaxed select-text">
             {activeTab === 'memo' ? memoText : jsonText}
           </pre>
         </div>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 border-t border-[var(--line-color)] flex items-center justify-between shrink-0 bg-black/40">
-          <span className="text-[11px] font-mono text-slate-400">
+        <div className="px-6 py-4 border-t border-[var(--line-color)] flex items-center justify-between shrink-0 bg-[var(--canvas-subtle)]">
+          <span className="text-[11px] font-mono text-[var(--text-muted)]">
             Export ready for Notion, Obsidian, Slack, or Docs
           </span>
 
           <div className="flex items-center space-x-2.5">
             <button
               onClick={handleCopy}
-              className="flex items-center space-x-1.5 px-4 py-2 rounded-full bg-white/10 hover:bg-white/15 text-white text-xs font-mono transition-colors"
+              className="flex items-center space-x-1.5 px-4 py-2 rounded-full bg-[var(--canvas-subtle)] hover:bg-[var(--line-color)] text-[var(--text-vivid)] text-xs font-mono border border-[var(--line-color)] transition-colors"
             >
               {copied ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-emerald-400">Copied!</span>
+                  <Check className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-emerald-500">Copied!</span>
                 </>
               ) : (
                 <>

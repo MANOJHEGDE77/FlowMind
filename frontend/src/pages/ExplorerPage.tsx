@@ -94,11 +94,11 @@ export const ExplorerPage: React.FC<ExplorerPageProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <TrendingUp className="w-4 h-4 text-cyan-400" />
-            <h2 className="text-xs font-mono uppercase tracking-widest text-white font-bold">
+            <h2 className="text-xs font-mono uppercase tracking-widest text-[var(--text-vivid)] font-bold">
               YOUR REAL-TIME DECISION METRICS
             </h2>
           </div>
-          <span className="text-[10px] font-mono text-slate-500">
+          <span className="text-[10px] font-mono text-[var(--text-faint)]">
             {hasRealData ? 'Live Database Records' : 'Awaiting First Decision'}
           </span>
         </div>
@@ -106,11 +106,11 @@ export const ExplorerPage: React.FC<ExplorerPageProps> = ({
         {hasRealData && realStats ? (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="p-4 rounded-2xl bg-[var(--canvas-subtle)] border border-[var(--line-color)] space-y-1">
-              <span className="text-[10px] font-mono text-slate-400 uppercase block">
+              <span className="text-[10px] font-mono text-[var(--text-faint)] uppercase block">
                 Total Evaluated
               </span>
               <div className="flex items-baseline space-x-2">
-                <span className="text-2xl font-bold font-mono text-white">
+                <span className="text-2xl font-bold font-mono text-[var(--text-vivid)]">
                   {realStats.total}
                 </span>
                 <span className="text-xs text-cyan-400 font-mono">Dilemmas</span>
@@ -118,19 +118,19 @@ export const ExplorerPage: React.FC<ExplorerPageProps> = ({
             </div>
 
             <div className="p-4 rounded-2xl bg-[var(--canvas-subtle)] border border-[var(--line-color)] space-y-1">
-              <span className="text-[10px] font-mono text-slate-400 uppercase block">
+              <span className="text-[10px] font-mono text-[var(--text-faint)] uppercase block">
                 Mean AI Confidence
               </span>
               <div className="flex items-baseline space-x-2">
                 <span className="text-2xl font-bold font-mono text-emerald-400">
                   {realStats.avgConfidence}%
                 </span>
-                <span className="text-xs text-slate-400 font-mono">Consensus</span>
+                <span className="text-xs text-[var(--text-faint)] font-mono">Consensus</span>
               </div>
             </div>
 
             <div className="p-4 rounded-2xl bg-[var(--canvas-subtle)] border border-[var(--line-color)] space-y-1">
-              <span className="text-[10px] font-mono text-slate-400 uppercase block">
+              <span className="text-[10px] font-mono text-[var(--text-faint)] uppercase block">
                 Model Status
               </span>
               <div className="flex items-center space-x-3 text-xs font-mono mt-1">
@@ -148,8 +148,8 @@ export const ExplorerPage: React.FC<ExplorerPageProps> = ({
             <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mx-auto">
               <Compass className="w-5 h-5" />
             </div>
-            <h3 className="text-sm font-semibold text-white">No Decision History Recorded Yet</h3>
-            <p className="text-xs text-slate-400 max-w-md mx-auto">
+            <h3 className="text-sm font-semibold text-[var(--text-vivid)]">No Decision History Recorded Yet</h3>
+            <p className="text-xs text-[var(--text-body)] max-w-md mx-auto">
               As you analyze real decisions in FlowMind, your personal priority distribution, confidence ratings, and cognitive calibration will automatically be computed here from your actual database records.
             </p>
           </div>
@@ -161,7 +161,7 @@ export const ExplorerPage: React.FC<ExplorerPageProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Compass className="w-4 h-4 text-cyan-400" />
-            <h2 className="text-xs font-mono uppercase tracking-widest text-white font-bold">
+            <h2 className="text-xs font-mono uppercase tracking-widest text-[var(--text-vivid)] font-bold">
               STARTER DILEMMA TEMPLATES
             </h2>
           </div>
@@ -170,7 +170,7 @@ export const ExplorerPage: React.FC<ExplorerPageProps> = ({
           </span>
         </div>
 
-        <p className="text-xs text-slate-400 font-sans">
+        <p className="text-xs text-[var(--text-body)] font-sans">
           Select any real-world dilemma starter below to trigger a live, multi-agent evaluation cycle.
         </p>
 
@@ -185,15 +185,15 @@ export const ExplorerPage: React.FC<ExplorerPageProps> = ({
                 <span className="text-[9px] font-mono text-cyan-400 uppercase tracking-wider block">
                   {starter.category}
                 </span>
-                <h3 className="text-sm font-semibold text-white group-hover:text-cyan-300 transition-colors">
+                <h3 className="text-sm font-semibold text-[var(--text-vivid)] group-hover:text-cyan-400 transition-colors">
                   {starter.title}
                 </h3>
-                <p className="text-[11px] text-slate-400 font-sans leading-relaxed line-clamp-2">
+                <p className="text-[11px] text-[var(--text-body)] font-sans leading-relaxed line-clamp-2">
                   "{starter.prompt}"
                 </p>
               </div>
 
-              <div className="flex items-center justify-between pt-2 border-t border-[var(--line-color)] text-[10px] font-mono text-slate-400">
+              <div className="flex items-center justify-between pt-2 border-t border-[var(--line-color)] text-[10px] font-mono text-[var(--text-faint)]">
                 <span>{starter.optionsCount} Pathways</span>
                 <span className="text-cyan-400 group-hover:translate-x-0.5 transition-transform flex items-center space-x-1 font-semibold">
                   <span>Launch Live Model</span>

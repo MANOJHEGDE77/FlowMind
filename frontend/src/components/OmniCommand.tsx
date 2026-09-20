@@ -15,7 +15,7 @@ interface OmniCommandProps {
   onChallenge: () => void;
   onSimulate: () => void;
   onUploadDoc: () => void;
-  onNavigate: (view: 'home' | 'workspace' | 'archive' | 'explore') => void;
+  onNavigate: (view: 'landing' | 'home' | 'workspace' | 'archive' | 'explore') => void;
   onSelectDecision: (id: number) => void;
   onOpenAskAI?: (question?: string) => void;
   recentDecisions: DecisionListItem[];
@@ -81,7 +81,7 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
       ? [{
           id: 'resume',
           type: 'action',
-          title: `Resume Thinking: ${recentDecisions[0].title}`,
+          title: `Continue Active Dilemma: ${recentDecisions[0].title}`,
           subtitle: `${recentDecisions[0].confidence_score}% Signal model • Continue unfinished analysis`,
           icon: History,
           color: 'text-sky-400',
@@ -89,6 +89,16 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
           action: () => { onSelectDecision(recentDecisions[0].id); onClose(); },
         }]
       : []),
+    {
+      id: 'landing',
+      type: 'action',
+      title: 'Platform Overview & Architecture Showcase',
+      subtitle: 'Explore 7-agent council, 1,000-run Monte Carlo & live sandbox',
+      icon: Sparkles,
+      color: 'text-cyan-400',
+      keywords: 'overview landing showcase home intro features architecture council monte carlo sandbox',
+      action: () => { onNavigate('landing'); onClose(); },
+    },
     {
       id: 'archive',
       type: 'action',
@@ -214,16 +224,16 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-black/80 backdrop-blur-xl select-none animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-slate-950/70 backdrop-blur-xl select-none animate-in fade-in duration-150">
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: -10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.98, y: -5 }}
         transition={{ duration: 0.16 }}
-        className="relative w-full max-w-2xl rounded-3xl bg-[var(--surface-blur)] backdrop-blur-2xl border border-cyan-500/30 shadow-[0_20px_60px_rgba(0,0,0,0.85)] overflow-hidden"
+        className="relative w-full max-w-2xl rounded-3xl bg-[var(--surface-blur)] backdrop-blur-2xl border border-cyan-500/30 shadow-[0_20px_60px_rgba(0,0,0,0.45)] overflow-hidden"
       >
         {/* Search Input Bar */}
-        <div className="p-4 border-b border-[var(--line-color)] flex items-center space-x-3 bg-black/30">
+        <div className="p-4 border-b border-[var(--line-color)] flex items-center space-x-3 bg-[var(--canvas-subtle)]">
           <Search className="w-5 h-5 text-cyan-400 shrink-0" />
           <input
             ref={inputRef}
@@ -235,11 +245,11 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
               setSelectedIndex(0);
             }}
             onKeyDown={handleKeyDownList}
-            className="w-full bg-transparent text-sm sm:text-base font-sans text-white placeholder-slate-500 focus:outline-none"
+            className="w-full bg-transparent text-sm sm:text-base font-sans text-[var(--text-vivid)] placeholder-[var(--text-faint)] focus:outline-none"
           />
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-slate-500 hover:text-white transition-colors"
+            className="p-1 rounded-md text-[var(--text-faint)] hover:text-[var(--text-vivid)] transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -250,7 +260,7 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
           {/* AI Strategic Question Action */}
           {aiActionItem.length > 0 && (
             <div className="space-y-1">
-              <span className="px-3 text-[10px] uppercase tracking-widest text-cyan-300 font-bold block mb-1">
+              <span className="px-3 text-[10px] uppercase tracking-widest text-cyan-400 font-bold block mb-1">
                 ✦ ASK AI MODEL (GEMINI FLASH)
               </span>
               {aiActionItem.map((item) => {
@@ -262,20 +272,20 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
                     onMouseEnter={() => setSelectedIndex(0)}
                     className={`p-3 rounded-2xl cursor-pointer flex items-center justify-between transition-all ${
                       isSelected
-                        ? 'bg-cyan-500/25 border border-cyan-400/60 text-white shadow-lg'
-                        : 'bg-cyan-500/10 text-slate-200 border border-cyan-500/20'
+                        ? 'bg-cyan-500/25 border border-cyan-400/60 text-[var(--text-vivid)] shadow-lg'
+                        : 'bg-cyan-500/10 text-[var(--text-body)] border border-cyan-500/20'
                     }`}
                   >
                     <div className="flex items-center space-x-3">
-                      <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/40">
+                      <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-400/40">
                         <Sparkles className="w-4 h-4" />
                       </div>
                       <div>
-                        <div className="font-semibold text-white text-xs">{item.title}</div>
-                        <div className="text-[11px] text-cyan-200/80 font-sans">{item.subtitle}</div>
+                        <div className="font-semibold text-[var(--text-vivid)] text-xs">{item.title}</div>
+                        <div className="text-[11px] text-[var(--text-body)] font-sans">{item.subtitle}</div>
                       </div>
                     </div>
-                    <span className="text-[10px] font-mono text-cyan-300 bg-black/40 px-2 py-0.5 rounded border border-cyan-500/30">
+                    <span className="text-[10px] font-mono text-cyan-400 bg-[var(--canvas-subtle)] px-2 py-0.5 rounded border border-cyan-500/30">
                       ↵ Press Enter
                     </span>
                   </div>
@@ -300,17 +310,17 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
                     onMouseEnter={() => setSelectedIndex(itemIdx)}
                     className={`p-3 rounded-2xl cursor-pointer flex items-center justify-between transition-all ${
                       isSelected
-                        ? 'bg-cyan-500/20 border border-cyan-400/50 text-white shadow-md'
-                        : 'text-slate-300 hover:bg-white/5 border border-transparent'
+                        ? 'bg-cyan-500/20 border border-cyan-400/50 text-[var(--text-vivid)] shadow-md'
+                        : 'text-[var(--text-body)] hover:bg-[var(--canvas-subtle)] border border-transparent'
                     }`}
                   >
                     <div className="flex items-center space-x-3">
-                      <div className="p-2 rounded-xl bg-cyan-950/60 text-cyan-400 border border-cyan-500/30">
+                      <div className="p-2 rounded-xl bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
                         <Lightbulb className="w-4 h-4" />
                       </div>
                       <div>
-                        <div className="font-medium text-white text-xs">{item.title}</div>
-                        <div className="text-[11px] text-slate-400 font-sans">{item.subtitle}</div>
+                        <div className="font-medium text-[var(--text-vivid)] text-xs">{item.title}</div>
+                        <div className="text-[11px] text-[var(--text-faint)] font-sans">{item.subtitle}</div>
                       </div>
                     </div>
                     <ArrowRight className={`w-3.5 h-3.5 ${isSelected ? 'text-cyan-400' : 'text-transparent'}`} />
@@ -322,7 +332,7 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
 
           {/* Quick Actions & System Commands */}
           <div className="space-y-1">
-            <span className="px-3 text-[10px] uppercase tracking-widest text-slate-500 font-bold block mb-1">
+            <span className="px-3 text-[10px] uppercase tracking-widest text-[var(--text-faint)] font-bold block mb-1">
               {q ? 'ACTIONS & COMMANDS' : 'QUICK ACTIONS'}
             </span>
             {filteredActions.map((action, idx) => {
@@ -337,24 +347,24 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
                   onMouseEnter={() => setSelectedIndex(actualIdx)}
                   className={`p-3 rounded-2xl cursor-pointer flex items-center justify-between transition-all ${
                     isSelected
-                      ? 'bg-cyan-500/15 border border-cyan-400/40 text-white shadow-md'
-                      : 'text-slate-300 hover:bg-white/5 border border-transparent'
+                      ? 'bg-cyan-500/15 border border-cyan-400/40 text-[var(--text-vivid)] shadow-md'
+                      : 'text-[var(--text-body)] hover:bg-[var(--canvas-subtle)] border border-transparent'
                   }`}
                 >
                   <div className="flex items-center space-x-3">
-                    <div className={`p-2 rounded-xl bg-black/40 border border-white/5 ${action.color}`}>
+                    <div className={`p-2 rounded-xl bg-[var(--canvas-subtle)] border border-[var(--line-color)] ${action.color}`}>
                       <Icon className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="text-xs font-mono font-medium flex items-center space-x-2">
+                      <div className="text-xs font-mono font-medium flex items-center space-x-2 text-[var(--text-vivid)]">
                         <span>{action.title}</span>
                         {isSelected && (
-                          <span className="text-[9px] font-mono text-cyan-400 bg-cyan-950/60 px-1.5 py-0.2 rounded border border-cyan-500/30">
+                          <span className="text-[9px] font-mono text-cyan-400 bg-cyan-500/15 px-1.5 py-0.2 rounded border border-cyan-500/30">
                             ↵ Enter
                           </span>
                         )}
                       </div>
-                      <div className="text-[11px] text-slate-400 font-sans">
+                      <div className="text-[11px] text-[var(--text-faint)] font-sans">
                         {action.subtitle}
                       </div>
                     </div>
@@ -368,7 +378,7 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
           {/* If query has no matches */}
           {allResults.length === 0 && (
             <div className="py-12 text-center space-y-2">
-              <span className="text-xs font-mono text-slate-400 block">
+              <span className="text-xs font-mono text-[var(--text-faint)] block">
                 No matching decisions or commands for "{query}"
               </span>
               <button
@@ -385,13 +395,13 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
         </div>
 
         {/* Command Footer */}
-        <div className="px-4 py-2.5 bg-black/50 border-t border-[var(--line-color)] flex items-center justify-between text-[10px] font-mono text-slate-500">
+        <div className="px-4 py-2.5 bg-[var(--canvas-subtle)] border-t border-[var(--line-color)] flex items-center justify-between text-[10px] font-mono text-[var(--text-faint)]">
           <div className="flex items-center space-x-4">
             <span>[↑↓] Navigate</span>
             <span>[↵] Execute</span>
             <span>[ESC] Close</span>
           </div>
-          <span className="text-cyan-400/80">FLOWMIND COMMAND LAYER</span>
+          <span className="text-cyan-400/90 font-bold">FLOWMIND COMMAND LAYER</span>
         </div>
       </motion.div>
     </div>

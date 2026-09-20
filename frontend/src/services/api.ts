@@ -3,7 +3,7 @@ import {
   SimulationResult, DecisionOutcome, DocumentItem
 } from '../types';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+let API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 class ApiService {
   private token: string | null = localStorage.getItem('flowmind_token');
@@ -34,23 +34,45 @@ class ApiService {
       headers['Content-Type'] = 'application/json';
     }
 
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-      ...options,
-      headers,
-    });
+    try {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
+        ...options,
+        headers,
+      });
 
-    if (!response.ok) {
-      let errorMsg = `Error: ${response.status} ${response.statusText}`;
-      try {
-        const errorData = await response.json();
-        errorMsg = errorData.detail || errorMsg;
-      } catch (e) {
-        // use default error message
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        } catch {
+          // Response was not JSON
+        }
+        throw new Error(errorMessage);
       }
-      throw new Error(errorMsg);
-    }
 
-    return response.json();
+      return await response.json();
+    } catch (err: any) {
+      // Auto-recover between port 8080 and 8000 if network fails
+      if (err.name === 'TypeError' || err.message?.includes('fetch') || err.message?.includes('NetworkError')) {
+        const altBase = API_BASE.includes('8080')
+          ? API_BASE.replace('8080', '8000')
+          : API_BASE.replace('8000', '8080');
+        try {
+          const fallbackResp = await fetch(`${altBase}${endpoint}`, {
+            ...options,
+            headers,
+          });
+          if (fallbackResp.ok) {
+            API_BASE = altBase;
+            return await fallbackResp.json();
+          }
+        } catch {
+          // Fallback also failed, proceed with original error
+        }
+      }
+      throw err;
+    }
   }
 
   // Auth
@@ -146,6 +168,11 @@ class ApiService {
     data: {
       chosen_option_title: string;
       actual_outcome_notes?: string;
+      expected_outcome?: string;
+      what_went_right?: string[];
+      what_went_wrong?: string[];
+      incorrect_assumptions?: string[];
+      lessons_learned?: string;
       satisfaction_score: number;
       ai_accuracy_rating: number;
     }
@@ -176,6 +203,7 @@ class ApiService {
     decisionId?: number;
     context?: string;
     history?: Array<{ role: string; content: string }>;
+    apiKey?: string;
   }): Promise<{
     question: string;
     answer: string;
@@ -193,7 +221,29 @@ class ApiService {
         decision_id: data.decisionId,
         context: data.context,
         history: data.history || [],
+        api_key: data.apiKey,
       }),
+    });
+  }
+
+  // Gemini AI Status & Key Configuration
+  async getAIConfig(): Promise<{
+    gemini_configured: boolean;
+    model: string;
+    provider: string;
+    free_tier_url: string;
+  }> {
+    return this.request('/ai/config', { method: 'GET' });
+  }
+
+  async configureGeminiKey(key: string): Promise<{
+    success: boolean;
+    message: string;
+    model: string;
+  }> {
+    return this.request('/ai/config', {
+      method: 'POST',
+      body: JSON.stringify({ gemini_api_key: key }),
     });
   }
 

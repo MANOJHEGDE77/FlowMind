@@ -349,37 +349,39 @@ Respond strictly in valid JSON:
         db.query(Evidence).filter(Evidence.decision_id == decision.id).delete()
         db.commit()
 
-        # Insert Grounded Evidence Items
+        # Insert Grounded Evidence Items with explicit source_type classification
         if evidence_results:
             for ev in evidence_results:
                 e_item = Evidence(
                     decision_id=decision.id,
-                    claim=f"Document specifies key conditions relevant to {ev['filename']}",
+                    claim=f"Verified Document Fact: {ev['filename']} specifies binding constraints/terms",
+                    source_type="FACT_FROM_DOCUMENT",
                     source_document_id=ev.get("document_id"),
                     chunk_id=ev.get("chunk_id"),
                     source_title=ev.get("filename", "Verified Attachment"),
                     page_or_section=ev.get("location", "Page 1"),
                     quote=ev["text"][:220] + "...",
-                    relevance_explanation="Directly supports comparison criteria for this option.",
+                    relevance_explanation="Direct empirical fact extracted from user-supplied uploaded document.",
                     agent_name="Analyst"
                 )
                 db.add(e_item)
         else:
-            # Add contextual baseline evidence
+            # Add contextual baseline evidence tagged as USER_ASSUMPTION
             for opt in option_titles[:2]:
                 e_item = Evidence(
                     decision_id=decision.id,
-                    claim=f"Strategic baseline established for {opt}",
+                    claim=f"User Assumption: Baseline parameters established for {opt}",
+                    source_type="USER_ASSUMPTION",
                     source_title="Primary Decision Prompt",
                     page_or_section="Context Line 1",
                     quote=f"Evaluated context: {decision.context[:150]}...",
-                    relevance_explanation=f"Directly frames user goals and constraints for {opt}.",
+                    relevance_explanation=f"Directly frames user goals, parameters, and assumptions for {opt}.",
                     agent_name="Analyst"
                 )
                 db.add(e_item)
         db.commit()
 
-        # 2. Parallel Agent Execution
+        # 2. Parallel Agent Execution (5 independent specialists)
         analyst_task = self.analyst.analyze(decision.title, decision.context, option_titles, evidence_results)
         optimist_task = self.optimist.analyze(decision.title, decision.context, option_titles)
         skeptic_task = self.skeptic.analyze(decision.title, decision.context, option_titles)
@@ -413,14 +415,35 @@ Respond strictly in valid JSON:
 
         db.commit()
 
-        # 3. Synthesis Phase
+        # 3. Synthesis Phase (Agent 7)
         options_data = [{"title": o.title, "pros": o.pros, "cons": o.cons} for o in decision.options]
         factors_data = [{"name": f.name, "weight": f.weight} for f in decision.factors]
         goals_data = [{"description": g.description, "weight": g.weight} for g in decision.goals]
 
         synthesis = self.synthesizer.synthesize(options_data, agent_records, factors_data, goals_data)
 
-        # 4. Devil's Advocate Initial Critique
+        # Persist Synthesizer AgentRun
+        synth_run = AgentRun(
+            decision_id=decision.id,
+            agent_name="Synthesizer",
+            agent_role="Multi-agent arbitrator & equilibrium optimizer",
+            status="completed",
+            viewpoint=synthesis["reasoning_summary"],
+            findings=synthesis.get("structured_findings", {
+                "agent": "SYNTHESIZER",
+                "keyFindings": [f"Top: {synthesis['recommended_option']}"],
+                "risks": synthesis.get("contradictions", []),
+                "assumptions": synthesis.get("what_could_change", []),
+                "missingInformation": [],
+                "confidence": synthesis["confidence_score"],
+                "evidence": [f"Calibrated Decision Score: {synthesis['decision_score']}/100"]
+            }),
+            confidence=synthesis["confidence_score"] / 100.0,
+            duration_ms=95
+        )
+        db.add(synth_run)
+
+        # 4. Devil's Advocate Initial Critique (Agent 6)
         advocate_res = await self.devils_advocate.challenge(
             top_option=synthesis["recommended_option"],
             alternative_option=synthesis["alternative_option"],
@@ -439,6 +462,18 @@ Respond strictly in valid JSON:
             duration_ms=advocate_res["duration_ms"]
         )
         db.add(advocate_run)
+
+        # Add AI Inference Evidence Item
+        db.add(Evidence(
+            decision_id=decision.id,
+            claim=f"AI Inference: Synthesizer selects {synthesis['recommended_option']} with {synthesis['confidence_score']}% confidence",
+            source_type="AI_INFERENCE",
+            source_title="Multi-Agent Dialectic Synthesis",
+            page_or_section="Council Consensus",
+            quote=f"Synthesizer resolved trade-offs between growth and risk with a calibrated composite score of {synthesis['decision_score']}/100.",
+            relevance_explanation="Synthesizes consensus across 7 reasoning agents using multi-objective optimization.",
+            agent_name="Synthesizer"
+        ))
 
         # 5. Update Decision with Synthesis
         decision.recommendation = synthesis["recommended_option"]

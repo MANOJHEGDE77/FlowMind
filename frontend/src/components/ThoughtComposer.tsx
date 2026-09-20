@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowRight, Plus, Shield, Sparkles, RefreshCw, X, History, ChevronRight, Wand2
+  ArrowRight, Plus, Shield, Sparkles, RefreshCw, X, History, ChevronRight, Wand2,
+  Compass, Zap, Rocket, Cpu, Globe, TrendingUp
 } from 'lucide-react';
 import { DecisionListItem } from '../types';
 import { api } from '../services/api';
+import { soundService } from '../services/sound';
+import { useTheme } from '../context/ThemeContext';
 
 interface ThoughtComposerProps {
   onSubmit: (data: {
@@ -31,6 +34,45 @@ const AVAILABLE_PRIORITIES = [
   'Mentorship & Team Density',
 ];
 
+const STRATEGIC_TEMPLATES = [
+  {
+    icon: '🚀',
+    label: 'Startup CTO vs BigTech Staff',
+    tag: 'Career Architecture',
+    dilemma: 'Should I join early-stage AI startup as founding CTO (high equity, high volatility) or accept BigTech Staff Engineer offer ($450k liquid comp, stability)?',
+    options: ['Join Early-Stage AI Startup as Founding CTO', 'Accept BigTech Staff Engineer Offer', 'Negotiate Partial Advisory Role at Startup while at BigTech'],
+    priorities: ['Long-Term Equity / Financial Upside', 'Autonomy & Cultural Agency', 'Career Velocity & Learning'],
+    constraints: ['Must achieve financial breakeven within 18 months', 'Cannot exceed 65 hours/week sustainably']
+  },
+  {
+    icon: '🤖',
+    label: 'Proprietary AI vs Cloud APIs',
+    tag: 'Technical Strategy',
+    dilemma: 'Should our team train and host proprietary fine-tuned open-weight models on private GPU clusters, or build directly on top of commercial LLM APIs?',
+    options: ['Host Proprietary Fine-Tuned Models on Private Cloud', 'Orchestrate Hybrid Commercial APIs (Anthropic/Gemini/OpenAI)', 'Multi-Model Fallback Gateway Architecture'],
+    priorities: ['Autonomy & Cultural Agency', 'Long-Term Equity / Financial Upside', 'Career Velocity & Learning'],
+    constraints: ['Strict zero data-retention security requirements', 'Engineering budget capped at $25k/month initially']
+  },
+  {
+    icon: '🌍',
+    label: 'SF Hub vs Remote Scaling',
+    tag: 'Organizational Design',
+    dilemma: 'Should our core leadership relocate to San Francisco to tap into local founder/investor density, or scale a 100% distributed remote global talent footprint?',
+    options: ['Full Core Team Relocation to San Francisco Hub', 'Maintain 100% Distributed Remote-First Footprint', 'Quarterly High-Intensity SF Residencies & Remote Hybrid'],
+    priorities: ['Mentorship & Team Density', 'Autonomy & Cultural Agency', 'Work-Life Sustainability'],
+    constraints: ['Family relocation timeline constraints', 'Operating burn rate cannot increase by more than 35%']
+  },
+  {
+    icon: '📈',
+    label: 'Series A vs Bootstrapped Profit',
+    tag: 'Venture & Capital',
+    dilemma: 'Should we raise a $6M Series A round at a 20% dilution to accelerate enterprise sales, or remain profitable and grow organically from customer revenue?',
+    options: ['Raise $6M Series A to Accelerate Market Capture', 'Bootstrap Organically Reinvesting 100% of Free Cashflow', 'Non-Dilutive Revenue-Based Financing Facility'],
+    priorities: ['Long-Term Equity / Financial Upside', 'Exit Optionality & Mobility', 'Autonomy & Cultural Agency'],
+    constraints: ['Retain absolute founder voting control', 'Runway must never drop below 12 months']
+  }
+];
+
 export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
   onSubmit,
   isAnalyzing,
@@ -40,6 +82,9 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
   recentDecisions,
   onSelectDecision,
 }) => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+
   const [dilemma, setDilemma] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const [stage, setStage] = useState<'prompt' | 'priorities' | 'options' | 'constraints'>('prompt');
@@ -139,8 +184,19 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
     }
   };
 
+  const handleApplyTemplate = (tmpl: typeof STRATEGIC_TEMPLATES[0]) => {
+    soundService.playChime();
+    setDilemma(tmpl.dilemma);
+    onInputChange(tmpl.dilemma);
+    setOptions(tmpl.options);
+    setSelectedPriorities(tmpl.priorities);
+    setConstraints(tmpl.constraints);
+    setStage('options');
+  };
+
   const handleLaunchSynthesis = async () => {
     if (!dilemma.trim()) return;
+    soundService.playSuccess();
 
     await onSubmit({
       title: dilemma.slice(0, 80) + (dilemma.length > 80 ? '...' : ''),
@@ -181,14 +237,18 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center justify-center space-x-2"
           >
-            <span className="text-[10px] font-mono tracking-widest text-cyan-400 font-bold uppercase">
+            <span className={`text-[10px] font-mono tracking-widest font-bold uppercase ${
+              isLight ? 'text-indigo-600' : 'text-cyan-400'
+            }`}>
               ✦ {dilemma ? 'THINKING ABOUT' : 'START A DECISION'}
             </span>
           </motion.div>
 
           {!dilemma && (
-            <p className="text-xs text-slate-400 font-sans max-w-md mx-auto">
-              Describe what you're trying to figure out in plain language. FlowMind will deconstruct it into a structured decision model.
+            <p className={`text-xs font-sans max-w-md mx-auto leading-relaxed ${
+              isLight ? 'text-slate-600' : 'text-slate-400'
+            }`}>
+              Describe what you're trying to figure out in plain language. FlowMind will deconstruct it into an interactive decision model.
             </p>
           )}
 
@@ -196,12 +256,16 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
           <div className="relative pt-2">
             {stage === 'prompt' ? (
               <div className="relative flex flex-col items-center w-full">
-                {/* Stylized Glassmorphic Thought Capsule */}
+                {/* Stylized Glassmorphic Thought Capsule (Adapts to Light & Dark) */}
                 <div
-                  className={`w-full max-w-xl mx-auto rounded-3xl p-5 sm:p-6 bg-slate-950/40 backdrop-blur-2xl border transition-all duration-300 relative group shadow-[0_0_50px_rgba(0,0,0,0.5)] ${
-                    isFocused
-                      ? 'border-cyan-400/40 shadow-[0_0_35px_rgba(0,240,255,0.12)] ring-1 ring-cyan-400/20'
-                      : 'border-white/10 hover:border-white/20'
+                  className={`w-full max-w-xl mx-auto rounded-3xl p-6 backdrop-blur-2xl border transition-all duration-300 relative group ${
+                    isLight
+                      ? isFocused
+                        ? 'bg-white/95 border-indigo-500/60 shadow-[0_0_40px_rgba(99,102,241,0.18),inset_0_1px_0_rgba(255,255,255,1)] ring-2 ring-indigo-400/20'
+                        : 'bg-white/90 border-slate-200/90 shadow-[0_16px_45px_rgba(15,23,42,0.06),inset_0_1px_0_rgba(255,255,255,1)] hover:border-slate-300'
+                      : isFocused
+                        ? 'bg-slate-950/75 border-cyan-400/50 shadow-[0_0_40px_rgba(0,240,255,0.2),inset_0_1px_0_rgba(255,255,255,0.25)] ring-1 ring-cyan-400/30'
+                        : 'bg-slate-950/75 border-white/[0.1] shadow-[0_24px_70px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.12)] hover:border-white/[0.2]'
                   }`}
                 >
                   <textarea
@@ -217,7 +281,11 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                       onFocusChange?.(false);
                     }}
                     placeholder="What are you looking to decide?"
-                    className="w-full bg-transparent text-base sm:text-xl font-sans font-normal text-white placeholder-slate-500/80 not-italic placeholder:not-italic focus:outline-none resize-none leading-relaxed text-center tracking-tight pb-1 transition-all"
+                    className={`w-full bg-transparent text-base sm:text-xl font-sans font-normal placeholder:not-italic focus:outline-none resize-none leading-relaxed text-center tracking-tight pb-1 transition-all ${
+                      isLight
+                        ? 'text-slate-900 placeholder-slate-400'
+                        : 'text-white placeholder-slate-500/80'
+                    }`}
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey && dilemma.trim()) {
@@ -228,56 +296,101 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                   />
 
                   {/* Micro Helper Bar inside capsule */}
-                  <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[10px] font-mono text-slate-500">
-                    <span className="flex items-center space-x-1 text-slate-400">
-                      <Sparkles className="w-3 h-3 text-cyan-400" />
-                      <span>Natural Language Decision Modeler</span>
+                  <div className={`flex items-center justify-between pt-3 border-t text-[10px] font-mono ${
+                    isLight ? 'border-slate-100 text-slate-500' : 'border-white/[0.06] text-slate-500'
+                  }`}>
+                    <span className={isLight ? 'text-slate-500' : 'text-slate-400'}>
+                      {dilemma ? `${dilemma.length} characters` : 'Type any dilemma or trade-off'}
                     </span>
-                    {dilemma ? (
-                      <span className="text-cyan-400/80">Press ↵ to structure</span>
-                    ) : (
-                      <span className="text-slate-500">Describe any ambition or choice</span>
+                    {dilemma && (
+                      <span className={`font-medium flex items-center space-x-1 ${
+                        isLight ? 'text-indigo-600' : 'text-cyan-400/90'
+                      }`}>
+                        <span>Press ↵ to structure</span>
+                        <kbd className={`px-1 py-0.5 rounded border text-[9px] ${
+                          isLight ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-cyan-950/60 border-cyan-500/30 text-cyan-300'
+                        }`}>↵</kbd>
+                      </span>
                     )}
                   </div>
                 </div>
 
-                {/* Quick Inspiration Pills when empty */}
+                {/* Curated Strategic Dilemma Starters */}
                 {!dilemma && (
-                  <div className="flex flex-wrap items-center justify-center gap-2 pt-3 text-[11px] font-mono">
-                    <span className="text-slate-500 text-[10px] mr-1">TRY:</span>
-                    {[
-                      'I want to become an AI engineer',
-                      'Startup Offer vs BigTech Principal',
-                      'Bootstrap SaaS vs Raise Seed Capital',
-                    ].map((sample, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => handleTextChange(sample)}
-                        className="px-2.5 py-1 rounded-full bg-slate-900/60 border border-slate-800/80 text-slate-400 hover:text-cyan-300 hover:border-cyan-500/30 transition-all cursor-pointer text-[10px]"
-                      >
-                        {sample}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* Dynamic concept extraction floating badges */}
-                {extractedConcepts.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center justify-center space-x-2 pt-2"
-                  >
-                    {extractedConcepts.map((kw, i) => (
-                      <span
-                        key={i}
-                        className="text-[9px] font-mono tracking-widest uppercase px-2 py-0.5 rounded-full bg-cyan-950/40 border border-cyan-500/20 text-cyan-300/80"
-                      >
-                        ✦ {kw}
+                  <div className="w-full max-w-xl mx-auto pt-5 space-y-3">
+                    <div className="flex items-center justify-between px-1 text-[10px] font-mono uppercase tracking-widest">
+                      <span className={`flex items-center space-x-1 font-semibold ${
+                        isLight ? 'text-indigo-600' : 'text-cyan-400/90'
+                      }`}>
+                        <Compass className="w-3 h-3" />
+                        <span>Curated Strategic Starters</span>
                       </span>
-                    ))}
-                  </motion.div>
+                      <span className="text-slate-500">1-Click Full Setup</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-left">
+                      {STRATEGIC_TEMPLATES.map((tmpl, idx) => (
+                        <motion.button
+                          key={idx}
+                          type="button"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => handleApplyTemplate(tmpl)}
+                          className={`p-3.5 rounded-2xl backdrop-blur-xl border transition-all text-left group ${
+                            isLight
+                              ? 'bg-white/90 hover:bg-white border-slate-200 hover:border-indigo-400/60 shadow-[0_4px_16px_rgba(15,23,42,0.04),inset_0_1px_0_rgba(255,255,255,1)]'
+                              : 'bg-slate-950/60 hover:bg-slate-900/80 border-white/[0.08] hover:border-cyan-400/40 shadow-[0_8px_24px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.08)]'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-base">{tmpl.icon}</span>
+                            <span className={`text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full border shadow-sm ${
+                              isLight
+                                ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                                : 'bg-cyan-950/70 text-cyan-300 border-cyan-500/25'
+                            }`}>
+                              {tmpl.tag}
+                            </span>
+                          </div>
+                          <h4 className={`text-xs font-semibold transition-colors line-clamp-1 ${
+                            isLight
+                              ? 'text-slate-900 group-hover:text-indigo-600'
+                              : 'text-slate-200 group-hover:text-cyan-300'
+                          }`}>
+                            {tmpl.label}
+                          </h4>
+                          <p className={`text-[10px] line-clamp-1 mt-0.5 font-sans ${
+                            isLight ? 'text-slate-500' : 'text-slate-400'
+                          }`}>
+                            {tmpl.options.slice(0, 2).join(' vs ')}
+                          </p>
+                        </motion.button>
+                      ))}
+                    </div>
+
+                    {/* Minimal Quick Queries */}
+                    <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1 text-[10px] font-mono">
+                      <span className="text-slate-500 mr-1">QUICK:</span>
+                      {[
+                        'Accelerated MS Degree vs Staff Engineer',
+                        'Accept Early Acquisition Offer vs Continue Scaling',
+                        'Relocate to Singapore Hub vs Expand in Bangalore',
+                      ].map((sample, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleTextChange(sample)}
+                          className={`px-2.5 py-0.5 rounded-full border transition-all cursor-pointer text-[10px] ${
+                            isLight
+                              ? 'bg-white border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-300 shadow-sm'
+                              : 'bg-slate-900/40 border-slate-800/80 text-slate-400 hover:text-cyan-300 hover:border-cyan-500/30'
+                          }`}
+                        >
+                          {sample}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 )}
 
                 {/* Action triggers below input */}
@@ -346,12 +459,16 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                 animate={{ opacity: 1, scale: 1 }}
                 className="space-y-2"
               >
-                <h1 className="text-2xl sm:text-3xl font-sans font-medium text-white max-w-xl mx-auto not-italic leading-snug drop-shadow-sm">
+                <h1 className={`text-2xl sm:text-3xl font-sans font-medium max-w-xl mx-auto not-italic leading-snug drop-shadow-sm ${
+                  isLight ? 'text-slate-900' : 'text-white'
+                }`}>
                   "{dilemma}"
                 </h1>
                 <button
                   onClick={() => setStage('prompt')}
-                  className="text-[10px] font-mono text-slate-400 hover:text-cyan-300 underline underline-offset-4 decoration-slate-700"
+                  className={`text-[10px] font-mono underline underline-offset-4 ${
+                    isLight ? 'text-indigo-600 hover:text-indigo-800 decoration-indigo-200' : 'text-slate-400 hover:text-cyan-300 decoration-slate-700'
+                  }`}
                 >
                   Edit thought
                 </button>
@@ -368,10 +485,12 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
             className="pt-2 space-y-4"
           >
             <div className="space-y-1">
-              <span className="text-[10px] font-mono uppercase text-cyan-400 tracking-widest font-semibold block">
+              <span className={`text-[10px] font-mono uppercase tracking-widest font-semibold block ${
+                isLight ? 'text-indigo-600' : 'text-cyan-400'
+              }`}>
                 WHAT MATTERS MOST TO YOU?
               </span>
-              <p className="text-[11px] font-mono text-slate-400">
+              <p className={`text-[11px] font-mono ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                 Selected priorities will form topological axes in your decision space
               </p>
             </div>
@@ -387,8 +506,12 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                     onClick={() => togglePriority(p)}
                     className={`px-3.5 py-1.5 rounded-full text-xs font-mono transition-all flex items-center space-x-1.5 ${
                       isSelected
-                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/60 shadow-[0_0_12px_rgba(0,240,255,0.2)] font-medium'
-                        : 'bg-[var(--canvas-subtle)] text-slate-400 border border-[var(--line-color)] hover:border-slate-500'
+                        ? isLight
+                          ? 'bg-indigo-50 text-indigo-700 border border-indigo-300 shadow-sm font-semibold'
+                          : 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/60 shadow-[0_0_12px_rgba(0,240,255,0.2)] font-medium'
+                        : isLight
+                          ? 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300 shadow-sm'
+                          : 'bg-[var(--canvas-subtle)] text-slate-400 border border-[var(--line-color)] hover:border-slate-500'
                     }`}
                   >
                     <span>{isSelected ? '✓' : '+'}</span>
@@ -401,7 +524,11 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
             <div className="pt-3 flex justify-center space-x-3">
               <button
                 onClick={() => setStage('options')}
-                className="px-4 py-1.5 rounded-full bg-[var(--canvas-subtle)] hover:bg-cyan-400 hover:text-slate-950 text-xs font-mono text-slate-300 border border-[var(--line-color)] transition-all flex items-center space-x-1.5"
+                className={`px-4 py-1.5 rounded-full text-xs font-mono transition-all flex items-center space-x-1.5 ${
+                  isLight
+                    ? 'bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 shadow-sm'
+                    : 'bg-[var(--canvas-subtle)] hover:bg-cyan-400 hover:text-slate-950 text-slate-300 border border-[var(--line-color)]'
+                }`}
               >
                 <span>Define Options</span>
                 <ArrowRight className="w-3 h-3" />
@@ -418,23 +545,29 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
             className="pt-2 space-y-4"
           >
             <div className="space-y-1">
-              <span className="text-[10px] font-mono uppercase text-cyan-400 tracking-widest font-semibold block">
+              <span className={`text-[10px] font-mono uppercase tracking-widest font-semibold block ${
+                isLight ? 'text-indigo-600' : 'text-cyan-400'
+              }`}>
                 COMPETING PATHWAYS UNDER EVALUATION
               </span>
-              <p className="text-[11px] font-mono text-slate-400">
+              <p className={`text-[11px] font-mono ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                 Identify or select candidate paths for multi-agent stress testing
               </p>
             </div>
 
             {/* Smart AI Option Suggester Banner */}
-            <div className="p-3.5 rounded-2xl bg-cyan-950/40 border border-cyan-500/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-left max-w-lg mx-auto">
+            <div className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 text-left max-w-lg mx-auto ${
+              isLight
+                ? 'bg-indigo-50/70 border-indigo-200/80 shadow-sm'
+                : 'bg-cyan-950/40 border-cyan-500/30'
+            }`}>
               <div className="flex items-start space-x-2.5">
-                <Sparkles className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+                <Sparkles className={`w-4 h-4 shrink-0 mt-0.5 ${isLight ? 'text-indigo-600' : 'text-cyan-400'}`} />
                 <div className="space-y-0.5">
-                  <span className="text-xs font-mono font-bold text-cyan-200 block">
+                  <span className={`text-xs font-mono font-bold block ${isLight ? 'text-indigo-950' : 'text-cyan-200'}`}>
                     Unsure what pathways to define?
                   </span>
-                  <p className="text-[11px] text-slate-400 font-sans">
+                  <p className={`text-[11px] font-sans ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                     FlowMind can automatically propose realistic, competing routes for your ambition.
                   </p>
                 </div>
@@ -443,7 +576,11 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                 type="button"
                 onClick={handleFetchSuggestedOptions}
                 disabled={isSuggestingOptions}
-                className="px-3.5 py-1.5 rounded-full bg-cyan-400 hover:bg-cyan-300 text-slate-950 text-xs font-mono font-semibold transition-all flex items-center space-x-1.5 shrink-0 cursor-pointer shadow-sm"
+                className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-semibold transition-all flex items-center space-x-1.5 shrink-0 cursor-pointer shadow-sm ${
+                  isLight
+                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                    : 'bg-cyan-400 hover:bg-cyan-300 text-slate-950'
+                }`}
               >
                 {isSuggestingOptions ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
                 <span>{isSuggestingOptions ? 'Mapping...' : '✨ Suggest Pathways'}</span>
@@ -457,23 +594,27 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                   return (
                     <div
                       key={i}
-                      className="px-4 py-2 rounded-xl bg-[var(--canvas-subtle)] border border-cyan-500/30 text-xs font-mono text-white flex flex-col items-start space-y-1 shadow-sm text-left w-full"
+                      className={`px-4 py-2 rounded-xl text-xs font-mono flex flex-col items-start space-y-1 text-left w-full border ${
+                        isLight
+                          ? 'bg-white border-slate-200/90 text-slate-900 shadow-sm'
+                          : 'bg-[var(--canvas-subtle)] border-cyan-500/30 text-white'
+                      }`}
                     >
                       <div className="flex items-center justify-between w-full">
                         <div className="flex items-center space-x-2">
                           <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-                          <span className="font-semibold text-xs text-white">{opt}</span>
+                          <span className={`font-semibold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>{opt}</span>
                         </div>
                         <button
                           onClick={() => setOptions(options.filter((_, idx) => idx !== i))}
-                          className="text-slate-400 hover:text-rose-400 text-sm ml-2"
+                          className="text-slate-400 hover:text-rose-500 text-sm ml-2"
                           title="Remove option"
                         >
                           ×
                         </button>
                       </div>
                       {desc && (
-                        <p className="text-[11px] text-slate-400 font-sans pl-4 leading-relaxed">
+                        <p className={`text-[11px] font-sans pl-4 leading-relaxed ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                           {desc}
                         </p>
                       )}
@@ -482,7 +623,7 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                 })
               ) : autoExtractedOptions.length > 0 ? (
                 <div className="space-y-2 w-full text-center">
-                  <span className="text-[10px] font-mono text-cyan-400/80 uppercase tracking-wider block">
+                  <span className={`text-[10px] font-mono uppercase tracking-wider block ${isLight ? 'text-indigo-600' : 'text-cyan-400/80'}`}>
                     ⚡ Auto-detected from your dilemma:
                   </span>
                   <div className="flex flex-wrap justify-center gap-2">
@@ -491,7 +632,11 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                         key={i}
                         type="button"
                         onClick={() => setOptions([...options, opt])}
-                        className="px-3 py-1.5 rounded-full bg-cyan-500/10 hover:bg-cyan-500/25 border border-cyan-400/30 text-xs font-mono text-cyan-200 flex items-center space-x-2 transition-colors cursor-pointer"
+                        className={`px-3 py-1.5 rounded-full border text-xs font-mono flex items-center space-x-2 transition-colors cursor-pointer ${
+                          isLight
+                            ? 'bg-indigo-50 hover:bg-indigo-100/70 border-indigo-200 text-indigo-800'
+                            : 'bg-cyan-500/10 hover:bg-cyan-500/25 border-cyan-400/30 text-cyan-200'
+                        }`}
                         title="Click to add as confirmed option"
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
@@ -520,11 +665,17 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                     handleAddOption();
                   }
                 }}
-                className="bg-[var(--canvas-subtle)] border border-[var(--line-color)] rounded-full px-4 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 transition-colors flex-1 font-mono"
+                className={`border rounded-full px-4 py-1.5 text-xs focus:outline-none transition-colors flex-1 font-mono ${
+                  isLight
+                    ? 'bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:border-indigo-500 shadow-sm'
+                    : 'bg-[var(--canvas-subtle)] border-[var(--line-color)] text-white placeholder-slate-500 focus:border-cyan-400'
+                }`}
               />
               <button
                 onClick={handleAddOption}
-                className="px-3.5 py-1.5 bg-cyan-400 text-slate-950 font-semibold rounded-full text-xs font-mono cursor-pointer"
+                className={`px-3.5 py-1.5 font-semibold rounded-full text-xs font-mono cursor-pointer ${
+                  isLight ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-cyan-400 text-slate-950'
+                }`}
               >
                 Add
               </button>
@@ -550,10 +701,12 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
             className="pt-2 space-y-4"
           >
             <div className="space-y-1">
-              <span className="text-[10px] font-mono uppercase text-cyan-400 tracking-widest font-semibold block">
+              <span className={`text-[10px] font-mono uppercase tracking-widest font-semibold block ${
+                isLight ? 'text-indigo-600' : 'text-cyan-400'
+              }`}>
                 NON-NEGOTIABLES & DEADLINES (OPTIONAL)
               </span>
-              <p className="text-[11px] font-mono text-slate-400">
+              <p className={`text-[11px] font-mono ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                 Any hard constraints, budget limits, or deadlines that must not be violated
               </p>
             </div>
@@ -563,13 +716,17 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                 constraints.map((c, i) => (
                   <span
                     key={i}
-                    className="px-3.5 py-1.5 rounded-full bg-[var(--canvas-subtle)] border border-amber-500/30 text-xs font-mono text-slate-200 flex items-center space-x-1.5"
+                    className={`px-3.5 py-1.5 rounded-full border text-xs font-mono flex items-center space-x-1.5 ${
+                      isLight
+                        ? 'bg-white border-amber-300 text-slate-800 shadow-sm'
+                        : 'bg-[var(--canvas-subtle)] border-amber-500/30 text-slate-200'
+                    }`}
                   >
-                    <Shield className="w-3 h-3 text-amber-400" />
+                    <Shield className="w-3 h-3 text-amber-500" />
                     <span>{c}</span>
                     <button
                       onClick={() => setConstraints(constraints.filter((_, idx) => idx !== i))}
-                      className="text-slate-400 hover:text-rose-400"
+                      className="text-slate-400 hover:text-rose-500"
                     >
                       ×
                     </button>
@@ -594,7 +751,11 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                     handleAddConstraint();
                   }
                 }}
-                className="bg-[var(--canvas-subtle)] border border-[var(--line-color)] rounded-full px-4 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-colors flex-1"
+                className={`border rounded-full px-4 py-1.5 text-xs focus:outline-none transition-colors flex-1 ${
+                  isLight
+                    ? 'bg-white border-slate-200 text-slate-950 placeholder-slate-400 focus:border-amber-500 shadow-sm'
+                    : 'bg-[var(--canvas-subtle)] border-[var(--line-color)] text-white placeholder-slate-500 focus:border-amber-400'
+                }`}
               />
               <button
                 onClick={handleAddConstraint}
@@ -646,7 +807,11 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
                   key={i}
                   type="button"
                   onClick={() => handleTextChange(seed)}
-                  className="text-[11px] font-mono text-slate-400 hover:text-cyan-300 transition-colors underline underline-offset-4 decoration-slate-800 hover:decoration-cyan-400"
+                  className={`text-[11px] font-mono transition-colors underline underline-offset-4 ${
+                    isLight
+                      ? 'text-slate-600 hover:text-indigo-600 decoration-slate-300 hover:decoration-indigo-500'
+                      : 'text-slate-400 hover:text-cyan-300 decoration-slate-800 hover:decoration-cyan-400'
+                  }`}
                 >
                   {seed}
                 </button>
@@ -655,74 +820,6 @@ export const ThoughtComposer: React.FC<ThoughtComposerProps> = ({
           </div>
         )}
       </div>
-
-      {/* Spatially Positioned Floating Memory Fragment: "RESUME THINKING" */}
-      {latestMemory && (
-        <div className="absolute bottom-20 inset-x-0 flex justify-center pointer-events-none">
-          <div
-            onMouseEnter={() => setHoveredMemory(latestMemory)}
-            onMouseLeave={() => setHoveredMemory(null)}
-            className="pointer-events-auto relative group"
-          >
-            <div className="flex items-center space-x-3 px-4 py-2 rounded-full bg-[var(--surface-blur)] backdrop-blur-xl border border-[var(--line-color)] hover:border-cyan-500/40 text-[11px] font-mono text-slate-400 hover:text-white transition-all cursor-pointer shadow-lg shadow-black/40">
-              <span className="text-cyan-400 flex items-center space-x-1 font-bold">
-                <History className="w-3 h-3" />
-                <span>RESUME THINKING:</span>
-              </span>
-              <span className="truncate max-w-[220px] text-slate-300">
-                {latestMemory.title}
-              </span>
-              <span className="text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded-full border border-cyan-500/30 text-[10px] font-bold">
-                {latestMemory.confidence_score}%
-              </span>
-            </div>
-
-            {/* Hover preview card: Memory Fragment details */}
-            <AnimatePresence>
-              {hoveredMemory && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.97 }}
-                  animate={{ opacity: 1, y: -8, scale: 1 }}
-                  exit={{ opacity: 0, y: 4, scale: 0.98 }}
-                  transition={{ duration: 0.16 }}
-                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-80 p-4 rounded-2xl bg-[var(--surface-blur)] backdrop-blur-2xl border border-cyan-500/30 shadow-2xl space-y-3 pointer-events-auto"
-                >
-                  <div className="flex items-center justify-between border-b border-[var(--line-color)] pb-2">
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-cyan-400 font-bold">
-                      ✦ MEMORY FRAGMENT
-                    </span>
-                    <span className="text-[10px] font-mono text-emerald-400">
-                      {latestMemory.confidence_score}% Signal
-                    </span>
-                  </div>
-
-                  <div className="space-y-1">
-                    <span className="text-[9px] font-mono uppercase text-slate-500 block">
-                      Last Dilemma
-                    </span>
-                    <p className="text-xs font-sans text-white not-italic">
-                      "{latestMemory.title}"
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="text-[10px] font-mono text-slate-400">
-                      {latestMemory.options_count} Pathways Evaluated
-                    </span>
-                    <button
-                      onClick={() => onSelectDecision(latestMemory.id)}
-                      className="px-3 py-1 rounded-full bg-cyan-400 text-slate-950 text-[10px] font-mono font-bold hover:bg-cyan-300 transition-colors flex items-center space-x-1"
-                    >
-                      <span>Continue</span>
-                      <ChevronRight className="w-3 h-3" />
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

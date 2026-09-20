@@ -91,19 +91,29 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
               key={item.id}
               className="bg-space-950/80 border border-space-800 hover:border-emerald-500/40 rounded-xl p-4 transition-all space-y-2.5"
             >
-              {/* Claim */}
+              {/* Claim & Provenance Badge */}
               <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="text-[10px] font-mono text-emerald-400 uppercase bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">
-                    CLAIM
-                  </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  {item.source_type === 'FACT_FROM_DOCUMENT' ? (
+                    <span className="text-[9px] font-mono font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full flex items-center space-x-1">
+                      <span>📄 FACT FROM DOCUMENT</span>
+                    </span>
+                  ) : item.source_type === 'AI_INFERENCE' ? (
+                    <span className="text-[9px] font-mono font-bold uppercase bg-purple-500/20 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded-full flex items-center space-x-1">
+                      <span>⚡ AI INFERENCE</span>
+                    </span>
+                  ) : (
+                    <span className="text-[9px] font-mono font-bold uppercase bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 px-2 py-0.5 rounded-full flex items-center space-x-1">
+                      <span>💭 USER ASSUMPTION</span>
+                    </span>
+                  )}
                   <span className="text-xs font-semibold text-white">
                     {item.claim}
                   </span>
                 </div>
               </div>
 
-              {/* Source & Page */}
+              {/* Source & Page Provenance */}
               <div className="flex items-center space-x-2 text-[11px] text-slate-400 font-mono">
                 <FileText className="w-3.5 h-3.5 text-emerald-400" />
                 <span className="text-slate-300 font-medium truncate">
@@ -112,7 +122,7 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({
                 {item.page_or_section && (
                   <>
                     <span>•</span>
-                    <span className="text-emerald-400">{item.page_or_section}</span>
+                    <span className="text-emerald-400 font-semibold">{item.page_or_section}</span>
                   </>
                 )}
                 <span>•</span>

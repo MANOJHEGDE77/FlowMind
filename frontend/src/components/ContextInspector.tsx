@@ -60,16 +60,16 @@ export const ContextInspector: React.FC<ContextInspectorProps> = ({
           <div className="space-y-4">
             {nodeData.pros && nodeData.pros.length > 0 && (
               <div className="space-y-1.5">
-                <span className="text-[10px] text-emerald-400 uppercase tracking-wider font-semibold block">
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 uppercase tracking-wider font-semibold block">
                   ✦ STRATEGIC ADVANTAGES (PROS)
                 </span>
                 <div className="space-y-1.5">
                   {nodeData.pros.map((p: string, idx: number) => (
                     <div
                       key={idx}
-                      className="p-2.5 rounded-xl bg-emerald-950/20 border border-emerald-500/20 text-emerald-300/90 text-xs font-sans flex items-start space-x-2"
+                      className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs font-sans flex items-start space-x-2"
                     >
-                      <span className="text-emerald-400 font-bold shrink-0 mt-0.5">✓</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-bold shrink-0 mt-0.5">✓</span>
                       <span>{p}</span>
                     </div>
                   ))}
@@ -79,16 +79,16 @@ export const ContextInspector: React.FC<ContextInspectorProps> = ({
 
             {nodeData.cons && nodeData.cons.length > 0 && (
               <div className="space-y-1.5">
-                <span className="text-[10px] text-rose-400 uppercase tracking-wider font-semibold block">
+                <span className="text-[10px] text-rose-600 dark:text-rose-400 uppercase tracking-wider font-semibold block">
                   ▲ RISKS & BOTTLENECKS (CONS)
                 </span>
                 <div className="space-y-1.5">
                   {nodeData.cons.map((c: string, idx: number) => (
                     <div
                       key={idx}
-                      className="p-2.5 rounded-xl bg-rose-950/20 border border-rose-500/20 text-rose-300/90 text-xs font-sans flex items-start space-x-2"
+                      className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-800 dark:text-rose-300 text-xs font-sans flex items-start space-x-2"
                     >
-                      <span className="text-rose-400 font-bold shrink-0 mt-0.5">✕</span>
+                      <span className="text-rose-600 dark:text-rose-400 font-bold shrink-0 mt-0.5">✕</span>
                       <span>{c}</span>
                     </div>
                   ))}
@@ -115,37 +115,60 @@ export const ContextInspector: React.FC<ContextInspectorProps> = ({
           </div>
         )}
 
-        {/* Grounded Evidence Citations */}
-        <div className="space-y-2.5">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] text-[var(--text-faint)] uppercase tracking-wider">
-              GROUNDED EVIDENCE EXCERPTS
+        {/* Grounded Evidence Citations (RAG Provenance) */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between border-b border-[var(--line-color)] pb-2">
+            <span className="text-[10px] text-cyan-400 font-mono font-bold uppercase tracking-wider">
+              GROUNDED EVIDENCE PROVENANCE
             </span>
-            <span className="text-emerald-400 text-[10px]">{evidenceItems.length} Sources</span>
+            <span className="text-emerald-400 text-[10px] font-mono">{evidenceItems.length} Citations Linked</span>
           </div>
 
-          <div className="space-y-2">
-            {evidenceItems.slice(0, 3).map((item) => (
+          <div className="space-y-3">
+            {evidenceItems.slice(0, 4).map((item) => (
               <div
                 key={item.id}
-                className="p-3.5 rounded-2xl bg-[var(--canvas-subtle)] border border-[var(--line-color)] space-y-1.5 font-sans"
+                className="p-3.5 rounded-2xl bg-[var(--canvas-subtle)] border border-white/[0.08] space-y-2 font-mono text-[11px]"
               >
-                <div className="flex items-center justify-between text-[11px] font-mono">
-                  <span className="font-semibold text-[var(--text-vivid)] truncate max-w-[200px]">
-                    {item.claim}
+                {/* SOURCE */}
+                <div>
+                  <span className="text-[9px] text-slate-500 uppercase font-bold tracking-wider block">
+                    SOURCE
                   </span>
-                  <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                    {item.page_or_section || 'Page 1'}
-                  </span>
+                  <div className="flex items-center justify-between text-white font-medium">
+                    <span className="truncate max-w-[240px] text-xs flex items-center space-x-1.5">
+                      <FileText className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                      <span>{item.source_title || 'Uploaded Document'}</span>
+                    </span>
+                    <span className="text-[10px] text-emerald-400 px-1.5 py-0.5 rounded bg-emerald-500/10">
+                      {item.page_or_section || 'Verified Excerpt'}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="p-2 rounded-xl bg-black/20 border-l-2 border-emerald-400 text-[11px] text-[var(--text-body)] italic">
-                  "{item.quote}"
+                {/* EVIDENCE */}
+                <div>
+                  <span className="text-[9px] text-slate-500 uppercase font-bold tracking-wider block mb-0.5">
+                    EVIDENCE
+                  </span>
+                  <div className="p-2.5 rounded-xl bg-black/40 border-l-2 border-emerald-400 text-[11px] text-slate-200 font-sans italic leading-relaxed">
+                    "{item.quote || item.claim}"
+                  </div>
                 </div>
 
-                <div className="text-[10px] font-mono text-[var(--text-faint)] pt-1 flex items-center justify-between">
-                  <span>Source: {item.source_title}</span>
-                  <span>Agent: {item.agent_name}</span>
+                {/* USED BY */}
+                <div className="pt-1 flex items-center justify-between">
+                  <span className="text-[9px] text-slate-500 uppercase font-bold tracking-wider">
+                    USED BY
+                  </span>
+                  <div className="flex items-center space-x-1.5">
+                    <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/25 text-cyan-300 text-[10px] font-bold">
+                      {item.agent_name || 'Analyst'}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/25 text-rose-300 text-[10px]">
+                      Skeptic
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}

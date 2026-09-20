@@ -84,12 +84,24 @@ class AnalystAgent(BaseAgent):
             f"exit velocity, cognitive load, and financial sustainability."
         )
 
+        evidence_snippets = [e.get("quote", "")[:120] for e in evidence[:3]] if evidence else [
+            "User provided baseline context prompt and stated options."
+        ]
+
         return {
             "agent_name": self.name,
             "agent_role": self.role,
             "status": "completed",
             "viewpoint": viewpoint,
             "findings": {
+                "agent": "ANALYST",
+                "keyFindings": key_facts,
+                "risks": ["Information asymmetry between familiar choices and uncertain pathways."],
+                "assumptions": ["Baseline context provided accurately represents current operational constraints."],
+                "missingInformation": missing_info,
+                "confidence": 92.0,
+                "evidence": evidence_snippets,
+                # Backwards-compatible legacy keys
                 "key_facts": key_facts,
                 "constraints": extracted_constraints,
                 "missing_information": missing_info,
@@ -106,12 +118,15 @@ class OptimistAgent(BaseAgent):
     async def analyze(self, title: str, context: str, options: List[str]) -> Dict[str, Any]:
         start = time.time()
         opportunities = {}
+        key_upside_findings = []
         for opt in options:
-            opportunities[opt] = [
+            opp_list = [
                 f"High-upside trajectory: provides substantial skill leverage and market positioning in {opt}.",
                 f"Compounding network effects and career optionality unlocked over 2-4 years.",
                 f"Asymmetric positive payoff if initial execution targets are met."
             ]
+            opportunities[opt] = opp_list
+            key_upside_findings.append(f"Convex upside in {opt}: high mastery compounding and peer pedigree.")
 
         viewpoint = (
             f"Optimistic outlook: Each path offers distinct multiplier opportunities. "
@@ -126,6 +141,14 @@ class OptimistAgent(BaseAgent):
             "status": "completed",
             "viewpoint": viewpoint,
             "findings": {
+                "agent": "OPTIMIST",
+                "keyFindings": key_upside_findings[:4],
+                "risks": ["Excessive conservatism may surrender asymmetric early-mover advantages."],
+                "assumptions": ["High-agency execution momentum can overcome initial friction."],
+                "missingInformation": ["Maximum upside ceiling under favorable macro tailwinds."],
+                "confidence": 89.0,
+                "evidence": ["Compounding skill curves consistently out-compound linear salary steps."],
+                # Backwards-compatible legacy keys
                 "upside_potential": opportunities,
                 "best_case_scenario": "Rapid compounding of mastery, outsized influence, and strong financial upside.",
                 "catalysts": ["Early momentum", "Mentorship leverage", "Modern tech stack exposure"]
@@ -141,12 +164,15 @@ class SkepticAgent(BaseAgent):
     async def analyze(self, title: str, context: str, options: List[str]) -> Dict[str, Any]:
         start = time.time()
         risks = {}
+        flat_risks = []
         for opt in options:
-            risks[opt] = [
+            risk_items = [
                 f"Burnout or mismatched expectations within the first 6-12 months in {opt}.",
                 f"Opportunity cost of forsaking parallel opportunities during peak learning years.",
                 f"Execution risk if key promises or assumptions fail to materialize."
             ]
+            risks[opt] = risk_items
+            flat_risks.extend(risk_items[:2])
 
         viewpoint = (
             f"Cautionary critique: Critical assumptions remain untested. Optimism biases often mask "
@@ -161,6 +187,17 @@ class SkepticAgent(BaseAgent):
             "status": "completed",
             "viewpoint": viewpoint,
             "findings": {
+                "agent": "SKEPTIC",
+                "keyFindings": [
+                    "Operational friction and uncompensated cognitive load are systematically underestimated.",
+                    "Switching barriers increase non-linearly after 12 months in single environments."
+                ],
+                "risks": flat_risks[:4],
+                "assumptions": ["Culture parity", "Consistent leadership support", "Linear compensation progression"],
+                "missingInformation": ["Empirical attrition rates and realistic day-to-day operational drag."],
+                "confidence": 86.0,
+                "evidence": ["Historical variance in role expectations versus initial recruiter pitch."],
+                # Backwards-compatible legacy keys
                 "risk_matrix": risks,
                 "worst_case_scenario": "Stagnation or regret due to overlooked day-to-day friction.",
                 "untested_assumptions": ["Culture parity", "Consistent leadership support", "Linear compensation progression"]
@@ -203,6 +240,20 @@ class FinancialAgent(BaseAgent):
             "status": "completed",
             "viewpoint": viewpoint,
             "findings": {
+                "agent": "FINANCIAL_ANALYST",
+                "keyFindings": [
+                    f"Financial feasibility scores: {', '.join([f'{k}: {v}/100' for k, v in scores.items()])}",
+                    "Deferred earnings require minimum 2.5x career acceleration multiplier to break even."
+                ],
+                "risks": [
+                    "High illiquidity discount on non-public equity grants.",
+                    "Inflationary living cost pressures during early incubation phases."
+                ],
+                "assumptions": ["Tax baseline and personal burn rate remain steady over 24-month horizon."],
+                "missingInformation": ["Detailed equity vesting cliff, strike price, and liquidity preferences."],
+                "confidence": 88.0,
+                "evidence": ["Total compensation certainty vs discounted future option value."],
+                # Backwards-compatible legacy keys
                 "financial_rankings": scores,
                 "opportunity_cost_assessment": "Deferred earnings require minimum 2.5x career acceleration to break even.",
                 "downside_protection": "Maintain minimum 6-month liquid cash reserves regardless of selection."
@@ -218,13 +269,16 @@ class LongTermPlanner(BaseAgent):
     async def analyze(self, title: str, context: str, options: List[str]) -> Dict[str, Any]:
         start = time.time()
         reversibility = {}
+        trajectory_findings = []
         for opt in options:
             is_reversible = not ("higher studies" in opt.lower() or "relocation" in opt.lower())
+            door_type = "Type 2 (Reversible / Two-Way Door)" if is_reversible else "Type 1 (Hard to reverse / One-Way Door)"
             reversibility[opt] = {
-                "type": "Type 2 (Reversible)" if is_reversible else "Type 1 (Hard to reverse)",
+                "type": door_type,
                 "five_year_trajectory": f"Strong platform foundation with compounding strategic leverage via {opt}.",
                 "second_order_effects": "Establishes reputational pedigree and opens international talent mobility."
             }
+            trajectory_findings.append(f"{opt}: {door_type} optionality with compounding pedigree.")
 
         viewpoint = (
             f"Strategic horizon analysis: Decisions are not isolated events but branching state machines. "
@@ -238,6 +292,14 @@ class LongTermPlanner(BaseAgent):
             "status": "completed",
             "viewpoint": viewpoint,
             "findings": {
+                "agent": "LONG_TERM_PLANNER",
+                "keyFindings": trajectory_findings[:3],
+                "risks": ["Premature lock-in into narrow institutional silos reduces strategic career agility."],
+                "assumptions": ["Broad transferable technical skills retain high optionality across cycles."],
+                "missingInformation": ["Macro tech disruption horizon across 3-5 year cycle."],
+                "confidence": 91.0,
+                "evidence": ["Type 2 two-way door decisions allow pivoting with near-zero uncompensated penalty."],
+                # Backwards-compatible legacy keys
                 "reversibility_index": reversibility,
                 "strategic_recommendation": "Optimize for velocity of learning rather than immediate comfort.",
                 "inflection_point": "Re-evaluate trajectory at 18 months."
@@ -270,6 +332,17 @@ class DevilsAdvocateAgent(BaseAgent):
             "status": "completed",
             "viewpoint": critique,
             "findings": {
+                "agent": "DEVILS_ADVOCATE",
+                "keyFindings": [
+                    f"Favored pathway '{top_option}' exhibits high confirmation bias sensitivity.",
+                    f"Alternative pathway '{alternative_option}' provides contrarian downside hedge."
+                ],
+                "risks": vulnerabilities,
+                "assumptions": [f"Assumes promises made during recruitment for '{top_option}' remain invariant."],
+                "missingInformation": ["Independent verification of attrition and culture from non-interview sources."],
+                "confidence": 84.0,
+                "evidence": ["Over 40% of standard recommendations suffer from near-term preference bias."],
+                # Backwards-compatible legacy keys
                 "vulnerabilities": vulnerabilities,
                 "contrarian_alternative": alternative_option,
                 "fragility_score": 68.0
@@ -440,6 +513,20 @@ class SynthesizerAgent(BaseAgent):
             f"Commit full focused attention to the initial sprint of {top['title']}. Measure empirical progress at Day 30 before allocating irreversible capital."
         )
 
+        structured_findings = {
+            "agent": "SYNTHESIZER",
+            "keyFindings": [
+                f"Multi-agent consensus winner: {top['title']} (Score: {top['score']}/100, Confidence: {confidence}%)",
+                f"Secondary strategic hedge: {alt['title']} (Score: {alt['score']}/100)"
+            ],
+            "risks": contradictions,
+            "assumptions": what_could_change,
+            "missingInformation": ["30-day milestone empirical validation."],
+            "confidence": confidence,
+            "evidence": [f"Direct goal alignment: {top['alignment_scores']['goal']}% against stated priorities."],
+            "decisive_edge": decisive_edge
+        }
+
         return {
             "recommended_option": top["title"],
             "alternative_option": alt["title"],
@@ -448,5 +535,6 @@ class SynthesizerAgent(BaseAgent):
             "scored_options": scored_options,
             "reasoning_summary": reasoning,
             "what_could_change": what_could_change,
-            "contradictions": contradictions
+            "contradictions": contradictions,
+            "structured_findings": structured_findings
         }

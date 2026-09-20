@@ -98,6 +98,7 @@ class EvidenceResponse(BaseModel):
     id: int
     decision_id: int
     claim: str
+    source_type: str = "FACT_FROM_DOCUMENT"  # FACT_FROM_DOCUMENT, AI_INFERENCE, USER_ASSUMPTION
     source_document_id: Optional[int] = None
     source_title: str
     page_or_section: Optional[str] = None
@@ -141,6 +142,11 @@ class DecisionQuickPrompt(BaseModel):
 class OutcomeCreate(BaseModel):
     chosen_option_title: str
     actual_outcome_notes: Optional[str] = None
+    expected_outcome: Optional[str] = None
+    what_went_right: List[str] = []
+    what_went_wrong: List[str] = []
+    incorrect_assumptions: List[str] = []
+    lessons_learned: Optional[str] = None
     satisfaction_score: int = Field(5, ge=1, le=10)
     ai_accuracy_rating: int = Field(5, ge=1, le=10)
 
@@ -149,6 +155,11 @@ class OutcomeResponse(BaseModel):
     decision_id: int
     chosen_option_title: str
     actual_outcome_notes: Optional[str] = None
+    expected_outcome: Optional[str] = None
+    what_went_right: List[str] = []
+    what_went_wrong: List[str] = []
+    incorrect_assumptions: List[str] = []
+    lessons_learned: Optional[str] = None
     satisfaction_score: int
     ai_accuracy_rating: int
     recorded_at: datetime.datetime
@@ -209,6 +220,13 @@ class ChallengeResponse(BaseModel):
     devil_advocate_critique: str
     alternative_scenario: str
     fragility_verdict: str  # "Robust", "Moderately Sensitive", "Fragile"
+    # Structured Red Team contract
+    attackedOption: str = ""
+    criticalAssumptions: List[str] = []
+    failureScenarios: List[str] = []
+    counterArguments: List[str] = []
+    questionsToValidate: List[str] = []
+    confidenceAdjustment: float = 0.0
 
 # ----------------- What-If Simulator -----------------
 
@@ -235,6 +253,15 @@ class SimulationResponse(BaseModel):
     key_drivers: List[str]
     diff_explanation: str
     updated_option_scores: Dict[str, float]
+    # 1,000-run Monte Carlo Sensitivity Analysis contract
+    monte_carlo_runs: int = 1000
+    outcome_distribution: Dict[str, float] = {}
+    expected_outcome: float = 0.0
+    downside_risk: float = 0.0
+    upside_potential: float = 0.0
+    volatility: float = 0.0
+    probability_ranges: Dict[str, float] = {}
+    disclaimer: str = "Scenario-based sensitivity analysis. Not guaranteed prediction."
 
 # ----------------- Document / RAG -----------------
 
@@ -257,6 +284,7 @@ class AskQuestionRequest(BaseModel):
     decision_id: Optional[int] = None
     context: Optional[str] = None
     history: Optional[List[Dict[str, str]]] = []
+    api_key: Optional[str] = None
 
 class AskQuestionResponse(BaseModel):
     question: str
@@ -266,6 +294,20 @@ class AskQuestionResponse(BaseModel):
     relevant_factors: List[str] = []
     suggested_followups: List[str] = []
     citations: List[str] = []
+
+class GeminiKeyConfigRequest(BaseModel):
+    gemini_api_key: str
+
+class GeminiKeyConfigResponse(BaseModel):
+    success: bool
+    message: str
+    model: str = "gemini-1.5-flash"
+
+class AIStatusResponse(BaseModel):
+    gemini_configured: bool
+    model: str = "gemini-1.5-flash"
+    provider: str = "Google DeepMind Gemini"
+    free_tier_url: str = "https://aistudio.google.com/app/apikey"
 
 # ----------------- Real-Time Pathway & Option Suggestion -----------------
 

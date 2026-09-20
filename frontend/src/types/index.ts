@@ -42,6 +42,7 @@ export interface EvidenceItem {
   id: number;
   decision_id: number;
   claim: string;
+  source_type?: 'FACT_FROM_DOCUMENT' | 'AI_INFERENCE' | 'USER_ASSUMPTION';
   source_document_id?: number;
   source_title: string;
   page_or_section?: string;
@@ -83,6 +84,12 @@ export interface Decision {
     recalculated_confidence: number;
     delta: number;
     critique: string;
+    attackedOption?: string;
+    criticalAssumptions?: string[];
+    failureScenarios?: string[];
+    counterArguments?: string[];
+    questionsToValidate?: string[];
+    confidenceAdjustment?: number;
   }>;
   options: DecisionOption[];
   factors: DecisionFactor[];
@@ -115,6 +122,12 @@ export interface ChallengeResult {
   devil_advocate_critique: string;
   alternative_scenario: string;
   fragility_verdict: string;
+  attackedOption?: string;
+  criticalAssumptions?: string[];
+  failureScenarios?: string[];
+  counterArguments?: string[];
+  questionsToValidate?: string[];
+  confidenceAdjustment?: number;
 }
 
 export interface SimulationResult {
@@ -129,6 +142,14 @@ export interface SimulationResult {
   key_drivers: string[];
   diff_explanation: string;
   updated_option_scores: Record<string, number>;
+  monte_carlo_runs?: number;
+  outcome_distribution?: Record<string, number>;
+  expected_outcome?: number;
+  downside_risk?: number;
+  upside_potential?: number;
+  volatility?: number;
+  probability_ranges?: Record<string, number>;
+  disclaimer?: string;
 }
 
 export interface DecisionOutcome {
@@ -136,6 +157,11 @@ export interface DecisionOutcome {
   decision_id: number;
   chosen_option_title: string;
   actual_outcome_notes?: string;
+  expected_outcome?: string;
+  what_went_right?: string[];
+  what_went_wrong?: string[];
+  incorrect_assumptions?: string[];
+  lessons_learned?: string;
   satisfaction_score: number;
   ai_accuracy_rating: number;
   recorded_at: string;

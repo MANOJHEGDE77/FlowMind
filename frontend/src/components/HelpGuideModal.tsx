@@ -78,25 +78,25 @@ export const HelpGuideModal: React.FC<HelpGuideModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl select-none animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xl select-none animate-in fade-in duration-150">
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: -10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.98, y: -5 }}
         transition={{ duration: 0.16 }}
-        className="relative w-full max-w-2xl rounded-3xl bg-[var(--surface-blur)] backdrop-blur-2xl border border-cyan-500/30 p-6 md:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto"
+        className="relative w-full max-w-2xl rounded-3xl bg-[var(--surface-blur)] backdrop-blur-2xl border border-[var(--line-color)] p-6 md:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto"
       >
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-[var(--line-color)]">
           <div className="flex items-center space-x-2">
-            <HelpCircle className="w-5 h-5 text-cyan-400" />
-            <span className="text-xs font-mono uppercase tracking-widest text-cyan-400 font-bold">
+            <HelpCircle className="w-5 h-5 text-cyan-500" />
+            <span className="text-xs font-mono uppercase tracking-widest text-cyan-500 font-bold">
               HOW FLOWMIND WORKS
             </span>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-full hover:bg-white/5 transition-colors"
+            className="text-[var(--text-muted)] hover:text-[var(--text-vivid)] p-1 rounded-full hover:bg-[var(--canvas-subtle)] transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -104,7 +104,7 @@ export const HelpGuideModal: React.FC<HelpGuideModalProps> = ({
 
         {/* 5-Step Process */}
         <div className="space-y-3">
-          <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500 block">
+          <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)] block">
             THE 5-STAGE COGNITIVE JOURNEY
           </span>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
@@ -113,11 +113,11 @@ export const HelpGuideModal: React.FC<HelpGuideModalProps> = ({
                 key={s.step}
                 className="p-3 rounded-2xl bg-[var(--canvas-subtle)] border border-[var(--line-color)] space-y-1"
               >
-                <span className="text-[10px] font-mono text-cyan-400 font-bold block">
+                <span className="text-[10px] font-mono text-cyan-500 font-bold block">
                   {s.step}
                 </span>
-                <h4 className="text-xs font-bold text-white">{s.title}</h4>
-                <p className="text-[10px] text-slate-400 leading-relaxed font-sans">
+                <h4 className="text-xs font-bold text-[var(--text-vivid)]">{s.title}</h4>
+                <p className="text-[10px] text-[var(--text-body)] leading-relaxed font-sans">
                   {s.desc}
                 </p>
               </div>
@@ -127,7 +127,7 @@ export const HelpGuideModal: React.FC<HelpGuideModalProps> = ({
 
         {/* Modes Glossary */}
         <div className="space-y-3 pt-2">
-          <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500 block">
+          <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)] block">
             INTELLIGENCE MODES EXPLAINED
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -142,11 +142,11 @@ export const HelpGuideModal: React.FC<HelpGuideModalProps> = ({
                     <div className={`p-1.5 rounded-lg ${m.bg} ${m.color}`}>
                       <Icon className="w-3.5 h-3.5" />
                     </div>
-                    <span className="text-xs font-mono font-bold text-white">
+                    <span className="text-xs font-mono font-bold text-[var(--text-vivid)]">
                       {m.name}
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400 leading-relaxed font-sans">
+                  <p className="text-[11px] text-[var(--text-body)] leading-relaxed font-sans">
                     {m.desc}
                   </p>
                 </div>

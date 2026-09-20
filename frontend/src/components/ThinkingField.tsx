@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useTheme } from '../context/ThemeContext';
 
 interface ThinkingFieldProps {
   inputText?: string;
@@ -36,6 +37,8 @@ export const ThinkingField: React.FC<ThinkingFieldProps> = ({
   selectedPriorities = [],
   hoveredConcept = null,
 }) => {
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Extract key concepts from text
@@ -259,8 +262,8 @@ export const ThinkingField: React.FC<ThinkingFieldProps> = ({
             const totalAlpha = Math.min(baseAlpha + extraAlpha, 0.45);
 
             ctx.strokeStyle = p1.isPriority || p2.isPriority
-              ? `rgba(0, 240, 255, ${totalAlpha * 1.5})`
-              : `rgba(255, 255, 255, ${totalAlpha})`;
+              ? (isLight ? `rgba(2, 132, 199, ${totalAlpha * 1.5})` : `rgba(0, 240, 255, ${totalAlpha * 1.5})`)
+              : (isLight ? `rgba(15, 23, 42, ${totalAlpha * 0.4})` : `rgba(255, 255, 255, ${totalAlpha})`);
 
             ctx.lineWidth = p1.isPriority || p2.isPriority ? 0.9 : 0.55;
             ctx.beginPath();
@@ -276,7 +279,7 @@ export const ThinkingField: React.FC<ThinkingFieldProps> = ({
           const cdy = p1.y - centerThoughtY;
           const cDist = Math.sqrt(cdx * cdx + cdy * cdy);
 
-          ctx.strokeStyle = 'rgba(0, 240, 255, 0.22)';
+          ctx.strokeStyle = isLight ? 'rgba(2, 132, 199, 0.28)' : 'rgba(0, 240, 255, 0.22)';
           ctx.setLineDash([4, 6]);
           ctx.lineWidth = 0.8;
           ctx.beginPath();
@@ -307,8 +310,8 @@ export const ThinkingField: React.FC<ThinkingFieldProps> = ({
         const curX = p1.x + (p2.x - p1.x) * pulse.progress;
         const curY = p1.y + (p2.y - p1.y) * pulse.progress;
 
-        ctx.fillStyle = 'rgba(0, 240, 255, 0.85)';
-        ctx.shadowColor = '#00F0FF';
+        ctx.fillStyle = isLight ? 'rgba(2, 132, 199, 0.85)' : 'rgba(0, 240, 255, 0.85)';
+        ctx.shadowColor = isLight ? '#0284C7' : '#00F0FF';
         ctx.shadowBlur = 8;
         ctx.beginPath();
         ctx.arc(curX, curY, 1.4, 0, Math.PI * 2);
@@ -338,24 +341,26 @@ export const ThinkingField: React.FC<ThinkingFieldProps> = ({
         // Node circle
         if (p.depth === 0) {
           // Far dust particle
-          ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
+          ctx.fillStyle = isLight ? `rgba(51, 65, 85, ${p.alpha * 0.6})` : `rgba(255, 255, 255, ${p.alpha})`;
           ctx.beginPath();
           ctx.arc(renderX, renderY, p.radius, 0, Math.PI * 2);
           ctx.fill();
         } else if (p.depth === 1) {
           // Midground constellation node
           const effectiveAlpha = p.alpha + currentFocus * 0.15;
-          ctx.fillStyle = `rgba(255, 255, 255, ${effectiveAlpha})`;
+          ctx.fillStyle = isLight ? `rgba(30, 41, 59, ${effectiveAlpha * 0.75})` : `rgba(255, 255, 255, ${effectiveAlpha})`;
           ctx.beginPath();
           ctx.arc(renderX, renderY, p.radius, 0, Math.PI * 2);
           ctx.fill();
         } else {
           // Foreground semantic node
           const isSelectedOrHovered = p.isPriority || isHovered;
-          ctx.fillStyle = isSelectedOrHovered ? '#00F0FF' : '#38BDF8';
+          ctx.fillStyle = isSelectedOrHovered
+            ? (isLight ? '#0284C7' : '#00F0FF')
+            : (isLight ? '#2563EB' : '#38BDF8');
 
           if (isSelectedOrHovered) {
-            ctx.shadowColor = '#00F0FF';
+            ctx.shadowColor = isLight ? '#0284C7' : '#00F0FF';
             ctx.shadowBlur = 10;
           }
 
@@ -365,19 +370,13 @@ export const ThinkingField: React.FC<ThinkingFieldProps> = ({
           ctx.shadowBlur = 0;
 
           // Outer delicate halo ring
-          ctx.strokeStyle = isSelectedOrHovered ? 'rgba(0, 240, 255, 0.45)' : 'rgba(56, 189, 248, 0.2)';
+          ctx.strokeStyle = isSelectedOrHovered
+            ? (isLight ? 'rgba(2, 132, 199, 0.5)' : 'rgba(0, 240, 255, 0.45)')
+            : (isLight ? 'rgba(37, 99, 235, 0.25)' : 'rgba(56, 189, 248, 0.2)');
           ctx.lineWidth = 0.7;
           ctx.beginPath();
           ctx.arc(renderX, renderY, p.radius + 3.5, 0, Math.PI * 2);
           ctx.stroke();
-
-          // Semantic label
-          if (p.keyword) {
-            ctx.fillStyle = isSelectedOrHovered ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.45)';
-            ctx.font = '10px JetBrains Mono, monospace';
-            const displayText = p.isPriority ? `✦ ${p.keyword}` : p.keyword.toUpperCase();
-            ctx.fillText(displayText, renderX + 9, renderY + 3.5);
-          }
         }
       });
 
@@ -391,12 +390,34 @@ export const ThinkingField: React.FC<ThinkingFieldProps> = ({
       window.removeEventListener('mousemove', handleMouseMove);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [inputText, isAnalyzing, isInputFocused, selectedPriorities, hoveredConcept]);
+  }, [inputText, isAnalyzing, isInputFocused, selectedPriorities, hoveredConcept, isLight]);
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none">
+      {/* Modern Ambient Aurora Glows (Adapts to Light & Dark) */}
+      <div className={`absolute -top-[15%] left-[10%] w-[600px] h-[600px] rounded-full blur-[140px] animate-aurora-1 ${
+        isLight
+          ? 'bg-gradient-to-br from-indigo-200/40 via-purple-100/30 to-transparent'
+          : 'bg-gradient-to-br from-indigo-600/15 via-purple-600/10 to-transparent'
+      }`} />
+      <div className={`absolute top-[40%] -right-[10%] w-[650px] h-[650px] rounded-full blur-[150px] animate-aurora-2 ${
+        isLight
+          ? 'bg-gradient-to-bl from-cyan-200/35 via-blue-100/30 to-transparent'
+          : 'bg-gradient-to-bl from-cyan-500/12 via-blue-600/10 to-transparent'
+      }`} />
+      <div className={`absolute -bottom-[20%] left-[30%] w-[700px] h-[500px] rounded-full blur-[160px] animate-aurora-1 ${
+        isLight
+          ? 'bg-gradient-to-tr from-violet-200/30 via-emerald-100/25 to-transparent'
+          : 'bg-gradient-to-tr from-violet-600/10 via-emerald-500/8 to-transparent'
+      }`} />
+      
+      {/* Subtle Dot-Matrix Vignette Grid */}
+      <div className="absolute inset-0 grid-mesh-ambient pointer-events-none opacity-60" />
+
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-90" />
-      <div className="absolute inset-0 bg-noise pointer-events-none opacity-40 mix-blend-overlay" />
+      <div className={`absolute inset-0 bg-noise pointer-events-none mix-blend-overlay ${
+        isLight ? 'opacity-15' : 'opacity-30'
+      }`} />
     </div>
   );
 };

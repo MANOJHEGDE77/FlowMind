@@ -58,12 +58,16 @@ def test_create_and_orchestrate_quick_decision():
     assert data["status"] == "completed"
     assert data["recommendation"] is not None
     assert data["confidence_score"] > 0
-    assert len(data["agent_runs"]) >= 5
+    assert len(data["agent_runs"]) >= 7  # All 7 council agents including Synthesizer
     assert len(data["evidence_items"]) >= 1
+    # Verify evidence source_type provenance
+    assert data["evidence_items"][0]["source_type"] in ["USER_ASSUMPTION", "FACT_FROM_DOCUMENT", "AI_INFERENCE"]
+    # Verify structured agent findings
+    assert "keyFindings" in data["agent_runs"][0]["findings"]
 
     decision_id = data["id"]
 
-    # Test Challenge Feature
+    # Test Challenge Feature with Structured Red Team Contract
     challenge_resp = client.post(f"/api/decisions/{decision_id}/challenge", json={
         "target_recommendation": data["recommendation"],
         "focus_area": "risk severity"
@@ -73,8 +77,12 @@ def test_create_and_orchestrate_quick_decision():
     assert c_data["recalculated_confidence"] < c_data["original_confidence"]
     assert len(c_data["vulnerabilities"]) > 0
     assert c_data["devil_advocate_critique"] is not None
+    assert c_data["attackedOption"] == data["recommendation"]
+    assert len(c_data["criticalAssumptions"]) >= 1
+    assert len(c_data["failureScenarios"]) >= 1
+    assert len(c_data["questionsToValidate"]) >= 1
 
-    # Test What-If Simulator
+    # Test What-If Simulator with 1,000-run Monte Carlo Sensitivity Engine
     sim_resp = client.post(f"/api/decisions/{decision_id}/simulate", json={
         "scenario_title": "Startup 25% Equity & Compensation Bump",
         "modifications": {
@@ -87,17 +95,28 @@ def test_create_and_orchestrate_quick_decision():
     sim_data = sim_resp.json()
     assert "updated_option_scores" in sim_data
     assert sim_data["diff_explanation"] is not None
+    assert sim_data["monte_carlo_runs"] == 1000
+    assert "p50" in sim_data["outcome_distribution"]
+    assert sim_data["volatility"] >= 0
+    assert "sensitivity analysis" in sim_data["disclaimer"].lower()
 
-    # Test Outcome Recording
+    # Test Outcome Recording with Calibration Memory
     outcome_resp = client.post(f"/api/decisions/{decision_id}/outcomes", json={
         "chosen_option_title": data["recommendation"],
         "actual_outcome_notes": "Accepted offer. Accelerated learning exceeded expectations in first 6 months.",
+        "expected_outcome": "Expected high autonomy and steep learning curve.",
+        "what_went_right": ["Autonomous execution", "Rapid technical mastery"],
+        "what_went_wrong": ["Initial friction with cross-functional dependencies"],
+        "incorrect_assumptions": ["Assumed 40hr weeks without overtime"],
+        "lessons_learned": "Clarify cross-team expectations before onboarding.",
         "satisfaction_score": 9,
         "ai_accuracy_rating": 9
     })
     assert outcome_resp.status_code == 200
     o_data = outcome_resp.json()
     assert o_data["satisfaction_score"] == 9
+    assert o_data["expected_outcome"] == "Expected high autonomy and steep learning curve."
+    assert len(o_data["what_went_right"]) == 2
 
     # Verify decision is marked resolved and contains outcomes
     dec_check = client.get(f"/api/decisions/{decision_id}").json()

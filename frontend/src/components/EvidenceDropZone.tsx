@@ -84,16 +84,16 @@ export const EvidenceDropZone: React.FC<EvidenceDropZoneProps> = ({
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-space-950/80 backdrop-blur-md select-none"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xl select-none"
     >
-      <div className="w-full max-w-lg bg-[var(--bg-surface)] border border-emerald-500/40 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="w-full max-w-lg bg-[var(--surface-blur)] backdrop-blur-2xl border border-[var(--line-color)] rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-emerald-500/20 bg-emerald-500/5 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-[var(--line-color)] bg-[var(--canvas-subtle)] flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400">
+            <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-500">
               <BookOpen className="w-4 h-4" />
             </div>
-            <h3 className="text-sm font-semibold text-[var(--text-primary)] font-mono uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-[var(--text-vivid)] font-mono uppercase tracking-wider">
               Evidence Ingestion Engine
             </h3>
           </div>
