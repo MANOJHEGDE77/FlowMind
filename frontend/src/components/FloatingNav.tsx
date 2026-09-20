@@ -23,13 +23,6 @@ interface FloatingNavProps {
 
 const NAV_ITEMS = [
   {
-    id: 'landing',
-    symbol: '✧',
-    label: 'Overview',
-    shortcut: '0',
-    hint: 'Overview: Platform architecture, 7-agent showcase & live engine sandbox',
-  },
-  {
     id: 'home',
     symbol: '✦',
     label: 'Thinking',
