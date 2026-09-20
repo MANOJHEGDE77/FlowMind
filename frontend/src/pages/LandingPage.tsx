@@ -5,7 +5,8 @@ import {
   BookOpen, CheckCircle2, ChevronRight, Crown, Layers,
   ShieldAlert, Zap, BarChart3, Scale, Eye, Check,
   ExternalLink, Terminal, ShieldCheck, Cpu, ArrowUpRight,
-  TrendingUp, AlertTriangle, FileText, CornerDownRight, RotateCcw
+  TrendingUp, AlertTriangle, FileText, CornerDownRight, RotateCcw,
+  Heart, Brain, Compass
 } from 'lucide-react';
 import { soundService } from '../services/sound';
 
@@ -28,7 +29,7 @@ const AGENTS_DATA = [
     role: 'Empirical Baseline',
     icon: '🔍',
     confidence: '92%',
-    question: 'What does the evidence say?',
+    question: 'What does historical evidence prove?',
     lens: 'Historical base rates indicate a 42% survival probability for Series B ventures in vertical AI. Customer retention in the first 90 days is the primary indicator of durable product-market fit.',
     risk: 'Key executive turnover if early validation takes more than 5 months.',
     tag: 'EMPIRICAL_RIGOR',
@@ -41,8 +42,8 @@ const AGENTS_DATA = [
     role: 'Asymmetric Upside',
     icon: '🚀',
     confidence: '96%',
-    question: 'What could go right?',
-    lens: 'Early lead equity captures asymmetric upside. In the bull case, market tailwinds and autonomous agent adoption provide 12x compounding valuation leverage over 4 years.',
+    question: 'What happens if we succeed wildly?',
+    lens: 'Early lead equity captures asymmetric upside. In the bull case, autonomous market tailwinds provide 12x compounding valuation leverage over 4 years.',
     risk: 'Opportunity cost if sales cycle elongates beyond 9 months.',
     tag: 'ASYMMETRIC_LEVERAGE',
     color: '#10B981',
@@ -54,7 +55,7 @@ const AGENTS_DATA = [
     role: 'Downside Protection',
     icon: '🛡️',
     confidence: '78%',
-    question: 'What are we missing?',
+    question: 'What blind spots are we ignoring?',
     lens: 'Switching costs are high. This is an irreversible Type 1 door: exiting early burns reputational capital and forfeits accrued equity vesting schedules.',
     risk: 'Burnout and compensation reduction in year 1 before revenue stability.',
     tag: 'TAIL_RISK_DEFENSE',
@@ -67,7 +68,7 @@ const AGENTS_DATA = [
     role: 'Capital Efficiency',
     icon: '💰',
     confidence: '89%',
-    question: 'What are the financial implications?',
+    question: 'What is the risk-adjusted ROI?',
     lens: 'Net Present Value analysis indicates Option A delivers 2.8x expected capital return over 5 years compared to fixed salary compensation, adjusting for inflation and equity risk.',
     risk: 'Sunk cost escalation during initial unmonetized prototyping.',
     tag: 'CAPITAL_CALIBRATION',
@@ -80,7 +81,7 @@ const AGENTS_DATA = [
     role: 'Compounding Horizon',
     icon: '⏳',
     confidence: '91%',
-    question: 'What compounds over time?',
+    question: 'What compounds over 10 years?',
     lens: 'Second-order effects: high-density leadership accelerates personal brand and unlocks direct tier-1 founder network, outperforming incremental corporate ladder advancement.',
     risk: 'Delayed liquidity timeline compared to public stock vesting.',
     tag: 'SECOND_ORDER_HORIZON',
@@ -93,8 +94,8 @@ const AGENTS_DATA = [
     role: 'Bias Interrogation',
     icon: '⚔️',
     confidence: '84%',
-    question: 'Why might this fail?',
-    lens: 'Severe confirmation bias detected: you are underweighting the risk of customer churn and assuming early enthusiastic feedback equates to signed enterprise contracts.',
+    question: 'Why will this fail catastrophically?',
+    lens: 'Severe confirmation bias detected: you are underweighting customer churn and assuming early enthusiastic feedback equates to signed enterprise contracts.',
     risk: 'Premature scaling based on verbal commitments without capital deposits.',
     tag: 'BIAS_DESTRUCTION',
     color: '#EF4444',
@@ -106,7 +107,7 @@ const AGENTS_DATA = [
     role: 'Equilibrium Signal',
     icon: '⚖️',
     confidence: '88%',
-    question: 'What survives the debate?',
+    question: 'What truth survives the debate?',
     lens: 'Equilibrium recommendation decisively favors Option A, but mandates strict 60-day validation gates to bound downside exposure and verify enterprise pilot conversions.',
     risk: 'Recommendation confidence haircut (-12%) applied to account for unverified assumptions.',
     tag: 'EQUILIBRIUM_SIGNAL',
@@ -145,14 +146,14 @@ const STARTER_DILEMMAS = [
   {
     id: 'architecture',
     code: 'DLM_03',
-    title: 'Monolith vs Event-Driven Microservices',
+    title: 'Domain Modular Monolith vs Event-Driven Microservices',
     category: 'Technical Architecture',
     confidence: '91.2%',
     reversibility: 'TYPE_2 // TWO_WAY_DOOR',
     context: 'The engineering team is experiencing deploy friction as team size crosses 40 developers. Trade-off between distributed event microservices and a domain modular monolith.',
     options: [
-      { title: 'Event-Driven Microservices', description: 'Independent deploys, network latency, distributed state overhead' },
       { title: 'Domain Modular Monolith', description: 'Unified repository, zero distributed transactions, faster iteration' },
+      { title: 'Event-Driven Microservices', description: 'Independent deploys, network latency, distributed state overhead' },
     ],
   },
 ];
@@ -164,11 +165,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onSelectStarterDilemma,
 }) => {
   const [selectedDilemmaIdx, setSelectedDilemmaIdx] = useState<number>(0);
-  const [activeHoverAgent, setActiveHoverAgent] = useState<string | null>('analyst');
-  const [activeRedTeamStep, setActiveRedTeamStep] = useState<number>(0);
+  const [activeHoverAgent, setActiveHoverAgent] = useState<string>('analyst');
   const [marketFriction, setMarketFriction] = useState<number>(14);
   const [revenueShift, setRevenueShift] = useState<number>(8);
-  const [hoveredMatrixNode, setHoveredMatrixNode] = useState<string>('startup');
 
   const currentDilemma = STARTER_DILEMMAS[selectedDilemmaIdx];
 
@@ -177,7 +176,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const p10Score = Math.max(38, Math.round(baseConfidence - marketFriction * 1.15 + Math.min(0, revenueShift)));
   const p50Score = Math.min(94, Math.max(48, Math.round(baseConfidence - marketFriction * 0.45 + revenueShift * 0.6)));
   const p90Score = Math.min(98, Math.round(baseConfidence + Math.max(0, revenueShift * 0.9) - marketFriction * 0.15));
-  const calculatedVolatility = Math.round(Math.abs(p90Score - p10Score) * 0.65);
 
   const selectedAgentObj = AGENTS_DATA.find(a => a.id === activeHoverAgent) || AGENTS_DATA[0];
 
@@ -185,50 +183,50 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     <div className="relative min-h-screen bg-[#030408] text-white selection:bg-cyan-500/30 selection:text-cyan-200 overflow-x-hidden font-sans">
       {/* Ambient Neural Lighting Fields */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-[850px] h-[500px] bg-gradient-to-br from-cyan-500/[0.07] via-indigo-600/[0.05] to-transparent blur-[160px] rounded-full animate-aurora-1" />
-        <div className="absolute top-[35%] right-0 w-[650px] h-[550px] bg-violet-600/[0.06] blur-[170px] rounded-full animate-aurora-2" />
-        <div className="absolute top-[70%] left-[-10%] w-[700px] h-[500px] bg-amber-500/[0.04] blur-[180px] rounded-full" />
-        <div className="absolute inset-0 grid-mesh-ambient opacity-50" />
+        <div className="absolute top-0 left-1/4 w-[950px] h-[550px] bg-gradient-to-br from-cyan-500/[0.08] via-indigo-600/[0.06] to-transparent blur-[160px] rounded-full" />
+        <div className="absolute top-[35%] right-0 w-[750px] h-[600px] bg-amber-500/[0.05] blur-[180px] rounded-full" />
+        <div className="absolute top-[70%] left-[-10%] w-[800px] h-[600px] bg-violet-600/[0.06] blur-[180px] rounded-full" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,240,255,0.03)_0%,transparent_70%)]" />
       </div>
 
       <div className="relative z-10 flex flex-col">
         {/* ========================================================================= */}
-        {/* SECTION 1: THE QUESTION // ASYMMETRIC DECISION FLOW HERO */}
+        {/* SECTION 1: THE COGNITIVE FLOW HERO // ASYMMETRIC STORYTELLING */}
         {/* ========================================================================= */}
-        <section className="min-h-[92vh] flex items-center pt-28 pb-16 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center w-full">
-            {/* Left Column (5 cols): Asymmetric Editorial Typography & Ingestion Stream */}
+        <section className="min-h-[94vh] flex items-center pt-28 pb-16 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center w-full">
+            {/* Left Column (5 cols): Master Asymmetric Editorial Narrative */}
             <div className="lg:col-span-5 flex flex-col justify-center text-left space-y-6">
-              {/* Technical Origin Badge */}
+              {/* Technical Cognitive Badge */}
               <motion.div
                 initial={{ opacity: 0, x: -16 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6 }}
-                className="inline-flex items-center space-x-2.5 px-3.5 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] text-[11px] font-mono w-fit backdrop-blur-xl"
+                className="inline-flex items-center space-x-2.5 px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-cyan-400/25 text-[11px] font-mono w-fit backdrop-blur-xl shadow-[0_0_15px_rgba(0,240,255,0.1)]"
               >
-                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                <span className="text-slate-300 uppercase tracking-wider">COGNITIVE INGESTION STREAM</span>
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                <span className="text-slate-300 uppercase tracking-wider font-semibold">DECISION INTELLIGENCE CORE</span>
                 <span className="text-slate-600">|</span>
-                <span className="text-cyan-400 font-bold">FLOW_ACTIVE</span>
+                <span className="text-cyan-400 font-bold">7 AGENTS ACTIVE</span>
               </motion.div>
 
-              {/* Master Asymmetric Editorial Title */}
+              {/* Master Editorial Headline */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.1 }}
                 className="space-y-3"
               >
-                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[0.95] text-white font-sans uppercase">
+                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[0.93] text-white font-sans uppercase">
                   A decision <br />
                   is never <br />
                   just one <br />
-                  <span className="bg-gradient-to-r from-cyan-400 via-indigo-300 to-violet-400 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-cyan-400 via-indigo-300 to-amber-300 bg-clip-text text-transparent">
                     thought.
                   </span>
                 </h1>
 
-                {/* Animated Luminous Trajectory Line */}
+                {/* Trajectory Directional Indicator */}
                 <div className="flex items-center space-x-3 py-1">
                   <div className="h-[2px] w-28 bg-gradient-to-r from-cyan-400 via-indigo-500 to-transparent relative overflow-hidden">
                     <div className="absolute inset-0 bg-white/80 animate-flow-dash" />
@@ -239,22 +237,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </div>
               </motion.div>
 
-              {/* Psychological Premise */}
+              {/* Cognitive Philosophy */}
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.2 }}
                 className="space-y-2 text-slate-400 text-sm sm:text-base font-light leading-relaxed"
               >
-                <p className="text-slate-200 font-medium font-sans">
+                <p className="text-slate-200 font-medium font-sans text-base sm:text-lg">
                   One decision. Seven perspectives. Enter the flow of thought.
                 </p>
-                <p className="text-xs sm:text-sm text-slate-400">
-                  Weighing asymmetric upside against irreversible traps. Uncovering what survives adversarial tension.
+                <p className="text-xs sm:text-sm text-slate-400 leading-normal">
+                  Weighing asymmetric compounding upside against irreversible traps. Uncovering what survives adversarial tension.
                 </p>
               </motion.div>
 
-              {/* Primary Call to Action Bar */}
+              {/* Action Triggers */}
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -281,7 +279,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </button>
               </motion.div>
 
-              {/* Active Dilemma Live Selector */}
+              {/* Active Dilemma Switcher: Dynamically reroutes the reasoning visual */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -329,7 +327,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
             {/* Right Column (7 cols): The Hero of the Screen — The Living Cognitive Mind */}
             <div className="lg:col-span-7 relative w-full flex flex-col items-center justify-center">
-              <div className="relative w-full rounded-3xl bg-[#060812]/90 border border-white/[0.08] backdrop-blur-2xl p-4 sm:p-6 shadow-[0_30px_90px_rgba(0,0,0,0.9)] overflow-hidden">
+              <div className="relative w-full rounded-3xl bg-[#060814]/95 border border-white/[0.1] backdrop-blur-2xl p-4 sm:p-6 shadow-[0_30px_90px_rgba(0,0,0,0.95)] overflow-hidden group">
                 {/* Visual Header Telemetry */}
                 <div className="flex items-center justify-between pb-3 mb-2 border-b border-white/[0.06] font-mono text-xs">
                   <div className="flex items-center space-x-2">
@@ -339,161 +337,97 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     </span>
                   </div>
                   <div className="flex items-center space-x-2 text-[10px] text-slate-400">
-                    <span className="text-cyan-400">7 AGENTS IN DELIBERATION</span>
+                    <span className="text-cyan-400 font-bold">{currentDilemma.code}</span>
                     <span>•</span>
-                    <span className="text-emerald-400 font-bold">1,000 SCENARIOS</span>
+                    <span className="text-emerald-400 font-bold">{currentDilemma.confidence} SIGNAL</span>
                   </div>
                 </div>
 
-                {/* THE LIVING NEURAL SVG CANVAS */}
-                <div className="relative w-full aspect-[4/3] max-h-[500px] flex items-center justify-center">
-                  <svg className="w-full h-full" viewBox="0 0 760 520" fill="none" preserveAspectRatio="xMidYMid meet">
-                    <defs>
-                      <linearGradient id="beamGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#00F0FF" stopOpacity="0.85" />
-                        <stop offset="50%" stopColor="#6366F1" stopOpacity="0.6" />
-                        <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0.85" />
-                      </linearGradient>
+                {/* THE CINEMATIC COGNITIVE MIND CANVAS */}
+                <div className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden border border-white/[0.08] bg-black/60 shadow-inner">
+                  {/* High-Resolution Conceptual Mind Artwork */}
+                  <img
+                    src="/assets/hero_mind.jpg"
+                    alt="FlowMind Living Cognitive Core"
+                    className="w-full h-full object-cover object-center scale-105 group-hover:scale-100 transition-transform duration-1000 ease-out"
+                  />
 
-                      <linearGradient id="clashGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#10B981" stopOpacity="0.8" />
-                        <stop offset="50%" stopColor="#F59E0B" stopOpacity="0.9" />
-                        <stop offset="100%" stopColor="#F43F5E" stopOpacity="0.8" />
-                      </linearGradient>
+                  {/* Atmospheric Vignette & Color Grading Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#060814] via-transparent to-[#060814]/40 pointer-events-none" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_30%,#060814_90%)] pointer-events-none" />
 
-                      <filter id="coreGlow" x="-20%" y="-20%" width="140%" height="140%">
-                        <feGaussianBlur stdDeviation="12" result="blur" />
-                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                      </filter>
-                    </defs>
+                  {/* Dynamic 7-Agent Interactive Hotspot Overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
+                    {AGENTS_DATA.map((agent, i) => {
+                      // Position 7 nodes circularly around the central mind orb
+                      const angle = (i * (360 / 7) - 90) * (Math.PI / 180);
+                      const radius = 38; // percentage radius from center
+                      const x = 50 + radius * Math.cos(angle);
+                      const y = 48 + (radius * 0.72) * Math.sin(angle);
+                      const isHovered = activeHoverAgent === agent.id;
 
-                    {/* Radial Orbit Guide Rings */}
-                    <circle cx="380" cy="240" r="180" stroke="rgba(255,255,255,0.04)" strokeWidth="1" strokeDasharray="4 6" />
-                    <circle cx="380" cy="240" r="110" stroke="rgba(0,240,255,0.08)" strokeWidth="1" />
+                      return (
+                        <button
+                          key={agent.id}
+                          onClick={() => {
+                            soundService.playClick();
+                            setActiveHoverAgent(agent.id);
+                          }}
+                          onMouseEnter={() => {
+                            soundService.playClick();
+                            setActiveHoverAgent(agent.id);
+                          }}
+                          style={{
+                            left: `${x}%`,
+                            top: `${y}%`,
+                            transform: 'translate(-50%, -50%)',
+                          }}
+                          className={`absolute group/node flex flex-col items-center transition-all duration-300 z-20 ${
+                            isHovered ? 'scale-115 z-30' : 'scale-95 opacity-85 hover:opacity-100'
+                          }`}
+                        >
+                          <div
+                            style={{
+                              borderColor: isHovered ? agent.color : 'rgba(255,255,255,0.2)',
+                              boxShadow: isHovered ? `0 0 20px ${agent.color}` : '0 4px 12px rgba(0,0,0,0.6)',
+                              backgroundColor: '#090D1A',
+                            }}
+                            className="w-9 h-9 sm:w-11 sm:h-11 rounded-full border flex items-center justify-center text-sm sm:text-base backdrop-blur-md transition-all cursor-pointer"
+                          >
+                            <span>{agent.icon}</span>
+                          </div>
 
-                    {/* Dynamic Dialectic Conflict Arc (Optimist vs Skeptic tension) */}
-                    <path
-                      d="M 180 230 C 260 160, 500 160, 580 230"
-                      stroke="url(#clashGradient)"
-                      strokeWidth="1.5"
-                      strokeDasharray="4 4"
-                      className="animate-pulse"
-                      opacity="0.75"
-                    />
+                          <span
+                            style={{ color: isHovered ? agent.color : '#94A3B8' }}
+                            className="text-[9px] font-mono font-bold uppercase tracking-wider mt-1 px-1.5 py-0.5 rounded bg-black/80 border border-white/[0.08] backdrop-blur-sm whitespace-nowrap shadow-md"
+                          >
+                            {agent.name.replace('The ', '')}
+                          </span>
+                        </button>
+                      );
+                    })}
 
-                    {/* Incoming Dilemma Flow Arrow into Center */}
-                    <path
-                      d="M 40 240 L 290 240"
-                      stroke="url(#beamGradient)"
-                      strokeWidth="2.5"
-                      strokeDasharray="8 6"
-                      className="animate-flow-dash"
-                    />
-
-                    {/* Synaptic Bezier Filaments: Center Core to each Perspective */}
-                    {/* Analyst (Top-Left) */}
-                    <path d="M 380 240 Q 280 160 220 110" stroke="url(#beamGradient)" strokeWidth="1.8" strokeDasharray="6 4" className="animate-flow-dash" />
-                    {/* Long-Term Planner (Top-Center) */}
-                    <path d="M 380 240 L 380 80" stroke="url(#beamGradient)" strokeWidth="1.8" strokeDasharray="6 4" className="animate-flow-dash" />
-                    {/* Optimist (Top-Right) */}
-                    <path d="M 380 240 Q 480 160 540 110" stroke="url(#beamGradient)" strokeWidth="1.8" strokeDasharray="6 4" className="animate-flow-dash" />
-                    {/* Skeptic (Mid-Right) */}
-                    <path d="M 380 240 L 580 230" stroke="url(#beamGradient)" strokeWidth="1.8" strokeDasharray="6 4" className="animate-flow-dash" />
-                    {/* Devil's Advocate (Bottom-Right) */}
-                    <path d="M 380 240 Q 480 320 540 370" stroke="url(#beamGradient)" strokeWidth="1.8" strokeDasharray="6 4" className="animate-flow-dash" />
-                    {/* Financial Analyst (Bottom-Left) */}
-                    <path d="M 380 240 Q 280 320 220 370" stroke="url(#beamGradient)" strokeWidth="1.8" strokeDasharray="6 4" className="animate-flow-dash" />
-                    {/* Synthesizer (Bottom-Center) */}
-                    <path d="M 380 240 L 380 410" stroke="#8B5CF6" strokeWidth="2.8" strokeDasharray="6 4" className="animate-flow-dash" />
-                    {/* Synthesizer to Calibrated Clarity */}
-                    <path d="M 380 430 L 380 490" stroke="#10B981" strokeWidth="2" strokeDasharray="4 4" opacity="0.9" />
-
-                    {/* CENTRAL FLOWMIND COGNITIVE CORE */}
-                    <g className="cursor-pointer" onClick={onGetStarted}>
-                      <circle cx="380" cy="240" r="64" fill="#0C1124" stroke="#00F0FF" strokeWidth="2" filter="url(#coreGlow)" />
-                      <circle cx="380" cy="240" r="54" fill="url(#beamGradient)" opacity="0.15" />
-                      <circle cx="380" cy="240" r="46" stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="3 3" />
-                      <text x="380" y="234" textAnchor="middle" fill="#FFFFFF" fontSize="11" fontWeight="bold" fontFamily="monospace" letterSpacing="2">
-                        FLOWMIND
-                      </text>
-                      <text x="380" y="248" textAnchor="middle" fill="#00F0FF" fontSize="8" fontFamily="monospace" letterSpacing="1">
-                        CORE // ACTIVE
-                      </text>
-                      <text x="380" y="262" textAnchor="middle" fill="#94A3B8" fontSize="7" fontFamily="sans-serif">
-                        {currentDilemma.code}
-                      </text>
-                    </g>
-
-                    {/* 7 AGENT NODES (Clickable and interactive) */}
-                    {/* 1. Analyst (Top-Left) */}
-                    <g className="cursor-pointer group" onMouseEnter={() => setActiveHoverAgent('analyst')}>
-                      <circle cx="220" cy="110" r="28" fill="#090C16" stroke={activeHoverAgent === 'analyst' ? '#00F0FF' : 'rgba(0,240,255,0.4)'} strokeWidth={activeHoverAgent === 'analyst' ? 2 : 1} />
-                      <text x="220" y="108" textAnchor="middle" fill="#00F0FF" fontSize="12">🔍</text>
-                      <text x="220" y="122" textAnchor="middle" fill="#FFFFFF" fontSize="8" fontWeight="bold" fontFamily="monospace">ANALYST</text>
-                    </g>
-
-                    {/* 2. Long-Term Planner (Top-Center) */}
-                    <g className="cursor-pointer group" onMouseEnter={() => setActiveHoverAgent('planner')}>
-                      <circle cx="380" cy="80" r="28" fill="#090C16" stroke={activeHoverAgent === 'planner' ? '#6366F1' : 'rgba(99,102,241,0.4)'} strokeWidth={activeHoverAgent === 'planner' ? 2 : 1} />
-                      <text x="380" y="78" textAnchor="middle" fill="#6366F1" fontSize="12">⏳</text>
-                      <text x="380" y="92" textAnchor="middle" fill="#FFFFFF" fontSize="8" fontWeight="bold" fontFamily="monospace">PLANNER</text>
-                    </g>
-
-                    {/* 3. Optimist (Top-Right) */}
-                    <g className="cursor-pointer group" onMouseEnter={() => setActiveHoverAgent('optimist')}>
-                      <circle cx="540" cy="110" r="28" fill="#090C16" stroke={activeHoverAgent === 'optimist' ? '#10B981' : 'rgba(16,185,129,0.4)'} strokeWidth={activeHoverAgent === 'optimist' ? 2 : 1} />
-                      <text x="540" y="108" textAnchor="middle" fill="#10B981" fontSize="12">🚀</text>
-                      <text x="540" y="122" textAnchor="middle" fill="#FFFFFF" fontSize="8" fontWeight="bold" fontFamily="monospace">OPTIMIST</text>
-                    </g>
-
-                    {/* 4. Skeptic (Mid-Right) */}
-                    <g className="cursor-pointer group" onMouseEnter={() => setActiveHoverAgent('skeptic')}>
-                      <circle cx="580" cy="230" r="28" fill="#090C16" stroke={activeHoverAgent === 'skeptic' ? '#F43F5E' : 'rgba(244,63,94,0.4)'} strokeWidth={activeHoverAgent === 'skeptic' ? 2 : 1} />
-                      <text x="580" y="228" textAnchor="middle" fill="#F43F5E" fontSize="12">🛡️</text>
-                      <text x="580" y="242" textAnchor="middle" fill="#FFFFFF" fontSize="8" fontWeight="bold" fontFamily="monospace">SKEPTIC</text>
-                    </g>
-
-                    {/* 5. Devil's Advocate (Bottom-Right) */}
-                    <g className="cursor-pointer group" onMouseEnter={() => setActiveHoverAgent('devil')}>
-                      <circle cx="540" cy="370" r="28" fill="#090C16" stroke={activeHoverAgent === 'devil' ? '#EF4444' : 'rgba(239,68,68,0.4)'} strokeWidth={activeHoverAgent === 'devil' ? 2 : 1} />
-                      <text x="540" y="368" textAnchor="middle" fill="#EF4444" fontSize="12">⚔️</text>
-                      <text x="540" y="382" textAnchor="middle" fill="#FFFFFF" fontSize="8" fontWeight="bold" fontFamily="monospace">DEVIL</text>
-                    </g>
-
-                    {/* 6. Financial Analyst (Bottom-Left) */}
-                    <g className="cursor-pointer group" onMouseEnter={() => setActiveHoverAgent('financial')}>
-                      <circle cx="220" cy="370" r="28" fill="#090C16" stroke={activeHoverAgent === 'financial' ? '#F59E0B' : 'rgba(245,158,11,0.4)'} strokeWidth={activeHoverAgent === 'financial' ? 2 : 1} />
-                      <text x="220" y="368" textAnchor="middle" fill="#F59E0B" fontSize="12">💰</text>
-                      <text x="220" y="382" textAnchor="middle" fill="#FFFFFF" fontSize="8" fontWeight="bold" fontFamily="monospace">FINANCE</text>
-                    </g>
-
-                    {/* 7. Synthesizer (Bottom-Center) */}
-                    <g className="cursor-pointer group" onMouseEnter={() => setActiveHoverAgent('synthesizer')}>
-                      <circle cx="380" cy="410" r="30" fill="#140D26" stroke={activeHoverAgent === 'synthesizer' ? '#8B5CF6' : 'rgba(139,92,246,0.5)'} strokeWidth={activeHoverAgent === 'synthesizer' ? 2.5 : 1.5} />
-                      <text x="380" y="408" textAnchor="middle" fill="#8B5CF6" fontSize="12">⚖️</text>
-                      <text x="380" y="422" textAnchor="middle" fill="#FFFFFF" fontSize="8" fontWeight="bold" fontFamily="monospace">SYNTHESIS</text>
-                    </g>
-
-                    {/* Bottom Clarity Pill */}
-                    <g>
-                      <rect x="260" y="475" width="240" height="28" rx="14" fill="#064E3B" fillOpacity="0.4" stroke="#10B981" strokeWidth="1" />
-                      <text x="380" y="493" textAnchor="middle" fill="#34D399" fontSize="9" fontWeight="bold" fontFamily="monospace" letterSpacing="1">
-                        CALIBRATED CLARITY // {currentDilemma.confidence}
-                      </text>
-                    </g>
-                  </svg>
+                    {/* Central Equilibrium Target */}
+                    <div className="absolute pointer-events-none flex flex-col items-center justify-center text-center">
+                      <div className="w-20 h-20 rounded-full border border-cyan-400/30 bg-cyan-500/[0.04] animate-ping" />
+                      <div className="absolute px-3 py-1 rounded-full bg-black/80 border border-cyan-400/40 text-[10px] font-mono text-cyan-300 font-bold tracking-widest shadow-[0_0_15px_rgba(0,240,255,0.3)]">
+                        SYNTHESIS // {currentDilemma.confidence}
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Live Node Inspection Micro-Card */}
-                <div className="mt-2 p-3.5 rounded-2xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-between text-left font-mono">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl">{selectedAgentObj.icon}</span>
-                    <div>
+                <div className="mt-3 p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between text-left font-mono gap-3">
+                  <div className="flex items-center space-x-3 truncate">
+                    <span className="text-3xl shrink-0">{selectedAgentObj.icon}</span>
+                    <div className="truncate">
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-bold text-white uppercase">{selectedAgentObj.name}</span>
                         <span className="text-[10px] text-cyan-400 font-semibold">[{selectedAgentObj.tag}]</span>
+                        <span className="text-[10px] text-emerald-400 font-bold">({selectedAgentObj.confidence})</span>
                       </div>
-                      <p className="text-[11px] text-slate-300 italic font-editorial">
+                      <p className="text-xs text-slate-300 italic font-editorial truncate max-w-md">
                         "{selectedAgentObj.question}"
                       </p>
                     </div>
@@ -508,7 +442,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         options: currentDilemma.options,
                       });
                     }}
-                    className="px-4 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-black text-xs font-bold font-mono transition-all shrink-0 flex items-center space-x-1.5 shadow-md"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-indigo-500 hover:from-cyan-300 hover:to-indigo-400 text-black text-xs font-bold font-mono transition-all shrink-0 flex items-center space-x-1.5 shadow-md w-full sm:w-auto justify-center"
                   >
                     <span>Convene Council</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -520,7 +454,76 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </section>
 
         {/* ========================================================================= */}
-        {/* SECTION 2: THE PERSPECTIVES // 7 AUTONOMOUS REASONING MODELS */}
+        {/* THE HUMAN DIMENSION // EMOTIONAL ATMOSPHERE & CONTEMPLATION */}
+        {/* ========================================================================= */}
+        <section className="py-24 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full border-t border-white/[0.06]">
+          <div className="relative rounded-3xl overflow-hidden border border-white/[0.08] bg-gradient-to-b from-[#090C16] to-[#04060C] p-8 sm:p-14 shadow-2xl">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+              {/* Left Column (6 cols): Large Human Contemplative Imagery */}
+              <div className="lg:col-span-6 relative rounded-2xl overflow-hidden aspect-[16/10] border border-white/[0.1] shadow-2xl">
+                <img
+                  src="/assets/human_mind.jpg"
+                  alt="Human Contemplation & Deep Thought"
+                  className="w-full h-full object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-gradient-to-tr from-[#090C16]/80 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute bottom-4 left-4 right-4 p-3 rounded-xl bg-black/60 backdrop-blur-md border border-white/[0.08] flex items-center justify-between text-[11px] font-mono">
+                  <span className="text-slate-300 flex items-center space-x-2">
+                    <Brain className="w-3.5 h-3.5 text-amber-400" />
+                    <span>HUMAN AGENCY & REASONING</span>
+                  </span>
+                  <span className="text-amber-400 font-bold">SOVEREIGN MIND</span>
+                </div>
+              </div>
+
+              {/* Right Column (6 cols): The Philosophical Imperative */}
+              <div className="lg:col-span-6 space-y-6 text-left">
+                <span className="text-xs font-mono tracking-widest text-amber-400 uppercase font-bold flex items-center space-x-2">
+                  <Compass className="w-4 h-4 text-amber-400" />
+                  <span>THE HUMAN STRUGGLE OF HIGH-STAKES DECISIONS</span>
+                </span>
+
+                <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight font-sans">
+                  Every decision begins as an internal tension before it becomes an outcome.
+                </h2>
+
+                <p className="text-slate-300 text-sm sm:text-base leading-relaxed font-light">
+                  FlowMind does not replace human sovereignty with black-box speculation. Instead, it provides the cognitive architecture to hold seven opposing futures in your mind simultaneously—interrogating blind spots until only calibrated conviction survives.
+                </p>
+
+                {/* 3 Human Axioms */}
+                <div className="space-y-3 pt-2 font-mono text-xs">
+                  <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-start space-x-3">
+                    <span className="text-cyan-400 font-bold text-sm">01</span>
+                    <div>
+                      <span className="text-white font-semibold font-sans block text-xs">Cognitive Decoupling</span>
+                      <p className="text-slate-400 font-sans text-xs">Separate emotional sunk costs from empirical probabilistic base rates.</p>
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-start space-x-3">
+                    <span className="text-rose-400 font-bold text-sm">02</span>
+                    <div>
+                      <span className="text-white font-semibold font-sans block text-xs">Adversarial Stress-Testing</span>
+                      <p className="text-slate-400 font-sans text-xs">Expose confirmation bias before personal reputation or capital is committed.</p>
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-start space-x-3">
+                    <span className="text-emerald-400 font-bold text-sm">03</span>
+                    <div>
+                      <span className="text-white font-semibold font-sans block text-xs">Equilibrium Clarity</span>
+                      <p className="text-slate-400 font-sans text-xs">Synthesize chaotic divergent tension into an actionable, bounded verdict.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* SECTION 2: THE PERSPECTIVES // 7 AUTONOMOUS REASONING ENGINES */}
         {/* ========================================================================= */}
         <section className="py-20 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full border-t border-white/[0.06]">
           <div className="max-w-3xl mb-12 text-left space-y-2">
