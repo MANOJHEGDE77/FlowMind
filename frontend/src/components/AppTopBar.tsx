@@ -1,6 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Search, Sparkles, Bell, Plus, ChevronRight, Cpu } from 'lucide-react';
+import { Search, Plus, Sparkles, Bell, CheckCircle2, GitBranch } from 'lucide-react';
 import { useFlow } from '../context/FlowContext';
 import { soundService } from '../services/sound';
 
@@ -20,70 +19,67 @@ export const AppTopBar: React.FC<AppTopBarProps> = ({
   const { activeFlow } = useFlow();
 
   return (
-    <header className="h-14 border-b border-white/[0.07] bg-[#060812]/80 backdrop-blur-xl px-5 flex items-center justify-between z-30 select-none">
-      {/* Left: Active Workspace / Flow Name Breadcrumb */}
-      <div className="flex items-center space-x-3 text-xs font-mono">
-        <span className="text-slate-500 uppercase tracking-wider hidden sm:inline">Workspace</span>
-        <span className="text-slate-600 hidden sm:inline">/</span>
-
-        <div className="flex items-center space-x-2">
-          <span className="text-white font-medium text-xs sm:text-sm font-sans truncate max-w-[200px] sm:max-w-xs">
-            {activeFlow?.title || 'FlowMind Workspace'}
-          </span>
-
-          <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/25 text-[10px] font-mono font-bold flex items-center space-x-1 shrink-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            <span>LIVE SYNC</span>
+    <header className="h-13 border-b border-white/[0.08] bg-[#08090D]/90 backdrop-blur-md px-4 md:px-6 flex items-center justify-between z-30 select-none">
+      {/* Left: Workspace Breadcrumb & Active Graph */}
+      <div className="flex items-center space-x-2.5 truncate">
+        <div className="flex items-center space-x-1.5 text-xs text-[#686E7C]">
+          <span className="hidden sm:inline">FlowMind</span>
+          <span className="hidden sm:inline text-[#686E7C]/60">/</span>
+        </div>
+        <div className="flex items-center space-x-2 truncate">
+          <div className="w-2 h-2 rounded-full bg-[#5EE7FF] shadow-[0_0_8px_rgba(94,231,255,0.6)] shrink-0" />
+          <span className="text-xs font-medium text-white truncate max-w-[200px] sm:max-w-xs">
+            {activeFlow?.title || 'Main Workspace'}
           </span>
         </div>
       </div>
 
-      {/* Center: Global Search & Command Input */}
+      {/* Center: Command Palette Trigger (Linear / Raycast style) */}
       <div className="flex-1 max-w-md mx-4 hidden md:block">
         <button
           onClick={() => {
             soundService.playClick();
             onOpenCommand();
           }}
-          className="w-full flex items-center justify-between px-3.5 py-1.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] hover:border-cyan-400/40 text-slate-400 hover:text-slate-200 transition-all text-xs font-sans group shadow-sm"
+          className="w-full flex items-center justify-between px-3.5 py-1.5 rounded-xl bg-[#0F1118] border border-white/[0.08] hover:border-white/[0.16] text-[#A7ACB8] text-xs transition-all shadow-inner group"
         >
-          <div className="flex items-center space-x-2.5 truncate">
-            <Search className="w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform" />
-            <span className="text-slate-400 font-light truncate">Search thoughts, tasks, ideas...</span>
+          <div className="flex items-center space-x-2 truncate">
+            <Search size={14} className="text-[#686E7C] group-hover:text-[#A7ACB8] transition-colors" />
+            <span className="truncate font-sans text-[13px]">
+              Search thoughts, flows, or ask Copilot...
+            </span>
           </div>
-
-          <kbd className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/60 border border-white/10 text-slate-400 shrink-0">
+          <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/[0.1] text-[10px] font-mono text-[#A7ACB8]">
             ⌘K
           </kbd>
         </button>
       </div>
 
-      {/* Right: AI Intelligence Status, New Flow Action & Alerts */}
+      {/* Right: Actions, Copilot State, Notifications */}
       <div className="flex items-center space-x-2.5">
-        {/* Quick New Flow Trigger */}
+        {/* Thought Quick Add Button */}
         <button
           onClick={() => {
             soundService.playChime();
             onNewFlow();
           }}
-          className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500/15 via-indigo-500/15 to-violet-500/15 hover:from-cyan-500/25 hover:to-violet-500/25 border border-cyan-400/30 hover:border-cyan-400/60 text-cyan-300 font-mono text-xs font-bold flex items-center space-x-1.5 transition-all shadow-sm"
+          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#7C5CFF] to-[#5EE7FF] text-white text-xs font-medium hover:opacity-95 transition-opacity shadow-[0_0_16px_rgba(124,92,255,0.3)]"
         >
-          <Plus className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">New Flow</span>
+          <Plus size={14} />
+          <span className="hidden sm:inline">New Thought</span>
         </button>
 
-        {/* AI System Status Indicator */}
+        {/* AI Copilot Observer Pill */}
         <button
           onClick={() => {
             soundService.playClick();
             onOpenAIThink();
           }}
-          className="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] hover:border-indigo-400/40 text-xs font-mono text-slate-300 transition-all"
-          title="FlowMind AI Engine Status"
+          className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-[#151823] border border-[#7C5CFF]/30 text-[#9B84FF] hover:bg-[#7C5CFF]/15 text-xs font-medium transition-colors"
+          title="Flow Copilot Intelligence"
         >
-          <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] animate-pulse" />
-          <span className="hidden lg:inline text-slate-300">Cognitive Core</span>
-          <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+          <Sparkles size={13} className="text-[#5EE7FF]" />
+          <span>Copilot</span>
         </button>
 
         {/* Notifications */}
@@ -92,11 +88,10 @@ export const AppTopBar: React.FC<AppTopBarProps> = ({
             soundService.playClick();
             onOpenNotifications();
           }}
-          className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/[0.05] border border-transparent hover:border-white/[0.08] transition-colors relative"
-          title="Notifications"
+          className="p-2 rounded-lg text-[#686E7C] hover:text-white hover:bg-white/[0.04] transition-colors"
+          title="Activity & Insights"
         >
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-cyan-400" />
+          <Bell size={15} />
         </button>
       </div>
     </header>

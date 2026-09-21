@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
-  X, Sparkles, Plus, CheckSquare, Trash2, ArrowRight,
-  Share2, FileText, Tag, BarChart2, ShieldAlert, Cpu,
-  ExternalLink, ChevronRight, Layers, Lightbulb, Zap
+  X,
+  Sparkles,
+  CheckSquare,
+  Trash2,
+  ArrowRight,
+  GitBranch,
+  AlertTriangle,
+  Lightbulb,
+  Plus,
+  Network,
 } from 'lucide-react';
 import { useFlow } from '../context/FlowContext';
 import { soundService } from '../services/sound';
@@ -25,40 +32,48 @@ export const ContextualAIInspector: React.FC<ContextualAIInspectorProps> = ({
     deleteNodeFromActiveFlow,
     addNodeToActiveFlow,
     addTask,
-    thinkingPatterns,
+    setSelectedNodeId,
   } = useFlow();
 
-  const [activeTab, setActiveTab] = useState<'inspector' | 'ai-insights'>('inspector');
+  const [activeTab, setActiveTab] = useState<'node' | 'intelligence'>('node');
   const [isExpanding, setIsExpanding] = useState(false);
 
   if (!isOpen && !selectedNode) return null;
 
   const node = selectedNode || activeFlow?.nodes[0];
 
-  const handleExpandWithAI = () => {
+  // Connected nodes list
+  const connectedNodes = activeFlow?.edges
+    .filter((e) => e.source === node?.id || e.target === node?.id)
+    .map((e) => {
+      const neighborId = e.source === node?.id ? e.target : e.source;
+      return activeFlow.nodes.find((n) => n.id === neighborId);
+    })
+    .filter(Boolean) || [];
+
+  const handleBranchSubIdea = () => {
+    if (!node) return;
     setIsExpanding(true);
     soundService.playChime();
 
     setTimeout(() => {
-      if (node) {
-        addNodeToActiveFlow({
-          parentId: node.id,
-          title: `AI Expansion: ${node.title} Strategy`,
-          description: `Second-order decomposition based on ${node.title}.`,
-          type: 'idea',
-          x: (node.x || 450) + 160,
-          y: (node.y || 200) + 120,
-        });
-      }
+      addNodeToActiveFlow({
+        parentId: node.id,
+        title: `Strategy on: ${node.title}`,
+        description: `Refined sub-concept branching from ${node.title}.`,
+        type: 'idea',
+        x: (node.x || 450) + 160,
+        y: (node.y || 200) + 120,
+      });
       setIsExpanding(false);
       soundService.playSuccess();
-    }, 600);
+    }, 400);
   };
 
   const handleConvertToTask = () => {
     if (!node) return;
     addTask({
-      title: `Complete: ${node.title}`,
+      title: `Execute: ${node.title}`,
       flowId: activeFlow.id,
       flowTitle: activeFlow.title,
       nodeId: node.id,
@@ -71,192 +86,183 @@ export const ContextualAIInspector: React.FC<ContextualAIInspectorProps> = ({
     soundService.playSuccess();
   };
 
-  const typeColors: Record<string, { bg: string; text: string; border: string }> = {
-    core: { bg: 'bg-cyan-500/10', text: 'text-cyan-400', border: 'border-cyan-500/30' },
-    idea: { bg: 'bg-indigo-500/10', text: 'text-indigo-400', border: 'border-indigo-500/30' },
-    decision: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/30' },
-    task: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/30' },
-    goal: { bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/30' },
-    result: { bg: 'bg-teal-500/10', text: 'text-teal-400', border: 'border-teal-500/30' },
-    resource: { bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/30' },
+  const handleAddInsightToCanvas = () => {
+    if (!node) return;
+    addNodeToActiveFlow({
+      parentId: node.id,
+      title: `Insight: Core trade-off in ${node.title.slice(0, 20)}`,
+      description: 'Synthesized architectural balance derived from contextual flow heuristics.',
+      type: 'result',
+      x: (node.x || 450) + 140,
+      y: (node.y || 200) - 80,
+    });
+    soundService.playSuccess();
   };
 
-  const currentTypeTheme = typeColors[node?.type || 'idea'] || typeColors.idea;
-
   return (
-    <aside className="w-80 sm:w-96 h-full shrink-0 border-l border-white/[0.08] bg-[#070914]/95 backdrop-blur-2xl flex flex-col z-30 shadow-[-20px_0_40px_rgba(0,0,0,0.6)] font-sans">
-      {/* Panel Tabs Header */}
-      <div className="p-4 border-b border-white/[0.07] flex items-center justify-between">
-        <div className="flex items-center space-x-1 p-1 rounded-xl bg-black/40 border border-white/[0.06] text-xs font-mono">
+    <aside className="w-80 sm:w-96 h-full shrink-0 border-l border-white/[0.08] bg-[#0F1118]/95 backdrop-blur-xl flex flex-col z-30 shadow-2xl">
+      {/* HEADER WITH TABS */}
+      <div className="p-4 border-b border-white/[0.08] flex items-center justify-between">
+        <div className="flex items-center space-x-1 p-1 rounded-xl bg-white/[0.04] border border-white/[0.06] text-xs">
           <button
             onClick={() => {
               soundService.playClick();
-              setActiveTab('inspector');
+              setActiveTab('node');
             }}
-            className={`px-3 py-1.5 rounded-lg transition-all ${
-              activeTab === 'inspector'
-                ? 'bg-white/[0.08] text-white font-bold shadow-sm'
-                : 'text-slate-400 hover:text-white'
+            className={`px-3 py-1.5 rounded-lg transition-colors font-medium ${
+              activeTab === 'node'
+                ? 'bg-white/[0.08] text-white shadow-sm'
+                : 'text-[#686E7C] hover:text-[#A7ACB8]'
             }`}
           >
-            Node Inspector
+            Node Details
           </button>
+
           <button
             onClick={() => {
               soundService.playClick();
-              setActiveTab('ai-insights');
+              setActiveTab('intelligence');
             }}
-            className={`px-3 py-1.5 rounded-lg transition-all flex items-center space-x-1.5 ${
-              activeTab === 'ai-insights'
-                ? 'bg-gradient-to-r from-cyan-500/20 to-indigo-500/20 text-cyan-300 border border-cyan-400/30 font-bold'
-                : 'text-slate-400 hover:text-white'
+            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition-colors font-medium ${
+              activeTab === 'intelligence'
+                ? 'bg-[#7C5CFF]/20 text-[#5EE7FF] border border-[#7C5CFF]/30 shadow-sm'
+                : 'text-[#686E7C] hover:text-[#A7ACB8]'
             }`}
           >
-            <Sparkles className="w-3 h-3 text-cyan-400" />
-            <span>AI Insights</span>
+            <Sparkles size={13} className="text-[#5EE7FF]" />
+            <span>AI Intelligence</span>
           </button>
         </div>
 
         <button
           onClick={onClose}
-          className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/[0.06] transition-colors"
+          className="p-1.5 rounded-lg text-[#686E7C] hover:text-white hover:bg-white/[0.06] transition-colors"
         >
-          <X className="w-4 h-4" />
+          <X size={15} />
         </button>
       </div>
 
-      {/* Body: Inspector Mode */}
-      {activeTab === 'inspector' && node && (
-        <div className="flex-1 overflow-y-auto p-5 space-y-6 text-left">
-          {/* Node Badge & Title */}
+      {/* BODY: NODE DETAILS */}
+      {activeTab === 'node' && node && (
+        <div className="flex-1 overflow-y-auto p-5 space-y-6 text-left custom-scrollbar text-xs">
+          {/* Node Type & Title */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase border ${currentTypeTheme.bg} ${currentTypeTheme.text} ${currentTypeTheme.border}`}>
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold uppercase tracking-wider bg-white/[0.05] text-[#5EE7FF] border border-white/[0.08]">
                 {node.type}
               </span>
-              <span className="text-[10px] font-mono text-slate-500 uppercase">
+              <span className="text-[10px] font-mono text-[#686E7C]">
                 ID: {node.id.slice(-6)}
               </span>
             </div>
 
-            <h3 className="text-xl font-bold text-white font-sans leading-tight">
+            <h3 className="text-base font-semibold text-white leading-snug">
               {node.title}
             </h3>
 
             {node.description && (
-              <p className="text-xs text-slate-300 font-light leading-relaxed">
+              <p className="text-xs text-[#A7ACB8] leading-relaxed">
                 {node.description}
               </p>
             )}
           </div>
 
-          {/* AI Structured Intelligence Card */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-[#0C1226] to-[#080B16] border border-cyan-500/25 space-y-2.5 shadow-lg">
-            <div className="flex items-center space-x-2 text-xs font-mono font-bold text-cyan-400">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-              <span>AI SYNTHESIS SUMMARY</span>
+          {/* AI SUMMARY CARD */}
+          <div className="p-3.5 rounded-xl bg-[#151823] border border-white/[0.08] space-y-1.5">
+            <div className="flex items-center space-x-1.5 text-xs font-medium text-[#9B84FF]">
+              <Sparkles size={13} className="text-[#5EE7FF]" />
+              <span>Thought Summary</span>
             </div>
-            <p className="text-xs text-slate-300 leading-relaxed font-light">
+            <p className="text-xs text-[#A7ACB8] leading-relaxed">
               {node.aiSummary || 'Connected node anchoring key downstream deliverables and strategic dependency paths.'}
             </p>
           </div>
 
-          {/* Suggested Next Actions */}
+          {/* CONNECTED THOUGHTS LINEAGE */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-[#686E7C]">
+              <span>Connected Nodes ({connectedNodes.length})</span>
+              <Network size={12} />
+            </div>
+
+            <div className="space-y-1.5">
+              {connectedNodes.length === 0 ? (
+                <p className="text-[11px] text-[#686E7C]">No connections attached yet.</p>
+              ) : (
+                connectedNodes.map((n) => (
+                  <button
+                    key={n?.id}
+                    onClick={() => {
+                      if (n) setSelectedNodeId(n.id);
+                    }}
+                    className="w-full p-2.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] text-left text-xs text-[#A7ACB8] hover:text-white transition-all flex items-center justify-between group"
+                  >
+                    <span className="truncate pr-2">{n?.title}</span>
+                    <ArrowRight size={12} className="text-[#686E7C] group-hover:text-[#5EE7FF] shrink-0" />
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* SUGGESTED ACTIONS */}
           {node.suggestedActions && node.suggestedActions.length > 0 && (
-            <div className="space-y-2 font-mono text-xs">
-              <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
-                SUGGESTED NEXT ACTIONS
+            <div className="space-y-2">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-[#686E7C]">
+                Suggested Next Moves
               </span>
               <div className="space-y-1.5">
                 {node.suggestedActions.map((action, i) => (
                   <div
                     key={i}
                     onClick={() => onAskAI(`How can I accomplish: "${action}" for ${node.title}?`)}
-                    className="p-2.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] hover:border-cyan-400/40 text-slate-300 hover:text-white transition-all cursor-pointer flex items-center justify-between text-xs group"
+                    className="p-2.5 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] hover:border-[#7C5CFF]/40 text-[#A7ACB8] hover:text-white transition-all cursor-pointer flex items-center justify-between group"
                   >
                     <span className="truncate pr-2">{action}</span>
-                    <ArrowRight className="w-3 h-3 text-slate-500 group-hover:text-cyan-400 shrink-0" />
+                    <ArrowRight size={12} className="text-[#686E7C] group-hover:text-[#5EE7FF] shrink-0" />
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Related Thoughts Lineage */}
-          {node.relatedThoughts && node.relatedThoughts.length > 0 && (
-            <div className="space-y-2 font-mono text-xs">
-              <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
-                RELATED THOUGHTS
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {node.relatedThoughts.map((thought, i) => (
-                  <span
-                    key={i}
-                    className="px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.08] text-[11px] text-slate-300 font-sans"
-                  >
-                    ✦ {thought}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Tags & Metadata */}
-          {node.tags && (
-            <div className="space-y-1.5 font-mono text-xs">
-              <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
-                TAGS
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {node.tags.map((tag, i) => (
-                  <span
-                    key={i}
-                    className="px-2 py-0.5 rounded-md bg-white/[0.02] border border-white/[0.06] text-[10px] text-slate-400"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Actions Palette */}
-          <div className="pt-4 border-t border-white/[0.08] space-y-2 font-mono text-xs">
-            <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
-              ACTIONS
+          {/* ACTIONS PALETTE */}
+          <div className="pt-4 border-t border-white/[0.08] space-y-2">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-[#686E7C]">
+              Actions
             </span>
 
             <div className="grid grid-cols-2 gap-2">
               <button
-                onClick={handleExpandWithAI}
+                onClick={handleBranchSubIdea}
                 disabled={isExpanding}
-                className="p-2.5 rounded-xl bg-gradient-to-r from-cyan-500/20 to-indigo-500/20 hover:from-cyan-500/30 hover:to-indigo-500/30 border border-cyan-400/40 text-cyan-300 font-bold flex items-center justify-center space-x-1.5 transition-all text-xs"
+                className="p-2.5 rounded-xl bg-[#7C5CFF]/15 hover:bg-[#7C5CFF]/25 border border-[#7C5CFF]/30 text-[#9B84FF] font-medium flex items-center justify-center space-x-1.5 transition-all text-xs"
               >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>{isExpanding ? 'Expanding...' : 'Expand AI'}</span>
+                <Plus size={13} />
+                <span>{isExpanding ? 'Branching...' : 'Branch Sub-idea'}</span>
               </button>
 
               <button
                 onClick={handleConvertToTask}
-                className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] text-slate-300 hover:text-white flex items-center justify-center space-x-1.5 transition-all text-xs"
+                className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] text-[#A7ACB8] hover:text-white flex items-center justify-center space-x-1.5 transition-all text-xs font-medium"
               >
-                <CheckSquare className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Make Task</span>
+                <CheckSquare size={13} className="text-[#45E0A8]" />
+                <span>Create Task</span>
               </button>
 
               <button
                 onClick={() => onAskAI(`Explain key trade-offs and next strategic moves for "${node.title}".`)}
-                className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] text-slate-300 hover:text-white flex items-center justify-center space-x-1.5 transition-all text-xs"
+                className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] text-[#A7ACB8] hover:text-white flex items-center justify-center space-x-1.5 transition-all text-xs font-medium"
               >
-                <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+                <Lightbulb size={13} className="text-[#F5B84B]" />
                 <span>Ask AI</span>
               </button>
 
               <button
                 onClick={() => deleteNodeFromActiveFlow(node.id)}
-                className="p-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 flex items-center justify-center space-x-1.5 transition-all text-xs"
+                className="p-2.5 rounded-xl bg-[#FF5C6C]/10 hover:bg-[#FF5C6C]/20 border border-[#FF5C6C]/20 text-[#FF5C6C] flex items-center justify-center space-x-1.5 transition-all text-xs font-medium"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 size={13} />
                 <span>Delete</span>
               </button>
             </div>
@@ -264,51 +270,76 @@ export const ContextualAIInspector: React.FC<ContextualAIInspectorProps> = ({
         </div>
       )}
 
-      {/* Body: AI Intelligence & Thinking Patterns */}
-      {activeTab === 'ai-insights' && (
-        <div className="flex-1 overflow-y-auto p-5 space-y-4 text-left font-mono">
+      {/* BODY: CONTEXTUAL AI INTELLIGENCE */}
+      {activeTab === 'intelligence' && (
+        <div className="flex-1 overflow-y-auto p-5 space-y-4 text-left custom-scrollbar text-xs">
           <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
-            <span className="text-xs font-bold text-white flex items-center space-x-2">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-              <span>FLOWMIND INTELLIGENCE</span>
+            <span className="font-semibold text-white flex items-center space-x-2">
+              <Sparkles size={14} className="text-[#5EE7FF]" />
+              <span>Contextual AI Observer</span>
             </span>
-            <span className="text-[10px] text-cyan-400 font-bold">LIVE OBSERVATIONS</span>
+            <span className="text-[10px] text-[#45E0A8] font-mono">OBSERVING</span>
           </div>
 
-          <p className="text-xs text-slate-300 font-sans font-light leading-relaxed">
-            FlowMind analyzes connections across all active thoughts to surface blind spots and high-leverage actions.
+          <p className="text-xs text-[#A7ACB8] leading-relaxed">
+            FlowMind analyzes the topology of your thoughts to surface missing connections, contradictions, and high-leverage execution steps.
           </p>
 
-          <div className="space-y-3 pt-2">
-            {thinkingPatterns.map((p) => (
-              <div
-                key={p.id}
-                className="p-4 rounded-2xl bg-gradient-to-br from-white/[0.04] to-white/[0.01] border border-white/[0.08] hover:border-cyan-400/40 space-y-2 transition-all shadow-md group"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">
-                    ✦ {p.type.replace('_', ' ')}
-                  </span>
-                  <span className="text-[10px] text-slate-500">OPTIMIZED</span>
-                </div>
+          {/* AI Contextual Card 1: Discovered Connections */}
+          <div className="p-4 rounded-xl bg-[#151823] border border-white/[0.08] space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-[#5EE7FF] font-semibold">
+                Possible Connections
+              </span>
+              <span className="text-[10px] font-mono text-[#686E7C]">3 DETECTED</span>
+            </div>
+            <p className="text-xs text-[#F4F5F7] leading-relaxed">
+              Found 3 natural relationships between <strong>{node?.title}</strong> and your Career and Projects roadmaps.
+            </p>
+            <button
+              onClick={handleBranchSubIdea}
+              className="w-full py-1.5 px-3 rounded-lg bg-[#5EE7FF]/15 hover:bg-[#5EE7FF]/25 border border-[#5EE7FF]/30 text-[#5EE7FF] font-medium text-[11px] transition-colors flex items-center justify-center space-x-1"
+            >
+              <span>Connect Nodes</span>
+              <ArrowRight size={12} />
+            </button>
+          </div>
 
-                <div className="text-xs font-bold text-white font-sans">
-                  {p.title}
-                </div>
+          {/* AI Contextual Card 2: Contradiction / Trade-off */}
+          <div className="p-4 rounded-xl bg-[#151823] border border-white/[0.08] space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-[#F5B84B] font-semibold flex items-center space-x-1">
+                <AlertTriangle size={12} />
+                <span>Trade-off Identified</span>
+              </span>
+            </div>
+            <p className="text-xs text-[#A7ACB8] leading-relaxed">
+              Balancing strong consistency with low latency creates architectural fragility if replication lags spike.
+            </p>
+            <button
+              onClick={() => onAskAI(`What are the recommended trade-offs between consistency and latency for ${node?.title}?`)}
+              className="text-[#F5B84B] hover:underline text-[11px] font-medium flex items-center space-x-1"
+            >
+              <span>Review Trade-off Options →</span>
+            </button>
+          </div>
 
-                <p className="text-xs text-slate-300 font-sans font-light leading-relaxed">
-                  {p.insight}
-                </p>
-
-                <button
-                  onClick={() => onAskAI(`How should I proceed with: ${p.actionText}`)}
-                  className="w-full pt-2 flex items-center justify-between text-[11px] text-cyan-300 hover:text-cyan-200 font-bold border-t border-white/[0.06] mt-2 group-hover:pl-1 transition-all"
-                >
-                  <span>{p.actionText}</span>
-                  <ArrowRight className="w-3 h-3 text-cyan-400" />
-                </button>
-              </div>
-            ))}
+          {/* AI Contextual Card 3: Synthesized Insight */}
+          <div className="p-4 rounded-xl bg-[#151823] border border-white/[0.08] space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-[#9B84FF] font-semibold">
+                Possible Insight
+              </span>
+            </div>
+            <p className="text-xs text-[#F4F5F7] leading-relaxed italic">
+              &quot;Structuring concurrency primitives early will reduce subsequent distributed test debugging by an estimated 40%.&quot;
+            </p>
+            <button
+              onClick={handleAddInsightToCanvas}
+              className="w-full py-1.5 px-3 rounded-lg bg-[#7C5CFF]/15 hover:bg-[#7C5CFF]/25 border border-[#7C5CFF]/30 text-[#9B84FF] font-medium text-[11px] transition-colors flex items-center justify-center space-x-1"
+            >
+              <span>+ Add Insight to Canvas</span>
+            </button>
           </div>
         </div>
       )}

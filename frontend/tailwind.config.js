@@ -8,39 +8,47 @@ export default {
   theme: {
     extend: {
       colors: {
-        space: {
-          950: '#07090E',
-          900: '#0B0F17',
-          850: '#111723',
-          800: '#171F2F',
-          700: '#232E42',
-          600: '#34425B',
-          500: '#4B5E7E',
+        background: '#08090D',
+        surface: {
+          DEFAULT: '#0F1118',
+          elevated: '#151823',
+          hover: '#1A1E2B',
         },
-        brand: {
-          primary: '#38BDF8',
-          accent: '#0284C7',
-          glow: '#0EA5E9',
+        foreground: {
+          DEFAULT: '#F4F5F7',
+          secondary: '#A7ACB8',
+          muted: '#686E7C',
         },
-        agent: {
-          analyst: '#38BDF8',
-          optimist: '#34D399',
-          skeptic: '#F87171',
-          financial: '#FBBF24',
-          longterm: '#818CF8',
-          devil: '#FB7185',
-          synthesizer: '#C084FC',
-        }
+        primary: {
+          DEFAULT: '#7C5CFF',
+          soft: '#9B84FF',
+        },
+        flow: {
+          DEFAULT: '#5EE7FF',
+          soft: '#2BB9D6',
+        },
+        success: '#45E0A8',
+        warning: '#F5B84B',
+        error: '#FF5C6C',
+        border: {
+          DEFAULT: 'rgba(255, 255, 255, 0.08)',
+          hover: 'rgba(255, 255, 255, 0.16)',
+        },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
-      boxShadow: {
-        'subtle-node': '0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08)',
-        'active-node': '0 0 25px -4px rgba(56, 189, 248, 0.25), 0 0 0 1px rgba(56, 189, 248, 0.5)',
-        'modal-depth': '0 20px 45px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1)',
-      }
+      borderRadius: {
+        'xs': '4px',
+        'sm': '6px',
+        'DEFAULT': '8px',
+        'md': '10px',
+        'lg': '12px',
+        'xl': '16px',
+        '2xl': '20px',
+        'full': '9999px',
+      },
     },
   },
   plugins: [],

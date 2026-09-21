@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Mic,
   Sparkles,
-  ArrowUpRight,
-  TrendingUp,
+  ArrowRight,
+  Mic,
   Brain,
   CheckCircle2,
   Clock,
   Layers,
-  Search,
-  Flame,
-  ArrowRight,
+  TrendingUp,
+  Zap,
 } from 'lucide-react';
 import { useFlow } from '../context/FlowContext';
 import { soundService } from '../services/sound';
@@ -22,12 +20,11 @@ interface HomePageProps {
   onNavigateToFocus: () => void;
 }
 
-const QUICK_CAPTURES = [
-  { label: 'Plan my project', category: 'Projects' as const },
-  { label: 'Study Computer Networks', category: 'Learning' as const },
-  { label: 'Prepare for interview', category: 'Career' as const },
-  { label: 'Build my portfolio', category: 'Projects' as const },
-  { label: 'Organize my week', category: 'Personal Goals' as const },
+const QUICK_STARTERS = [
+  'Distributed Systems Architecture',
+  'Technical Staff Interview Prep',
+  'Autonomous AI Agent Pipeline',
+  'Product Growth & Retention Strategy',
 ];
 
 export const HomePage: React.FC<HomePageProps> = ({
@@ -46,23 +43,25 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   const [inputVal, setInputVal] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [isSynthesizing, setIsSynthesizing] = useState(false);
 
   const pendingTasks = tasks.filter((t) => !t.completed);
-  const completedTasks = tasks.filter((t) => t.completed);
+  const totalThoughts = flows.reduce((acc, f) => acc + f.nodes.length, 0);
 
-  // Time-of-day greeting
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < 12) return 'GOOD MORNING';
+    if (hour < 18) return 'GOOD AFTERNOON';
+    return 'GOOD EVENING';
   };
 
   const handleCreateFlow = async (textToUse?: string) => {
     const text = textToUse || inputVal;
     if (!text.trim()) return;
     soundService.playChime();
+    setIsSynthesizing(true);
     const created = await generateFlowFromPrompt(text.trim());
+    setIsSynthesizing(false);
     setInputVal('');
     if (created) {
       setActiveFlowId(created.id);
@@ -74,301 +73,255 @@ export const HomePage: React.FC<HomePageProps> = ({
     soundService.playClick();
     if (!isListening) {
       setIsListening(true);
-      // Simulate brief voice recognition prompt
       setTimeout(() => {
-        setInputVal('Design scalable event-driven distributed pipeline');
+        setInputVal('Design scalable event-driven distributed pipeline with kafka & redis');
         setIsListening(false);
-      }, 1800);
+      }, 1600);
     } else {
       setIsListening(false);
     }
   };
 
   return (
-    <div className="flex-1 h-full overflow-y-auto bg-gradient-to-b from-[#06080F] via-[#090C16] to-[#06080F] text-slate-100 p-6 lg:p-10 custom-scrollbar">
+    <div className="flex-1 h-full overflow-y-auto bg-[#08090D] text-[#F4F5F7] p-6 lg:p-12 custom-scrollbar">
       <div className="max-w-5xl mx-auto space-y-12">
-        {/* HERO SECTION */}
-        <section className="relative pt-6 pb-2 text-center space-y-4">
-          {/* Subtle ambient lighting behind hero */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-64 bg-gradient-to-r from-cyan-500/10 via-violet-500/15 to-blue-500/10 blur-3xl pointer-events-none rounded-full" />
-
+        {/* HERO SECTION: "What is on your mind?" */}
+        <section className="text-center space-y-4 pt-4">
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/40 border border-cyan-500/30 text-cyan-300 text-xs font-mono uppercase tracking-wider backdrop-blur-sm"
+            className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs text-[#A7ACB8] font-medium"
           >
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-            FlowMind Neural Cognitive Workspace
+            <span className="w-1.5 h-1.5 rounded-full bg-[#5EE7FF]" />
+            <span className="font-mono text-[11px] tracking-wider uppercase">
+              {getGreeting()}, ARCHITECT
+            </span>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
+          <motion.h1
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="space-y-2"
+            transition={{ delay: 0.08 }}
+            className="text-3xl md:text-5xl font-semibold tracking-tight text-white"
           >
-            <p className="text-sm font-mono text-slate-400">
-              {getGreeting()}, <span className="text-slate-200 font-semibold">Architect</span>
-            </p>
-            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
-              What’s flowing through your mind today?
-            </h1>
-            <p className="text-sm md:text-base text-slate-400 max-w-xl mx-auto font-light">
-              Turn ambiguous thoughts into living, interconnected structured flows.
-            </p>
-          </motion.div>
+            What is on your mind?
+          </motion.h1>
 
-          {/* LARGE CENTRAL INPUT */}
+          <motion.p
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12 }}
+            className="text-sm md:text-base text-[#A7ACB8] max-w-lg mx-auto leading-relaxed"
+          >
+            Transform raw thoughts into connected graphs, structured insights, and decisive action.
+          </motion.p>
+
+          {/* CENTRAL THOUGHT CAPTURE INPUT */}
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="relative max-w-3xl mx-auto mt-8"
+            transition={{ delay: 0.18 }}
+            className="relative max-w-2xl mx-auto mt-6"
           >
-            <div className="relative group p-[1px] rounded-2xl bg-gradient-to-r from-cyan-500/30 via-violet-500/40 to-cyan-500/30 shadow-2xl shadow-cyan-950/40 transition-all duration-300 hover:border-cyan-400/50">
-              <div className="relative flex items-center bg-[#0C101D]/90 backdrop-blur-xl rounded-2xl px-4 py-3.5 sm:py-4">
-                <input
-                  type="text"
-                  value={inputVal}
-                  onChange={(e) => setInputVal(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleCreateFlow();
-                  }}
-                  placeholder="Capture a thought, goal, problem, idea..."
-                  className="flex-1 bg-transparent text-white placeholder-slate-500 text-base md:text-lg focus:outline-none pr-3 font-medium"
-                />
+            <div className="relative flex items-center p-2 rounded-2xl bg-[#0F1118] border border-white/[0.1] hover:border-white/[0.2] focus-within:border-[#7C5CFF] focus-within:shadow-[0_0_24px_rgba(124,92,255,0.25)] transition-all shadow-xl">
+              <input
+                type="text"
+                value={inputVal}
+                onChange={(e) => setInputVal(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleCreateFlow();
+                }}
+                placeholder="Start a new thought, project roadmap, or decision dilemma..."
+                className="flex-1 bg-transparent px-4 py-2 text-white placeholder-[#686E7C] text-sm md:text-base focus:outline-none"
+              />
 
-                {/* Right controls inside input */}
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handleVoiceToggle}
-                    className={`p-2.5 rounded-xl border transition-all ${
-                      isListening
-                        ? 'bg-rose-500/20 border-rose-500/50 text-rose-400 animate-pulse'
-                        : 'bg-slate-800/60 border-slate-700/60 text-slate-400 hover:text-cyan-300 hover:border-cyan-500/30'
-                    }`}
-                    title={isListening ? 'Listening...' : 'Voice Capture'}
-                  >
-                    <Mic size={18} />
-                  </button>
+              <div className="flex items-center space-x-2 shrink-0 pr-1">
+                <button
+                  type="button"
+                  onClick={handleVoiceToggle}
+                  className={`p-2.5 rounded-xl border transition-colors ${
+                    isListening
+                      ? 'border-[#FF5C6C] text-[#FF5C6C] bg-[#FF5C6C]/10 animate-pulse'
+                      : 'border-white/[0.08] text-[#A7ACB8] hover:text-white hover:bg-white/[0.05]'
+                  }`}
+                  title="Voice Thought Capture"
+                >
+                  <Mic size={16} />
+                </button>
 
-                  <button
-                    type="button"
-                    onClick={() => handleCreateFlow()}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-semibold text-sm shadow-lg shadow-cyan-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                  >
-                    <Sparkles size={16} />
-                    <span className="hidden sm:inline">Create Flow</span>
-                    <ArrowUpRight size={16} />
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  disabled={isSynthesizing}
+                  onClick={() => handleCreateFlow()}
+                  className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#7C5CFF] to-[#5EE7FF] text-white text-xs font-semibold hover:opacity-95 transition-opacity shadow-[0_0_16px_rgba(124,92,255,0.3)] disabled:opacity-50"
+                >
+                  <Sparkles size={14} />
+                  <span>{isSynthesizing ? 'Structuring...' : 'Synthesize'}</span>
+                </button>
               </div>
             </div>
-          </motion.div>
 
-          {/* QUICK CAPTURE CHIPS */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="flex flex-wrap items-center justify-center gap-2.5 pt-4"
-          >
-            <span className="text-xs uppercase tracking-wider font-mono text-slate-500 mr-1">
-              Quick Capture:
-            </span>
-            {QUICK_CAPTURES.map((chip) => (
-              <button
-                key={chip.label}
-                onClick={() => handleCreateFlow(chip.label)}
-                className="px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-300 bg-slate-900/60 border border-slate-800 hover:border-cyan-500/40 hover:text-cyan-300 hover:bg-slate-800/80 transition-all active:scale-95 shadow-sm"
-              >
-                ✦ {chip.label}
-              </button>
-            ))}
+            {/* QUICK STARTERS */}
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
+              <span className="text-xs text-[#686E7C] font-medium mr-1">Starters:</span>
+              {QUICK_STARTERS.map((starter) => (
+                <button
+                  key={starter}
+                  onClick={() => handleCreateFlow(starter)}
+                  className="px-3 py-1 rounded-full text-xs text-[#A7ACB8] bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.15] hover:text-white transition-all"
+                >
+                  ✦ {starter}
+                </button>
+              ))}
+            </div>
           </motion.div>
         </section>
 
-        {/* METRICS & COGNITIVE PULSE */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-5 rounded-2xl bg-[#0B0F1D]/80 border border-slate-800/80 backdrop-blur-sm relative overflow-hidden group hover:border-cyan-500/30 transition-colors">
-            <div className="flex items-center justify-between text-slate-400 mb-3">
-              <span className="text-xs font-mono uppercase tracking-wider">Active Mind Flows</span>
-              <Brain size={18} className="text-cyan-400" />
-            </div>
-            <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-extrabold text-white">{flows.length}</span>
-              <span className="text-xs text-emerald-400 font-mono flex items-center gap-1">
-                <TrendingUp size={12} /> Connected Ecosystem
-              </span>
-            </div>
-            <p className="text-xs text-slate-400 mt-2">
-              {flows.reduce((acc, f) => acc + f.nodes.length, 0)} total thoughts structured across domains
-            </p>
-          </div>
-
-          <div
-            onClick={onNavigateToTasks}
-            className="p-5 rounded-2xl bg-[#0B0F1D]/80 border border-slate-800/80 backdrop-blur-sm relative overflow-hidden group hover:border-violet-500/30 transition-colors cursor-pointer"
-          >
-            <div className="flex items-center justify-between text-slate-400 mb-3">
-              <span className="text-xs font-mono uppercase tracking-wider">Thought-Linked Tasks</span>
-              <CheckCircle2 size={18} className="text-violet-400" />
-            </div>
-            <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-extrabold text-white">{pendingTasks.length}</span>
-              <span className="text-xs text-slate-400 font-mono">
-                {completedTasks.length} finalized
-              </span>
-            </div>
-            <p className="text-xs text-slate-400 mt-2">
-              100% of tasks linked to their root cognitive origin
-            </p>
-          </div>
-
-          <div
-            onClick={() => {
-              if (pendingTasks[0]) setActiveFocusTask(pendingTasks[0]);
-              onNavigateToFocus();
-            }}
-            className="p-5 rounded-2xl bg-[#0B0F1D]/80 border border-slate-800/80 backdrop-blur-sm relative overflow-hidden group hover:border-emerald-500/30 transition-colors cursor-pointer"
-          >
-            <div className="flex items-center justify-between text-slate-400 mb-3">
-              <span className="text-xs font-mono uppercase tracking-wider">High Leverage Focus</span>
-              <Flame size={18} className="text-emerald-400" />
-            </div>
-            <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-extrabold text-white">25m</span>
-              <span className="text-xs text-emerald-400 font-mono">Ready to Launch</span>
-            </div>
-            <p className="text-xs text-slate-400 mt-2 truncate">
-              {pendingTasks[0]?.title || 'Practice Binary Search'}
-            </p>
+        {/* THOUGHT → ACTION COGNITIVE PIPELINE INDICATOR */}
+        <section className="py-3 px-6 rounded-2xl bg-[#0F1118]/60 border border-white/[0.06] flex flex-wrap items-center justify-between gap-3 text-xs text-[#686E7C]">
+          <span className="font-mono text-[10px] tracking-wider uppercase text-[#A7ACB8]">
+            Cognitive Pipeline
+          </span>
+          <div className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
+            <span className="text-white font-medium">THOUGHT</span>
+            <span className="text-[#686E7C]">→</span>
+            <span className="text-[#5EE7FF]">CONNECTION</span>
+            <span className="text-[#686E7C]">→</span>
+            <span className="text-[#9B84FF]">ANALYSIS</span>
+            <span className="text-[#686E7C]">→</span>
+            <span className="text-[#7C5CFF]">INSIGHT</span>
+            <span className="text-[#686E7C]">→</span>
+            <span className="text-[#F5B84B]">DECISION</span>
+            <span className="text-[#686E7C]">→</span>
+            <span className="text-[#45E0A8]">ACTION</span>
+            <span className="text-[#686E7C]">→</span>
+            <span className="text-white font-medium">PROGRESS</span>
           </div>
         </section>
 
-        {/* ACTIVE FLOWS CAROUSEL / GRID */}
+        {/* RECENT FLOWS (The signature FlowMind knowledge graphs) */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-white tracking-wide flex items-center gap-2">
-                <Layers className="text-cyan-400" size={20} />
-                Your Thinking Ecosystem
+              <h2 className="text-lg font-semibold text-white tracking-tight flex items-center space-x-2">
+                <Layers size={18} className="text-[#5EE7FF]" />
+                <span>Recent Flows</span>
               </h2>
-              <p className="text-xs text-slate-400">
-                Interactive graph visualizers representing your active cognitive paths.
+              <p className="text-xs text-[#686E7C]">
+                Explore your active spatial thinking graphs and connected roadmaps.
               </p>
             </div>
+
             <button
               onClick={() => onNavigateToCanvas()}
-              className="text-xs font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors"
+              className="text-xs font-medium text-[#5EE7FF] hover:underline flex items-center space-x-1"
             >
-              Open Infinite Canvas <ArrowRight size={14} />
+              <span>Open Canvas</span>
+              <ArrowRight size={13} />
             </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {flows.map((flow) => {
-              const coreNode = flow.nodes.find((n) => n.type === 'core') || flow.nodes[0];
-              const ideaNodes = flow.nodes.filter((n) => n.type === 'idea');
+              const thoughtNodes = flow.nodes.filter((n) => n.type === 'idea' || n.type === 'core');
+              const insightCount = flow.nodes.filter((n) => n.type === 'idea' || n.type === 'decision').length;
+              const actionCount = flow.nodes.filter((n) => n.type === 'task').length;
 
               return (
-                <motion.div
+                <div
                   key={flow.id}
-                  whileHover={{ y: -4 }}
                   onClick={() => {
                     soundService.playClick();
                     setActiveFlowId(flow.id);
                     onNavigateToCanvas(flow.id);
                   }}
-                  className="group relative p-5 rounded-2xl bg-[#0C101F]/90 border border-slate-800 hover:border-cyan-500/40 backdrop-blur-xl transition-all shadow-xl shadow-black/40 cursor-pointer overflow-hidden flex flex-col justify-between"
+                  className="group relative p-5 rounded-2xl bg-[#0F1118] border border-white/[0.08] hover:border-white/[0.18] hover:bg-[#151823] transition-all cursor-pointer flex flex-col justify-between space-y-4 shadow-lg hover:shadow-2xl"
                 >
-                  {/* Top glowing edge */}
-                  <div className="absolute top-0 inset-x-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wider bg-slate-800 text-cyan-300 border border-slate-700">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-mono uppercase tracking-wider bg-white/[0.04] text-[#5EE7FF] border border-white/[0.08]">
                         {flow.category}
                       </span>
-                      <span className="text-xs font-mono text-slate-400 flex items-center gap-1">
-                        <Clock size={12} /> {flow.progress}% synced
+                      <span className="text-[#686E7C] font-mono text-[11px]">
+                        {flow.progress}% synced
                       </span>
                     </div>
 
-                    <h3 className="text-base font-bold text-white group-hover:text-cyan-200 transition-colors line-clamp-1">
+                    <h3 className="text-base font-semibold text-white group-hover:text-[#5EE7FF] transition-colors line-clamp-1">
                       {flow.title}
                     </h3>
-                    <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-[#A7ACB8] line-clamp-2 leading-relaxed">
                       {flow.description}
                     </p>
 
-                    {/* Miniature SVG Graph preview */}
-                    <div className="h-24 w-full bg-[#080B14] rounded-xl border border-slate-800/80 p-2 relative flex items-center justify-center overflow-hidden">
-                      <svg className="w-full h-full" viewBox="0 0 300 100">
-                        {/* Connecting filaments */}
+                    {/* Miniature SVG Flow Preview */}
+                    <div className="h-20 w-full rounded-xl bg-[#08090D] border border-white/[0.06] p-2 flex items-center justify-center relative overflow-hidden">
+                      <svg className="w-full h-full" viewBox="0 0 260 80">
                         <path
-                          d="M 50,50 Q 110,20 150,50 T 250,50"
+                          d="M 30,40 C 70,10 110,60 150,30 C 190,10 210,50 230,40"
                           fill="none"
-                          stroke="#00F0FF"
-                          strokeWidth="1.5"
+                          stroke="#5EE7FF"
+                          strokeWidth="1.75"
                           strokeDasharray="4 4"
-                          className="opacity-40 animate-pulse"
+                          className="opacity-40 animate-flow-dash"
                         />
                         <path
-                          d="M 150,50 Q 200,80 250,75"
+                          d="M 150,30 C 170,70 200,65 230,65"
                           fill="none"
-                          stroke="#8B5CF6"
+                          stroke="#7C5CFF"
                           strokeWidth="1.5"
-                          className="opacity-50"
+                          strokeOpacity="0.4"
                         />
                         {/* Nodes */}
-                        <circle cx="50" cy="50" r="8" fill="#00F0FF" className="animate-ping opacity-20" />
-                        <circle cx="50" cy="50" r="5" fill="#00F0FF" />
-                        <circle cx="150" cy="50" r="7" fill="#6366F1" />
-                        <circle cx="250" cy="50" r="6" fill="#10B981" />
-                        <circle cx="250" cy="75" r="5" fill="#F59E0B" />
+                        <circle cx="30" cy="40" r="4.5" fill="#7C5CFF" />
+                        <circle cx="95" cy="38" r="4" fill="#5EE7FF" />
+                        <circle cx="150" cy="30" r="4.5" fill="#5EE7FF" />
+                        <circle cx="230" cy="40" r="4" fill="#45E0A8" />
+                        <circle cx="230" cy="65" r="3.5" fill="#F5B84B" />
                       </svg>
-                      <span className="absolute bottom-1.5 right-2 text-[10px] font-mono text-slate-500">
-                        {flow.nodes.length} nodes
-                      </span>
                     </div>
                   </div>
 
-                  <div className="pt-4 mt-2 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-                    <span className="truncate max-w-[180px]">
-                      Core: <strong className="text-slate-200">{coreNode?.title || 'Root'}</strong>
-                    </span>
-                    <span className="text-cyan-400 group-hover:translate-x-1 transition-transform flex items-center">
-                      Launch →
+                  {/* Card Bottom Meta */}
+                  <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs text-[#686E7C]">
+                    <div className="flex items-center space-x-3 font-mono text-[11px]">
+                      <span>{flow.nodes.length} THOUGHTS</span>
+                      <span>{insightCount} INSIGHTS</span>
+                    </div>
+                    <span className="text-[#5EE7FF] font-medium group-hover:translate-x-0.5 transition-transform">
+                      →
                     </span>
                   </div>
-                </motion.div>
+                </div>
               );
             })}
           </div>
         </section>
 
-        {/* COGNITIVE PATTERNS HIGHLIGHT */}
+        {/* FLOW COPILOT INSIGHTS BANNER */}
         {thinkingPatterns.length > 0 && (
-          <section className="p-6 rounded-2xl bg-gradient-to-r from-violet-950/20 via-cyan-950/20 to-slate-900/40 border border-violet-500/20 backdrop-blur-xl">
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="w-5 h-5 text-violet-400" />
-              <h3 className="text-sm font-semibold text-white tracking-wide">
-                FlowMind Autonomous Observation
-              </h3>
+          <section className="p-6 rounded-2xl bg-[#0F1118] border border-white/[0.08] space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2 text-sm font-semibold text-white">
+                <Sparkles size={16} className="text-[#5EE7FF]" />
+                <span>Copilot Cross-Flow Observations</span>
+              </div>
+              <span className="text-[11px] font-mono text-[#45E0A8] uppercase">
+                Active Observer
+              </span>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {thinkingPatterns.map((pat) => (
                 <div
                   key={pat.id}
-                  className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 space-y-1.5"
+                  className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-2 text-xs"
                 >
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-cyan-400">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-[#9B84FF]">
                     ✦ {pat.type.replace('_', ' ')}
                   </span>
-                  <p className="text-xs text-slate-200 leading-relaxed">{pat.insight}</p>
-                  <p className="text-[11px] font-medium text-violet-300 flex items-center gap-1 pt-1">
+                  <p className="text-[#A7ACB8] leading-relaxed">{pat.insight}</p>
+                  <p className="text-[11px] text-[#5EE7FF] font-medium pt-1">
                     ↳ {pat.actionText}
                   </p>
                 </div>

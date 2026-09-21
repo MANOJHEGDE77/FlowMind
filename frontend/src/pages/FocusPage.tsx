@@ -5,9 +5,10 @@ import {
   Pause,
   RotateCcw,
   CheckCircle2,
-  Flame,
   GitBranch,
   ArrowLeft,
+  Maximize2,
+  Minimize2,
   Volume2,
   VolumeX,
 } from 'lucide-react';
@@ -19,14 +20,23 @@ interface FocusPageProps {
   onOpenCanvas: (flowId: string) => void;
 }
 
+const PRESETS = [
+  { label: '25m Focus', seconds: 25 * 60 },
+  { label: '50m Deep Sprint', seconds: 50 * 60 },
+  { label: '5m Short Break', seconds: 5 * 60 },
+  { label: '15m Long Break', seconds: 15 * 60 },
+];
+
 export const FocusPage: React.FC<FocusPageProps> = ({
   onExitFocus,
   onOpenCanvas,
 }) => {
   const { activeFocusTask, toggleTask, flows } = useFlow();
 
-  const [timeLeft, setTimeLeft] = useState(25 * 60); // 25:00 default
+  const [totalDuration, setTotalDuration] = useState(25 * 60);
+  const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
+  const [isZenMode, setIsZenMode] = useState(false);
   const [ambientSound, setAmbientSound] = useState(true);
 
   // Timer tick effect
@@ -47,6 +57,11 @@ export const FocusPage: React.FC<FocusPageProps> = ({
   const seconds = timeLeft % 60;
   const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
+  const radius = 130;
+  const circumference = 2 * Math.PI * radius;
+  const progressRatio = totalDuration > 0 ? timeLeft / totalDuration : 0;
+  const strokeDashoffset = circumference * (1 - progressRatio);
+
   const handleToggleTimer = () => {
     soundService.playClick();
     setIsRunning(!isRunning);
@@ -55,7 +70,14 @@ export const FocusPage: React.FC<FocusPageProps> = ({
   const handleResetTimer = () => {
     soundService.playClick();
     setIsRunning(false);
-    setTimeLeft(25 * 60);
+    setTimeLeft(totalDuration);
+  };
+
+  const handleSelectPreset = (secondsCount: number) => {
+    soundService.playClick();
+    setIsRunning(false);
+    setTotalDuration(secondsCount);
+    setTimeLeft(secondsCount);
   };
 
   const handleCompleteCurrentTask = () => {
@@ -65,139 +87,185 @@ export const FocusPage: React.FC<FocusPageProps> = ({
     }
   };
 
-  // Find parent thought chain
   const parentFlow = flows.find((f) => f.id === activeFocusTask?.flowId) || flows[0];
 
   return (
-    <div className="relative flex-1 h-full w-full overflow-hidden bg-[#05070D] text-slate-100 flex flex-col justify-between p-6 md:p-12 select-none">
-      {/* AMBIENT BREATHING HALO */}
+    <div className="relative flex-1 h-full w-full overflow-hidden bg-[#08090D] text-[#F4F5F7] flex flex-col justify-between p-6 md:p-10 select-none">
+      {/* AMBIENT BREATHING BACKDROP */}
       <motion.div
         animate={{
-          scale: isRunning ? [1, 1.25, 1] : 1,
-          opacity: isRunning ? [0.15, 0.35, 0.15] : 0.15,
+          scale: isRunning ? [1, 1.15, 1] : 1,
+          opacity: isRunning ? [0.12, 0.22, 0.12] : 0.08,
         }}
         transition={{
-          duration: 6,
+          duration: 7,
           repeat: Infinity,
           ease: 'easeInOut',
         }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-cyan-500 via-indigo-600 to-violet-600 blur-[130px] pointer-events-none"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#7C5CFF]/20 blur-[140px] pointer-events-none"
       />
 
       {/* TOP CONTROLS */}
       <div className="relative z-10 flex items-center justify-between">
         <button
           onClick={onExitFocus}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-400 hover:text-white transition-colors text-xs font-mono"
+          className="flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[#A7ACB8] hover:text-white transition-colors text-xs font-medium"
         >
           <ArrowLeft size={14} />
-          <span>Exit Focus Mode</span>
+          <span>Exit Focus Space</span>
         </button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setIsZenMode(!isZenMode)}
+            className="p-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[#A7ACB8] hover:text-white transition-colors"
+            title={isZenMode ? 'Exit Zen Mode' : 'Zen Distraction-Free Mode'}
+          >
+            {isZenMode ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+          </button>
+
           <button
             onClick={() => setAmbientSound(!ambientSound)}
-            className="p-2 rounded-xl bg-slate-900/60 border border-slate-800 text-slate-400 hover:text-white transition-colors"
-            title={ambientSound ? 'Mute ambient' : 'Unmute ambient'}
+            className="p-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[#A7ACB8] hover:text-white transition-colors"
+            title={ambientSound ? 'Mute audio' : 'Enable audio'}
           >
-            {ambientSound ? <Volume2 size={16} /> : <VolumeX size={16} />}
+            {ambientSound ? <Volume2 size={15} className="text-[#5EE7FF]" /> : <VolumeX size={15} />}
           </button>
         </div>
       </div>
 
-      {/* CENTER CONCENTRATION HUB */}
-      <div className="relative z-10 max-w-xl mx-auto text-center space-y-8 my-auto">
-        {/* Thought Chain Breadcrumb */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#0C101F]/80 border border-cyan-500/20 backdrop-blur-md shadow-lg shadow-cyan-950/20 text-xs font-mono">
-          <GitBranch size={13} className="text-cyan-400" />
-          <span className="text-slate-400">{parentFlow.title}</span>
-          <span className="text-slate-600">→</span>
-          <span className="text-cyan-300 font-semibold truncate max-w-[200px]">
-            {activeFocusTask?.nodeTitle || 'Core Focus Objective'}
-          </span>
+      {/* CENTER FOCUS HUB */}
+      <div className="relative z-10 max-w-xl mx-auto text-center space-y-6 my-auto">
+        {!isZenMode && (
+          <div className="space-y-3">
+            {/* Thought Chain Breadcrumb */}
+            <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#0F1118] border border-white/[0.08] text-xs">
+              <GitBranch size={13} className="text-[#5EE7FF]" />
+              <span className="text-[#A7ACB8]">{parentFlow.title}</span>
+              <span className="text-[#686E7C]">→</span>
+              <span className="text-[#9B84FF] font-medium truncate max-w-[220px]">
+                {activeFocusTask?.nodeTitle || 'Core Focus Objective'}
+              </span>
+            </div>
+
+            {/* Current Objective */}
+            <h2 className="text-2xl md:text-3xl font-semibold text-white tracking-tight leading-tight">
+              {activeFocusTask?.title || 'Deep Execution Sprint'}
+            </h2>
+          </div>
+        )}
+
+        {/* CIRCULAR PROGRESS COUNTDOWN RING */}
+        <div className="relative flex items-center justify-center py-2">
+          <svg className="w-[280px] h-[280px] md:w-[320px] md:h-[320px] -rotate-90 transform">
+            <defs>
+              <linearGradient id="focus-timer-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#7C5CFF" />
+                <stop offset="100%" stopColor="#5EE7FF" />
+              </linearGradient>
+            </defs>
+
+            {/* Background track circle */}
+            <circle
+              cx="50%"
+              cy="50%"
+              r={radius}
+              fill="transparent"
+              stroke="rgba(255, 255, 255, 0.06)"
+              strokeWidth="8"
+            />
+
+            {/* Progress indicator circle */}
+            <circle
+              cx="50%"
+              cy="50%"
+              r={radius}
+              fill="transparent"
+              stroke="url(#focus-timer-grad)"
+              strokeWidth="8"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+              className="transition-[stroke-dashoffset] duration-1000 ease-linear"
+            />
+          </svg>
+
+          {/* Center Digital Display */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center space-y-1">
+            <span className="text-xs font-mono uppercase tracking-widest text-[#686E7C] font-medium">
+              {isRunning ? 'FOCUS SESSION' : 'PAUSED'}
+            </span>
+            <div className="text-5xl md:text-6xl font-mono font-bold tracking-tight text-white select-none">
+              {formattedTime}
+            </div>
+            <span className="text-[11px] text-[#A7ACB8]">
+              {Math.round(progressRatio * 100)}% remaining
+            </span>
+          </div>
         </div>
 
-        {/* Current Task Display */}
-        <div className="space-y-3">
-          <p className="text-xs uppercase tracking-widest font-mono text-cyan-400">
-            Current Deep Flow Target
-          </p>
-          <h2 className="text-2xl md:text-4xl font-extrabold text-white tracking-tight leading-tight">
-            {activeFocusTask?.title || 'Practice Binary Search on Answer'}
-          </h2>
-        </div>
-
-        {/* Big Futuristic Countdown Timer */}
-        <div className="relative py-4">
-          <motion.div
-            key={formattedTime}
-            initial={{ opacity: 0.8, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-7xl md:text-9xl font-black font-mono tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-100 to-slate-400 select-none drop-shadow-[0_10px_35px_rgba(0,240,255,0.15)]"
-          >
-            {formattedTime}
-          </motion.div>
-          <p className="text-xs font-mono text-slate-500 tracking-widest uppercase mt-2">
-            {isRunning ? '✦ Deep Cognition In Session' : 'Paused / Ready'}
-          </p>
-        </div>
-
-        {/* Primary Timer Controls */}
-        <div className="flex items-center justify-center gap-4">
-          <button
-            onClick={handleResetTimer}
-            className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-all active:scale-95"
-            title="Reset to 25:00"
-          >
-            <RotateCcw size={18} />
-          </button>
-
+        {/* CONTROLS */}
+        <div className="flex items-center justify-center space-x-3 pt-2">
           <button
             onClick={handleToggleTimer}
-            className="flex items-center gap-2.5 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold text-sm shadow-xl shadow-cyan-500/25 transition-all hover:scale-105 active:scale-95"
+            className={`flex items-center space-x-2 px-6 py-2.5 rounded-xl font-semibold text-xs transition-all shadow-lg ${
+              isRunning
+                ? 'bg-[#F5B84B] hover:bg-[#F5B84B]/90 text-black shadow-[#F5B84B]/20'
+                : 'bg-gradient-to-r from-[#7C5CFF] to-[#5EE7FF] hover:opacity-95 text-white shadow-[#7C5CFF]/25'
+            }`}
           >
-            {isRunning ? (
-              <>
-                <Pause size={18} />
-                <span>Pause Session</span>
-              </>
-            ) : (
-              <>
-                <Play size={18} fill="currentColor" />
-                <span>Start Session</span>
-              </>
-            )}
+            {isRunning ? <Pause size={15} /> : <Play size={15} />}
+            <span>{isRunning ? 'Pause' : 'Start Focus'}</span>
           </button>
 
           <button
-            onClick={handleCompleteCurrentTask}
-            className="flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-mono transition-all active:scale-95"
-            title="Mark Complete & Sync with Flow"
+            onClick={handleResetTimer}
+            className="p-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[#A7ACB8] hover:text-white transition-colors"
+            title="Reset Timer"
           >
-            <CheckCircle2 size={16} />
-            <span>Finalize</span>
+            <RotateCcw size={15} />
           </button>
+
+          {activeFocusTask && !activeFocusTask.completed && (
+            <button
+              onClick={handleCompleteCurrentTask}
+              className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl bg-[#45E0A8]/15 hover:bg-[#45E0A8]/25 border border-[#45E0A8]/30 text-[#45E0A8] font-medium text-xs transition-colors"
+            >
+              <CheckCircle2 size={15} />
+              <span>Mark Done</span>
+            </button>
+          )}
         </div>
+
+        {/* PRESET CHIPS */}
+        {!isZenMode && (
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+            {PRESETS.map((p) => (
+              <button
+                key={p.label}
+                onClick={() => handleSelectPreset(p.seconds)}
+                className={`px-3 py-1 rounded-xl text-xs transition-all ${
+                  totalDuration === p.seconds
+                    ? 'bg-white/[0.12] text-white border border-white/[0.2] font-semibold'
+                    : 'bg-white/[0.03] text-[#A7ACB8] border border-white/[0.06] hover:text-white'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* BOTTOM THOUGHT CHAIN LINEAGE */}
-      <div className="relative z-10 max-w-2xl mx-auto w-full pt-6 border-t border-slate-800/60">
-        <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider text-center mb-3">
-          Thought Chain Provenance
-        </div>
-        <div className="flex items-center justify-center gap-2 text-xs font-mono text-slate-400 overflow-x-auto py-1">
-          <span className="text-slate-300 bg-slate-900/60 px-2.5 py-1 rounded-lg border border-slate-800">
-            {parentFlow.title}
-          </span>
-          <span className="text-cyan-400 font-bold">↓</span>
-          <span className="text-indigo-300 bg-indigo-950/40 px-2.5 py-1 rounded-lg border border-indigo-800/40">
-            Strategic Pillar
-          </span>
-          <span className="text-cyan-400 font-bold">↓</span>
-          <span className="text-emerald-300 bg-emerald-950/40 px-2.5 py-1 rounded-lg border border-emerald-800/40">
-            Current Action
-          </span>
-        </div>
+      {/* BOTTOM FOOTER */}
+      <div className="relative z-10 flex items-center justify-between text-xs text-[#686E7C]">
+        <span>Cognitive Isolation Space</span>
+        <button
+          onClick={() => onOpenCanvas(parentFlow.id)}
+          className="text-[#5EE7FF] hover:underline"
+        >
+          View Parent Graph →
+        </button>
       </div>
     </div>
   );

@@ -2,175 +2,90 @@
 @config "../tailwind.config.js";
 
 :root {
-  --canvas-bg: #030408;
-  --canvas-subtle: #070911;
-  --canvas-elevated: #0C101C;
-  --text-vivid: #F8FAFC;
-  --text-body: #94A3B8;
-  --text-faint: #475569;
-  --accent-cyan: #00F0FF;
-  --accent-indigo: #6366F1;
-  --accent-violet: #8B5CF6;
-  --accent-emerald: #10B981;
-  --accent-rose: #F43F5E;
-  --accent-amber: #F59E0B;
-  --line-color: rgba(255, 255, 255, 0.07);
-  --line-active: rgba(0, 240, 255, 0.55);
-  --surface-blur: rgba(7, 9, 17, 0.82);
-  --halo-glow: rgba(99, 102, 241, 0.08);
-
-  /* Component semantic aliases */
-  --bg-surface: #070911;
-  --bg-surface-subtle: rgba(255, 255, 255, 0.03);
-  --bg-surface-elevated: rgba(255, 255, 255, 0.06);
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --text-primary: #F8FAFC;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
-}
-
-html.light {
-  --canvas-bg: #030408;
-  --canvas-subtle: #070911;
-  --canvas-elevated: #0C101C;
-  --text-vivid: #F8FAFC;
-  --text-body: #94A3B8;
-  --text-faint: #475569;
-  --accent-cyan: #00F0FF;
-  --accent-indigo: #6366F1;
-  --accent-violet: #8B5CF6;
-  --accent-emerald: #10B981;
-  --accent-rose: #F43F5E;
-  --accent-amber: #F59E0B;
-  --line-color: rgba(255, 255, 255, 0.07);
-  --line-active: rgba(0, 240, 255, 0.55);
-  --surface-blur: rgba(7, 9, 17, 0.82);
-  --halo-glow: rgba(99, 102, 241, 0.08);
-
-  --bg-surface: #070911;
-  --bg-surface-subtle: rgba(255, 255, 255, 0.03);
-  --bg-surface-elevated: rgba(255, 255, 255, 0.06);
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --text-primary: #F8FAFC;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
+  /* Core Cognitive Workspace Color Tokens */
+  --background: #08090D;
+  --surface: #0F1118;
+  --surface-elevated: #151823;
+  --surface-hover: #1A1E2B;
+  
+  --foreground: #F4F5F7;
+  --foreground-secondary: #A7ACB8;
+  --foreground-muted: #686E7C;
+  
+  --primary: #7C5CFF;
+  --primary-soft: #9B84FF;
+  --flow: #5EE7FF;
+  --flow-soft: #2BB9D6;
+  
+  --success: #45E0A8;
+  --warning: #F5B84B;
+  --error: #FF5C6C;
+  
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.16);
+  --primary-gradient: linear-gradient(135deg, #7C5CFF 0%, #5EE7FF 100%);
 }
 
 html {
+  background-color: var(--background);
+  color: var(--foreground);
+  color-scheme: dark;
   scroll-behavior: smooth;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
-  background-color: #030408;
 }
 
 body {
-  background-color: var(--canvas-bg);
-  color: var(--text-vivid);
-  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
   overflow-y: auto;
-  user-select: none;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Typography styles */
-.font-sans-ui {
-  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+/* Subtle Cognitive Workspace Utilities */
+.bg-flow-gradient {
+  background: linear-gradient(135deg, #7C5CFF 0%, #5EE7FF 100%);
 }
 
-.font-editorial {
-  font-family: 'Plus Jakarta Sans', 'Inter', Georgia, serif;
-  letter-spacing: -0.02em;
+.text-flow-gradient {
+  background: linear-gradient(135deg, #7C5CFF 0%, #5EE7FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.font-mono {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+.glow-primary {
+  box-shadow: 0 0 24px -4px rgba(124, 92, 255, 0.35);
 }
 
-/* Premium Glassmorphism & Materials */
-.glass-panel-luxury {
-  background: linear-gradient(180deg, rgba(12, 16, 28, 0.82) 0%, rgba(6, 8, 15, 0.92) 100%);
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12), 0 24px 60px -15px rgba(0, 0, 0, 0.75);
+.glow-flow {
+  box-shadow: 0 0 24px -4px rgba(94, 231, 255, 0.3);
 }
 
-.glass-card-premium {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.015) 100%);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 14px 36px -8px rgba(0, 0, 0, 0.5);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+/* Card Surface Utilities */
+.subtle-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease-in-out;
 }
 
-.glass-card-premium:hover {
-  border-color: rgba(99, 102, 241, 0.4);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.18), 0 18px 45px -8px rgba(99, 102, 241, 0.22);
+.subtle-card:hover {
+  background-color: var(--surface-hover);
+  border-color: var(--border-hover);
 }
 
-/* Atmospheric Subtle Dot-Matrix Grid with Vignette */
-.grid-mesh-ambient {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-  background-size: 28px 28px;
-  mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, black 40%, transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, black 40%, transparent 100%);
+.elevated-card {
+  background-color: var(--surface-elevated);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
-/* Ambient Floating Cognitive Halos */
-@keyframes cognitive-pulse-1 {
-  0%, 100% {
-    transform: translate(0px, 0px) scale(1);
-    opacity: 0.32;
-  }
-  50% {
-    transform: translate(30px, -20px) scale(1.1);
-    opacity: 0.5;
-  }
-}
-
-@keyframes cognitive-pulse-2 {
-  0%, 100% {
-    transform: translate(0px, 0px) scale(1);
-    opacity: 0.22;
-  }
-  50% {
-    transform: translate(-25px, 20px) scale(1.08);
-    opacity: 0.4;
-  }
-}
-
-.animate-aurora-1 {
-  animation: cognitive-pulse-1 14s infinite ease-in-out;
-}
-
-.animate-aurora-2 {
-  animation: cognitive-pulse-2 18s infinite ease-in-out;
-}
-
-/* Flowing Neural Signal Line Animation */
-@keyframes flow-dash {
-  0% {
-    stroke-dashoffset: 60;
-  }
-  100% {
-    stroke-dashoffset: 0;
-  }
-}
-
-.animate-flow-dash {
-  animation: flow-dash 3s linear infinite;
-}
-
-/* Radial thinking halo behind central thoughts */
-.thinking-halo {
-  background: radial-gradient(circle at 50% 45%, var(--halo-glow) 0%, transparent 68%);
-}
-
-/* Custom scrollbars */
+/* Custom Refined Scrollbars */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -180,19 +95,16 @@ body {
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.22);
 }
 
-/* Smooth pulsating signal keyframe */
-@keyframes signal-pulse {
-  0%, 100% {
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.2), inset 0 0 10px rgba(0, 240, 255, 0.1);
-  }
-  50% {
-    box-shadow: 0 0 32px rgba(0, 240, 255, 0.45), inset 0 0 16px rgba(0, 240, 255, 0.25);
+/* Subtle Animated Flow Pulse */
+@keyframes flow-dash {
+  to {
+    stroke-dashoffset: -40;
   }
 }
 
-.animate-signal-pulse {
-  animation: signal-pulse 3.2s infinite ease-in-out;
+.animate-flow-dash {
+  animation: flow-dash 1.6s linear infinite;
 }

@@ -8,19 +8,35 @@ import { AppTopBar } from './components/AppTopBar';
 import { ContextualAIInspector } from './components/ContextualAIInspector';
 import { AIGenerationModal } from './components/AIGenerationModal';
 import { AskAIModal } from './components/AskAIModal';
+import { OmniCommand } from './components/OmniCommand';
 
-// Core Pages
+import { LandingPage } from './pages/LandingPage';
 import { HomePage } from './pages/HomePage';
 import { SignatureFlowCanvas } from './pages/SignatureFlowCanvas';
 import { MyFlowPage } from './pages/MyFlowPage';
 import { TasksPage } from './pages/TasksPage';
 import { FocusPage } from './pages/FocusPage';
 import { AIThinkPage } from './pages/AIThinkPage';
+import { InsightsPage } from './pages/InsightsPage';
 import { LibraryPage } from './pages/LibraryPage';
 
 // Settings & Notification Modals
-import { Settings, User, X, Bell, Sparkles, CheckCircle2, Shield, Sliders } from 'lucide-react';
+import { Settings, User, X, Bell, Sparkles, Sliders } from 'lucide-react';
 import { soundService } from './services/sound';
+
+const getViewFromHash = (): AppView => {
+  const hash = window.location.hash.replace('#', '').toLowerCase();
+  const validViews: AppView[] = ['landing', 'home', 'canvas', 'ai-think', 'tasks', 'focus', 'insights', 'library', 'flows'];
+  if (validViews.includes(hash as AppView)) {
+    return hash as AppView;
+  }
+  if (hash === 'flow') return 'canvas';
+  if (hash === 'think') return 'ai-think';
+  if (hash === 'act') return 'tasks';
+  if (hash === 'directory') return 'flows';
+  if (hash === 'workspace') return 'home';
+  return 'landing';
+};
 
 function FlowMindAppContent() {
   const { showToast } = useToast();
@@ -33,7 +49,7 @@ function FlowMindAppContent() {
     setActiveFocusTask,
   } = useFlow();
 
-  const [activeView, setActiveView] = useState<AppView>('home');
+  const [activeView, setActiveView] = useState<AppView>(getViewFromHash());
   const [isInspectorOpen, setIsInspectorOpen] = useState(true);
   const [isAskAIOpen, setIsAskAIOpen] = useState(false);
   const [askAIQuestion, setAskAIQuestion] = useState('');
@@ -41,7 +57,34 @@ function FlowMindAppContent() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isQuickPromptOpen, setIsQuickPromptOpen] = useState(false);
-  const [quickPromptVal, setQuickPromptVal] = useState('');
+
+  // Sync hash changes (e.g. back/forward button)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const current = window.location.hash.replace('#', '').toLowerCase();
+      if (['modes', 'council', 'dilemmas', 'comparison', 'testimonials', 'faq'].includes(current)) {
+        return;
+      }
+      const newView = getViewFromHash();
+      setActiveView(newView);
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Sync activeView to URL hash
+  useEffect(() => {
+    const current = window.location.hash.replace('#', '').toLowerCase();
+    if (activeView === 'landing') {
+      if (!['modes', 'council', 'dilemmas', 'comparison', 'testimonials', 'faq', 'landing'].includes(current)) {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+    } else {
+      if (current !== activeView) {
+        window.location.hash = activeView;
+      }
+    }
+  }, [activeView]);
 
   // Auto-open inspector when a node is selected on canvas
   useEffect(() => {
@@ -50,10 +93,9 @@ function FlowMindAppContent() {
     }
   }, [selectedNodeId, activeView]);
 
-  // Global Keyboard shortcuts: 1..7 for views, ⌘K for search/prompt
+  // Global Keyboard shortcuts: 1..7 for views, ⌘K for command palette
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger when typing in inputs/textareas
       if (
         document.activeElement?.tagName === 'INPUT' ||
         document.activeElement?.tagName === 'TEXTAREA'
@@ -68,26 +110,33 @@ function FlowMindAppContent() {
       }
 
       switch (e.key) {
+        case '0':
+          setActiveView('landing');
+          break;
         case '1':
-          setActiveView('home');
+          setActiveView('canvas'); // FLOW
           break;
         case '2':
-          setActiveView('flows');
+          setActiveView('ai-think'); // THINK
           break;
         case '3':
-          setActiveView('canvas');
+          setActiveView('tasks'); // ACT
           break;
-        case '4':
-          setActiveView('ai-think');
+        case 'h':
+        case 'H':
+          setActiveView('home');
           break;
-        case '5':
-          setActiveView('tasks');
+        case 'i':
+        case 'I':
+          setActiveView('insights');
           break;
-        case '6':
-          setActiveView('focus');
-          break;
-        case '7':
+        case 'l':
+        case 'L':
           setActiveView('library');
+          break;
+        case 'g':
+        case 'G':
+          setActiveView('flows');
           break;
       }
     };
@@ -101,34 +150,40 @@ function FlowMindAppContent() {
     setActiveView('canvas');
   };
 
-  const handleQuickPromptSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!quickPromptVal.trim()) return;
-    const prompt = quickPromptVal.trim();
-    setQuickPromptVal('');
-    setIsQuickPromptOpen(false);
-    const created = await generateFlowFromPrompt(prompt);
-    if (created) {
-      setActiveView('canvas');
-      showToast(`Flow "${created.title}" generated!`, 'success');
-    }
-  };
-
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-[#06080F] text-slate-100 flex flex-col select-none font-sans">
+    <div className="relative w-screen h-screen overflow-hidden bg-[#08090D] text-[#F4F5F7] flex flex-col select-none font-sans">
       {/* 4-Stage AI Generation Modal */}
       <AIGenerationModal />
 
-      {/* FOCUS MODE TAKEOVER: full distraction-free screen */}
-      {activeView === 'focus' ? (
+      {/* LANDING PAGE VIEW */}
+      {activeView === 'landing' ? (
+        <LandingPage
+          onGetStarted={() => setActiveView('home')}
+          onNavigateToMode={(mode) => setActiveView(mode)}
+          onExplore={() => setActiveView('flows')}
+          onOpenAskAI={(q) => {
+            setAskAIQuestion(q || '');
+            setIsAskAIOpen(true);
+          }}
+          onSelectStarterDilemma={(dilemma) => {
+            generateFlowFromPrompt(dilemma.title).then((flow) => {
+              if (flow) {
+                setActiveFlowId(flow.id);
+                setActiveView('canvas');
+              }
+            });
+          }}
+        />
+      ) : activeView === 'focus' ? (
+        /* FOCUS MODE TAKEOVER: full distraction-free screen */
         <FocusPage
-          onExitFocus={() => setActiveView('home')}
+          onExitFocus={() => setActiveView('tasks')}
           onOpenCanvas={handleOpenCanvasWithFlow}
         />
       ) : (
-        /* STANDARD 3-PANEL SHELL */
+        /* STANDARD WORKSPACE SHELL */
         <div className="relative flex-1 flex overflow-hidden">
-          {/* LEFT: Compact Navigation Rail */}
+          {/* LEFT: Navigation Rail */}
           <AppNavigationRail
             activeView={activeView}
             onNavigate={(view) => {
@@ -138,8 +193,8 @@ function FlowMindAppContent() {
             onOpenProfile={() => setIsProfileOpen(true)}
           />
 
-          {/* MAIN COLUMN (TOP BAR + ACTIVE VIEW CANVAS) */}
-          <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#070913]">
+          {/* MAIN COLUMN (TOP BAR + ACTIVE VIEW CONTAINER) */}
+          <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#08090D]">
             {/* Top Bar */}
             <AppTopBar
               onOpenCommand={() => setIsQuickPromptOpen(true)}
@@ -149,56 +204,74 @@ function FlowMindAppContent() {
             />
 
             {/* View Switcher Container */}
-            <div className="flex-1 flex min-w-0 h-[calc(100vh-3.5rem)] overflow-hidden relative">
+            <div className="flex-1 flex min-w-0 h-[calc(100vh-3.25rem)] overflow-hidden relative">
               <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
-                {activeView === 'home' && (
-                  <HomePage
-                    onNavigateToCanvas={handleOpenCanvasWithFlow}
-                    onNavigateToTasks={() => setActiveView('tasks')}
-                    onNavigateToFocus={() => setActiveView('focus')}
-                  />
-                )}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeView}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+                    className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative"
+                  >
+                    {activeView === 'home' && (
+                      <HomePage
+                        onNavigateToCanvas={handleOpenCanvasWithFlow}
+                        onNavigateToTasks={() => setActiveView('tasks')}
+                        onNavigateToFocus={() => setActiveView('focus')}
+                      />
+                    )}
 
-                {activeView === 'canvas' && <SignatureFlowCanvas />}
+                    {activeView === 'canvas' && <SignatureFlowCanvas />}
 
-                {activeView === 'flows' && (
-                  <MyFlowPage
-                    onOpenCanvas={handleOpenCanvasWithFlow}
-                    onNewFlowPrompt={() => setIsQuickPromptOpen(true)}
-                  />
-                )}
+                    {activeView === 'flows' && (
+                      <MyFlowPage
+                        onOpenCanvas={handleOpenCanvasWithFlow}
+                        onNewFlowPrompt={() => setIsQuickPromptOpen(true)}
+                      />
+                    )}
 
-                {activeView === 'tasks' && (
-                  <TasksPage
-                    onStartFocus={(task) => {
-                      setActiveFocusTask(task);
-                      setActiveView('focus');
-                    }}
-                    onOpenCanvas={handleOpenCanvasWithFlow}
-                  />
-                )}
+                    {activeView === 'tasks' && (
+                      <TasksPage
+                        onStartFocus={(task) => {
+                          setActiveFocusTask(task);
+                          setActiveView('focus');
+                        }}
+                        onOpenCanvas={handleOpenCanvasWithFlow}
+                      />
+                    )}
 
-                {activeView === 'ai-think' && (
-                  <AIThinkPage
-                    onOpenCanvas={handleOpenCanvasWithFlow}
-                    onGeneratePrompt={async (prompt) => {
-                      await generateFlowFromPrompt(prompt);
-                      setActiveView('canvas');
-                    }}
-                  />
-                )}
+                    {activeView === 'ai-think' && (
+                      <AIThinkPage
+                        onOpenCanvas={handleOpenCanvasWithFlow}
+                        onGeneratePrompt={async (prompt) => {
+                          await generateFlowFromPrompt(prompt);
+                          setActiveView('canvas');
+                        }}
+                      />
+                    )}
 
-                {activeView === 'library' && (
-                  <LibraryPage
-                    onOpenFlow={(flowTitle) => {
-                      setActiveView('canvas');
-                    }}
-                  />
-                )}
+                    {activeView === 'insights' && (
+                      <InsightsPage
+                        onOpenCanvas={handleOpenCanvasWithFlow}
+                        onNavigateToThink={() => setActiveView('ai-think')}
+                      />
+                    )}
+
+                    {activeView === 'library' && (
+                      <LibraryPage
+                        onOpenFlow={(_flowTitle) => {
+                          setActiveView('canvas');
+                        }}
+                      />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
               </main>
 
               {/* RIGHT: Contextual AI Intelligence Panel */}
-              {isInspectorOpen && (
+              {isInspectorOpen && activeView === 'canvas' && (
                 <ContextualAIInspector
                   isOpen={isInspectorOpen}
                   onClose={() => setIsInspectorOpen(false)}
@@ -213,60 +286,19 @@ function FlowMindAppContent() {
         </div>
       )}
 
-      {/* QUICK CAPTURE / ⌘K MODAL */}
+      {/* COMMAND PALETTE (⌘K) */}
       <AnimatePresence>
         {isQuickPromptOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: -10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: -10 }}
-              className="w-full max-w-xl bg-[#0C101F] border border-cyan-500/30 rounded-2xl shadow-2xl p-5 overflow-hidden"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2 text-xs font-mono text-cyan-400">
-                  <Sparkles size={14} />
-                  <span>FLOWMIND OMNI COMMAND (⌘K)</span>
-                </div>
-                <button
-                  onClick={() => setIsQuickPromptOpen(false)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-white"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-
-              <form onSubmit={handleQuickPromptSubmit} className="space-y-4">
-                <input
-                  type="text"
-                  value={quickPromptVal}
-                  onChange={(e) => setQuickPromptVal(e.target.value)}
-                  placeholder="Capture a thought, goal, project or problem..."
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900/90 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-400"
-                  autoFocus
-                />
-
-                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 font-mono">
-                  <span>Press [Enter] to generate structured flow</span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setIsQuickPromptOpen(false)}
-                      className="px-3 py-1.5 rounded-lg hover:text-white"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-4 py-1.5 rounded-lg bg-cyan-400 hover:bg-cyan-300 text-black font-semibold shadow-md shadow-cyan-400/20"
-                    >
-                      Create Flow →
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </motion.div>
-          </div>
+          <OmniCommand
+            isOpen={isQuickPromptOpen}
+            onClose={() => setIsQuickPromptOpen(false)}
+            onNavigate={(view) => setActiveView(view)}
+            onOpenFlow={(flowId) => handleOpenCanvasWithFlow(flowId)}
+            onOpenAskAI={(initialQ) => {
+              setAskAIQuestion(initialQ || '');
+              setIsAskAIOpen(true);
+            }}
+          />
         )}
       </AnimatePresence>
 
@@ -280,58 +312,58 @@ function FlowMindAppContent() {
       {/* SETTINGS MODAL */}
       <AnimatePresence>
         {isSettingsOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md bg-[#0D111E] border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5 text-left"
+              className="w-full max-w-md bg-[#0F1118] border border-white/[0.12] rounded-2xl p-6 shadow-2xl space-y-5 text-left"
             >
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div className="flex items-center gap-2 text-white font-bold text-sm">
-                  <Sliders size={16} className="text-cyan-400" />
-                  <span>FlowMind Settings</span>
+              <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
+                <div className="flex items-center gap-2 text-white font-semibold text-sm">
+                  <Sliders size={16} className="text-[#5EE7FF]" />
+                  <span>FlowMind Workspace Settings</span>
                 </div>
                 <button
                   onClick={() => setIsSettingsOpen(false)}
-                  className="text-slate-400 hover:text-white"
+                  className="text-[#686E7C] hover:text-white"
                 >
                   <X size={16} />
                 </button>
               </div>
 
               <div className="space-y-3 text-xs">
-                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
                   <div>
-                    <span className="font-semibold text-slate-200 block">Tactical Synthesizer Audio</span>
-                    <span className="text-slate-400 text-[11px]">Real-time frequency tones during state transitions</span>
+                    <span className="font-semibold text-white block">Interactive Audio Feedback</span>
+                    <span className="text-[#686E7C] text-[11px]">Subtle chime and click tones during state changes</span>
                   </div>
-                  <input type="checkbox" defaultChecked className="accent-cyan-400 w-4 h-4" />
+                  <input type="checkbox" defaultChecked className="accent-[#7C5CFF] w-4 h-4" />
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
                   <div>
-                    <span className="font-semibold text-slate-200 block">Living Particle Animation</span>
-                    <span className="text-slate-400 text-[11px]">Animated pulses traveling along Bezier connections</span>
+                    <span className="font-semibold text-white block">Flow Connection Energy Particles</span>
+                    <span className="text-[#686E7C] text-[11px]">Subtle traveling flow dots on bezier lines</span>
                   </div>
-                  <input type="checkbox" defaultChecked className="accent-cyan-400 w-4 h-4" />
+                  <input type="checkbox" defaultChecked className="accent-[#7C5CFF] w-4 h-4" />
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+                <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
                   <div>
-                    <span className="font-semibold text-slate-200 block">Autonomous Pattern Observation</span>
-                    <span className="text-slate-400 text-[11px]">Continuous cognitive bottleneck detection</span>
+                    <span className="font-semibold text-white block">Autonomous Copilot Observer</span>
+                    <span className="text-[#686E7C] text-[11px]">Continuous background cross-flow synthesis</span>
                   </div>
-                  <input type="checkbox" defaultChecked className="accent-cyan-400 w-4 h-4" />
+                  <input type="checkbox" defaultChecked className="accent-[#7C5CFF] w-4 h-4" />
                 </div>
               </div>
 
               <div className="pt-2 flex justify-end">
                 <button
                   onClick={() => setIsSettingsOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-cyan-400 text-black font-semibold text-xs"
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#7C5CFF] to-[#5EE7FF] text-white font-semibold text-xs"
                 >
-                  Save & Close
+                  Save &amp; Close
                 </button>
               </div>
             </motion.div>
@@ -342,38 +374,38 @@ function FlowMindAppContent() {
       {/* USER PROFILE MODAL */}
       <AnimatePresence>
         {isProfileOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-sm bg-[#0D111E] border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4 text-center"
+              className="w-full max-w-sm bg-[#0F1118] border border-white/[0.12] rounded-2xl p-6 shadow-2xl space-y-4 text-center"
             >
-              <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-cyan-400 to-indigo-600 p-0.5 shadow-xl shadow-cyan-500/20">
-                <div className="w-full h-full rounded-full bg-[#070913] flex items-center justify-center text-xl font-mono font-bold text-white">
+              <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-[#7C5CFF] to-[#5EE7FF] p-0.5 shadow-xl shadow-[#7C5CFF]/20">
+                <div className="w-full h-full rounded-full bg-[#08090D] flex items-center justify-center text-xl font-bold text-white">
                   FM
                 </div>
               </div>
 
               <div>
                 <h3 className="text-base font-bold text-white">Cognitive Architect</h3>
-                <p className="text-xs text-cyan-400 font-mono">architect@flowmind.ai</p>
+                <p className="text-xs text-[#5EE7FF] font-mono">architect@flowmind.ai</p>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-300 font-mono text-left space-y-1">
+              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] text-xs text-[#A7ACB8] text-left space-y-1">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Tier:</span>
-                  <span className="text-emerald-400 font-semibold">Pro Enterprise Sovereign</span>
+                  <span className="text-[#686E7C]">Workspace:</span>
+                  <span className="text-[#45E0A8] font-medium">Active Enterprise</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Nodes Synced:</span>
-                  <span className="text-white">Active</span>
+                  <span className="text-[#686E7C]">Synced Mental Models:</span>
+                  <span className="text-white">{activeFlow?.nodes.length || 0} Thoughts</span>
                 </div>
               </div>
 
               <button
                 onClick={() => setIsProfileOpen(false)}
-                className="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold"
+                className="w-full py-2 rounded-xl bg-white/[0.08] hover:bg-white/[0.12] text-white text-xs font-semibold"
               >
                 Close
               </button>
@@ -390,48 +422,48 @@ function FlowMindAppContent() {
               initial={{ x: 320 }}
               animate={{ x: 0 }}
               exit={{ x: 320 }}
-              className="w-80 h-full bg-[#0A0D1A] border-l border-slate-800 p-5 shadow-2xl flex flex-col justify-between"
+              className="w-80 h-full bg-[#0F1118] border-l border-white/[0.08] p-5 shadow-2xl flex flex-col justify-between"
             >
               <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <span className="text-xs font-mono font-bold text-white flex items-center gap-2">
-                    <Bell size={14} className="text-cyan-400" />
+                <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
+                  <span className="text-xs font-semibold text-white flex items-center gap-2">
+                    <Bell size={14} className="text-[#5EE7FF]" />
                     <span>COGNITIVE SIGNALS</span>
                   </span>
                   <button
                     onClick={() => setIsNotificationsOpen(false)}
-                    className="text-slate-400 hover:text-white"
+                    className="text-[#686E7C] hover:text-white"
                   >
                     <X size={16} />
                   </button>
                 </div>
 
                 <div className="space-y-2.5">
-                  <div className="p-3 rounded-xl bg-slate-900/70 border border-slate-800 text-xs space-y-1">
-                    <span className="text-[10px] font-mono text-cyan-400 block uppercase">
-                      ✦ Autonomous Linking
+                  <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] text-xs space-y-1">
+                    <span className="text-[10px] font-mono text-[#5EE7FF] block uppercase">
+                      ✦ Cross-Flow Synergy
                     </span>
-                    <p className="text-slate-200">
-                      Cross-flow connection detected between Java and Agent platforms.
+                    <p className="text-[#A7ACB8]">
+                      Shared concurrency model detected between Java and Autonomous Agent graphs.
                     </p>
-                    <span className="text-[10px] text-slate-500 font-mono block">10m ago</span>
+                    <span className="text-[10px] text-[#686E7C] font-mono block">10m ago</span>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-slate-900/70 border border-slate-800 text-xs space-y-1">
-                    <span className="text-[10px] font-mono text-emerald-400 block uppercase">
-                      ✦ Milestone Completed
+                  <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] text-xs space-y-1">
+                    <span className="text-[10px] font-mono text-[#45E0A8] block uppercase">
+                      ✦ Action Resolved
                     </span>
-                    <p className="text-slate-200">
-                      ConcurrentHashMap CAS inspection task finalized.
+                    <p className="text-[#A7ACB8]">
+                      ConcurrentHashMap memory model review sprint finalized.
                     </p>
-                    <span className="text-[10px] text-slate-500 font-mono block">1h ago</span>
+                    <span className="text-[10px] text-[#686E7C] font-mono block">1h ago</span>
                   </div>
                 </div>
               </div>
 
               <button
                 onClick={() => setIsNotificationsOpen(false)}
-                className="w-full py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400 hover:text-white"
+                className="w-full py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-[#A7ACB8] hover:text-white"
               >
                 Dismiss All
               </button>

@@ -1,14 +1,38 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Sparkles, ArrowRight, Swords, SlidersHorizontal, Users,
-  BookOpen, CheckCircle2, ChevronRight, Crown, Layers,
-  ShieldAlert, Zap, BarChart3, Scale, Eye, Check,
-  ExternalLink, Terminal, ShieldCheck, Cpu, ArrowUpRight,
-  TrendingUp, AlertTriangle, FileText, CornerDownRight, RotateCcw,
-  Heart, Brain, Compass
+  ArrowRight,
+  Network,
+  Sparkles,
+  CheckSquare,
+  Zap,
+  Layers,
+  Brain,
+  ChevronRight,
+  Shield,
+  Clock,
+  Compass,
+  CheckCircle2,
+  HelpCircle,
+  TrendingUp,
+  Sliders,
+  Database,
+  Lock,
+  Cpu,
+  ChevronDown,
+  Menu,
+  X,
+  Activity,
+  Send,
+  ExternalLink,
+  Users,
+  Quote,
+  Radio,
 } from 'lucide-react';
+import { FlowMindLogo } from '../components/FlowMindLogo';
 import { soundService } from '../services/sound';
+
+export type LandingNavigateMode = 'canvas' | 'ai-think' | 'tasks' | 'flows' | 'home';
 
 interface LandingPageProps {
   onGetStarted: () => void;
@@ -19,142 +43,233 @@ interface LandingPageProps {
     context: string;
     options: Array<{ title: string; description?: string }>;
   }) => void;
+  onNavigateToMode?: (mode: LandingNavigateMode) => void;
 }
-
-const AGENTS_DATA = [
-  {
-    id: 'analyst',
-    code: 'AGT_01',
-    name: 'The Analyst',
-    role: 'Empirical Baseline',
-    icon: '🔍',
-    confidence: '92%',
-    question: 'What does historical evidence prove?',
-    lens: 'Historical base rates indicate a 42% survival probability for Series B ventures in vertical AI. Customer retention in the first 90 days is the primary indicator of durable product-market fit.',
-    risk: 'Key executive turnover if early validation takes more than 5 months.',
-    tag: 'EMPIRICAL_RIGOR',
-    color: '#00F0FF',
-  },
-  {
-    id: 'optimist',
-    code: 'AGT_02',
-    name: 'The Optimist',
-    role: 'Asymmetric Upside',
-    icon: '🚀',
-    confidence: '96%',
-    question: 'What happens if we succeed wildly?',
-    lens: 'Early lead equity captures asymmetric upside. In the bull case, autonomous market tailwinds provide 12x compounding valuation leverage over 4 years.',
-    risk: 'Opportunity cost if sales cycle elongates beyond 9 months.',
-    tag: 'ASYMMETRIC_LEVERAGE',
-    color: '#10B981',
-  },
-  {
-    id: 'skeptic',
-    code: 'AGT_03',
-    name: 'The Skeptic',
-    role: 'Downside Protection',
-    icon: '🛡️',
-    confidence: '78%',
-    question: 'What blind spots are we ignoring?',
-    lens: 'Switching costs are high. This is an irreversible Type 1 door: exiting early burns reputational capital and forfeits accrued equity vesting schedules.',
-    risk: 'Burnout and compensation reduction in year 1 before revenue stability.',
-    tag: 'TAIL_RISK_DEFENSE',
-    color: '#F43F5E',
-  },
-  {
-    id: 'financial',
-    code: 'AGT_04',
-    name: 'The Financial Analyst',
-    role: 'Capital Efficiency',
-    icon: '💰',
-    confidence: '89%',
-    question: 'What is the risk-adjusted ROI?',
-    lens: 'Net Present Value analysis indicates Option A delivers 2.8x expected capital return over 5 years compared to fixed salary compensation, adjusting for inflation and equity risk.',
-    risk: 'Sunk cost escalation during initial unmonetized prototyping.',
-    tag: 'CAPITAL_CALIBRATION',
-    color: '#F59E0B',
-  },
-  {
-    id: 'planner',
-    code: 'AGT_05',
-    name: 'The Long-Term Planner',
-    role: 'Compounding Horizon',
-    icon: '⏳',
-    confidence: '91%',
-    question: 'What compounds over 10 years?',
-    lens: 'Second-order effects: high-density leadership accelerates personal brand and unlocks direct tier-1 founder network, outperforming incremental corporate ladder advancement.',
-    risk: 'Delayed liquidity timeline compared to public stock vesting.',
-    tag: 'SECOND_ORDER_HORIZON',
-    color: '#6366F1',
-  },
-  {
-    id: 'devil',
-    code: 'AGT_06',
-    name: "The Devil's Advocate",
-    role: 'Bias Interrogation',
-    icon: '⚔️',
-    confidence: '84%',
-    question: 'Why will this fail catastrophically?',
-    lens: 'Severe confirmation bias detected: you are underweighting customer churn and assuming early enthusiastic feedback equates to signed enterprise contracts.',
-    risk: 'Premature scaling based on verbal commitments without capital deposits.',
-    tag: 'BIAS_DESTRUCTION',
-    color: '#EF4444',
-  },
-  {
-    id: 'synthesizer',
-    code: 'AGT_07',
-    name: 'The Synthesizer',
-    role: 'Equilibrium Signal',
-    icon: '⚖️',
-    confidence: '88%',
-    question: 'What truth survives the debate?',
-    lens: 'Equilibrium recommendation decisively favors Option A, but mandates strict 60-day validation gates to bound downside exposure and verify enterprise pilot conversions.',
-    risk: 'Recommendation confidence haircut (-12%) applied to account for unverified assumptions.',
-    tag: 'EQUILIBRIUM_SIGNAL',
-    color: '#8B5CF6',
-  },
-];
 
 const STARTER_DILEMMAS = [
   {
-    id: 'career',
-    code: 'DLM_01',
-    title: 'Series B Startup Lead vs BigTech Staff Track',
-    category: 'Executive Career Pivot',
-    confidence: '88.5%',
-    reversibility: 'TYPE_1 // ONE_WAY_DOOR',
-    context: 'Weighing high-equity ownership and execution velocity at a funded AI startup against compensation stability and low volatility at a FAANG company.',
+    code: 'FLOW_01',
+    category: 'Career & Growth',
+    title: 'Staff Engineer Promotion vs Co-Founder Venture',
+    context: 'Balancing guaranteed corporate equity vesting against asymmetric startup agency and upside.',
     options: [
-      { title: 'Series B Startup Lead', description: 'High equity upside, intense velocity, critical leadership agency' },
-      { title: 'BigTech Staff Engineer', description: 'Predictable compensation, public RSU liquidity, lower risk' },
-      { title: 'Bootstrapped Venture', description: '100% founder agency, high financial burn, unbounded leverage' },
+      { title: 'Accept Seed Co-Founder Role', description: '22% equity stake, high ownership, early market discovery.' },
+      { title: 'Remain Principal Staff at BigTech', description: 'Liquid RSUs, established team, guaranteed vesting schedule.' },
     ],
   },
   {
-    id: 'capital',
-    code: 'DLM_02',
-    title: 'Bootstrap SaaS to Profitability vs Raise $2.5M Seed',
-    category: 'Venture & Capital Strategy',
-    confidence: '84.0%',
-    reversibility: 'TYPE_1 // ONE_WAY_DOOR',
-    context: 'Evaluating whether to retain 100% founder equity and grow sustainably from customer revenue, or accept $2.5M institutional seed funding with 20% dilution.',
+    code: 'FLOW_02',
+    category: 'Distributed Systems',
+    title: 'Monolith Refactor vs Event-Driven Microservices',
+    context: 'Critical architectural crossroad projected under a 10x traffic spike.',
     options: [
-      { title: 'Bootstrap to Profitability', description: 'Zero dilution, organic growth, complete operational sovereignty' },
-      { title: 'Raise $2.5M Seed Round', description: 'Accelerated runway, immediate key hires, liquidation preference risk' },
+      { title: 'Decompose to Kafka & Go Microservices', description: 'High concurrency scale, decoupled fault domains, higher operational footprint.' },
+      { title: 'Optimize Postgres & Modular Monolith', description: 'Sub-millisecond query delivery, simplified transactional boundaries.' },
     ],
   },
   {
-    id: 'architecture',
-    code: 'DLM_03',
-    title: 'Domain Modular Monolith vs Event-Driven Microservices',
-    category: 'Technical Architecture',
-    confidence: '91.2%',
-    reversibility: 'TYPE_2 // TWO_WAY_DOOR',
-    context: 'The engineering team is experiencing deploy friction as team size crosses 40 developers. Trade-off between distributed event microservices and a domain modular monolith.',
+    code: 'FLOW_03',
+    category: 'AI Architecture',
+    title: 'Proprietary LLM Fine-Tuning vs Hybrid RAG',
+    context: 'Balancing strict enterprise data sovereignty, query latency, and GPU cluster expenses.',
     options: [
-      { title: 'Domain Modular Monolith', description: 'Unified repository, zero distributed transactions, faster iteration' },
-      { title: 'Event-Driven Microservices', description: 'Independent deploys, network latency, distributed state overhead' },
+      { title: 'Self-Hosted Llama-3 70B LoRA Matrix', description: 'Complete zero-leakage data privacy, dedicated model weights.' },
+      { title: 'Managed Vector DB with Hybrid RAG', description: 'Sub-50ms latency, zero GPU maintenance overhead.' },
     ],
+  },
+];
+
+const WORKSPACE_MODES = [
+  {
+    id: 'canvas' as const,
+    title: 'FLOW',
+    tagline: 'Visual Knowledge Canvas',
+    description: 'An infinite spatial workspace to map thoughts, questions, decisions, and goals as connected living topologies.',
+    icon: Network,
+    accent: '#5EE7FF',
+    accentBorder: 'border-[#5EE7FF]/30',
+    accentBg: 'bg-[#5EE7FF]/10',
+    features: ['Spatial node clustering', 'Subtle cubic bezier flows', 'Double-click thought creation', 'Minimap radar navigation'],
+  },
+  {
+    id: 'ai-think' as const,
+    title: 'THINK',
+    tagline: 'AI Reasoning Pipeline',
+    description: 'Structured multi-step reasoning blocks: Thought → Observations → Patterns → Synthesized Insight → Actionable Next Move.',
+    icon: Sparkles,
+    accent: '#7C5CFF',
+    accentBorder: 'border-[#7C5CFF]/30',
+    accentBg: 'bg-[#7C5CFF]/10',
+    features: ['Contextual friction detection', 'Empirical signals deconstruction', 'One-click graph injection', 'Cross-flow synergies'],
+  },
+  {
+    id: 'tasks' as const,
+    title: 'ACT',
+    tagline: 'Execution & Deep Focus',
+    description: 'Every task is anchored directly to its originating thought node. No orphan to-dos, zero friction to execution.',
+    icon: CheckSquare,
+    accent: '#45E0A8',
+    accentBorder: 'border-[#45E0A8]/30',
+    accentBg: 'bg-[#45E0A8]/10',
+    features: ['Direct thought provenance', 'Goal progress velocity bars', 'Pomodoro focus sprint timer', 'Distraction-free Zen mode'],
+  },
+];
+
+const AGENTS = [
+  { pid: '101', name: 'Analyst', role: 'Empirical Baseline', conf: 92, lens: 'Calculates historical base rates and empirical survivability curves to eliminate optimism bias.' },
+  { pid: '102', name: 'Optimist', role: 'Asymmetric Upside', conf: 96, lens: 'Identifies non-linear upside potential and compounding second-order market tailwinds.' },
+  { pid: '103', name: 'Skeptic', role: 'Downside Defense', conf: 81, lens: 'Stress-tests irreversible Type-1 commitments, liquidity constraints, and worst-case failure modes.' },
+  { pid: '104', name: 'Finance', role: 'Capital Calibration', conf: 89, lens: 'Models net present value (NPV), opportunity costs, and capital efficiency trade-offs.' },
+  { pid: '105', name: 'Horizon', role: 'Compounding Timeline', conf: 91, lens: 'Evaluates decade-long career compounding, knowledge retention, and relationship density.' },
+  { pid: '106', name: 'Devil’s Advocate', role: 'Bias Interrogation', conf: 84, lens: 'Aggressively challenges assumptions, confirmation traps, and unvalidated premises.' },
+  { pid: '107', name: 'Synthesizer', role: 'Equilibrium Signal', conf: 88, lens: 'Merges multi-agent debate into a unified, decisive action track with explicit milestones.' },
+];
+
+const COMPARISON_ROWS = [
+  {
+    dimension: 'Core Conceptual Model',
+    notesApp: 'Static folders and text documents',
+    kanban: 'Cards in column buckets',
+    aiChat: 'Disposable chat stream',
+    flowMind: 'Living topological knowledge graph',
+  },
+  {
+    dimension: 'Idea Relationships',
+    notesApp: 'Isolated, manually hyperlinked',
+    kanban: 'None (flat lists)',
+    aiChat: 'Lost after session closes',
+    flowMind: 'Automatic visual semantic connections',
+  },
+  {
+    dimension: 'Reasoning Engine',
+    notesApp: 'None',
+    kanban: 'None',
+    aiChat: 'Generic conversational text',
+    flowMind: 'Structured reasoning: Thought → Insight → Action',
+  },
+  {
+    dimension: 'Task Provenance',
+    notesApp: 'Disconnected checklist',
+    kanban: 'Orphan to-dos',
+    aiChat: 'Copy-pasted text',
+    flowMind: 'Every action is linked to its thought origin',
+  },
+  {
+    dimension: 'Deep Focus Execution',
+    notesApp: 'External timer needed',
+    kanban: 'External app needed',
+    aiChat: 'None',
+    flowMind: 'Native integrated focus space with Zen mode',
+  },
+];
+
+const TESTIMONIALS = [
+  {
+    name: 'Dr. Elena Rostova',
+    role: 'Principal Distributed Architect',
+    company: 'Ex-Stripe / CloudMesh',
+    quote: 'FlowMind completely replaced my fragmented mess of Notion pages, Miro boards, and scratchpads. The direct provenance between architecture decisions and sprint tasks is unparalleled.',
+    avatarColor: 'from-[#7C5CFF] to-[#5EE7FF]',
+  },
+  {
+    name: 'Marcus Vance',
+    role: 'Founding Engineer & CTO',
+    company: 'Krypton AI Labs',
+    quote: 'The 7-Agent Cognitive Council exposed a critical latency flaw in our RAG pipeline before we burned $60k on fine-tuning. It feels like having an elite advisory board in your browser.',
+    avatarColor: 'from-[#5EE7FF] to-[#45E0A8]',
+  },
+  {
+    name: 'Sarah Chen',
+    role: 'Staff Infrastructure Lead',
+    company: 'HyperScale Systems',
+    quote: 'Being able to switch between the visual FLOW canvas, structured THINK reasoning, and ACT deep focus sprints without losing context changed my entire cognitive workflow.',
+    avatarColor: 'from-[#F5B84B] to-[#FF5C6C]',
+  },
+];
+
+const FAQ_ITEMS = [
+  {
+    q: 'How does FlowMind differ from traditional note-taking and mind mapping apps?',
+    a: 'FlowMind is a "thinking operating system." Instead of leaving notes in isolated folders or drawing passive diagrams, FlowMind structures ideas into an active pipeline: Thought → Connection → Analysis → Insight → Decision → Action → Progress. Every task you execute is anchored directly to the conceptual thought that spawned it.',
+  },
+  {
+    q: 'Can I use FlowMind offline or in a private environment?',
+    a: 'Yes. All active flow graphs, connection topologies, and task streams are stored locally in your browser state. AI features utilize our local fallback heuristics when disconnected, or connect securely to state-of-the-art inference engines with zero data persistence on external servers.',
+  },
+  {
+    q: 'What are the three workspace modes (FLOW, THINK, ACT)?',
+    a: 'FLOW is the infinite spatial canvas where you build, drag, and connect mental models. THINK is the multi-step reasoning workspace where AI deconstructs observations and synthesizes insights. ACT is the execution stream where thoughts turn into concrete, progress-tracked action items.',
+  },
+  {
+    q: 'How does the 7-Agent Cognitive Council work?',
+    a: 'Whenever you face an ambiguous dilemma, the Cognitive Council examines it from 7 distinct angles (Empirical Analyst, Optimist, Downside Skeptic, Capital Finance, Compounding Horizon, Devil\'s Advocate, and Synthesizer). They deliberate to eliminate blind spots and calculate calibrated confidence scores.',
+  },
+  {
+    q: 'Can I export my flows and action items?',
+    a: 'Yes. You can export complete decision briefs, task lists, and thought graphs as formatted Markdown, JSON structures, or print-ready summaries directly from the workspace.',
+  },
+];
+
+const HERO_DEMO_NODES = [
+  {
+    id: 'n1',
+    label: 'Distributed Scalability',
+    type: 'core',
+    x: 20,
+    y: 35,
+    tag: 'GOAL',
+    color: '#7C5CFF',
+    desc: 'Target Tier-1 staff backend architecture with sub-10ms p99 latency.',
+    detail: 'Core strategic pillar anchoring data partitioning, consensus, and fault domains.',
+    connections: '4 active topologies',
+  },
+  {
+    id: 'n2',
+    label: 'Raft Consensus Protocol',
+    type: 'decision',
+    x: 175,
+    y: 15,
+    tag: 'DECISION',
+    color: '#F5B84B',
+    desc: 'Trade-off analysis: Strong linearizability vs operational complexity.',
+    detail: 'Evaluated against Paxos and multi-Raft. Calibrated confidence 91%.',
+    connections: 'Linked to Distributed Scalability',
+  },
+  {
+    id: 'n3',
+    label: 'Kafka Event Partitioning',
+    type: 'idea',
+    x: 190,
+    y: 70,
+    tag: 'THOUGHT',
+    color: '#5EE7FF',
+    desc: 'Keyed event streaming with idempotent consumers across 32 shards.',
+    detail: 'Ensures strict causal ordering without cluster-wide lock contention.',
+    connections: 'Linked to Concurrency Drill',
+  },
+  {
+    id: 'n4',
+    label: 'Lock-Free Queues',
+    type: 'idea',
+    x: 330,
+    y: 25,
+    tag: 'THOUGHT',
+    color: '#5EE7FF',
+    desc: 'Disruptor ring buffers & atomic CAS pointers for high-throughput memory buses.',
+    detail: 'Eliminates OS thread context switches on critical packet dispatch paths.',
+    connections: 'Linked to Distributed Scalability',
+  },
+  {
+    id: 'n5',
+    label: 'Execute Concurrency Drill',
+    type: 'task',
+    x: 340,
+    y: 80,
+    tag: 'ACTION',
+    color: '#45E0A8',
+    desc: '45-minute Deep Focus Sprint on thread dump analysis & stress harness.',
+    detail: 'Direct action item with provenance tracked back to Distributed Scalability.',
+    connections: 'Ready for ACT Deep Focus',
   },
 ];
 
@@ -163,842 +278,1230 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onExplore,
   onOpenAskAI,
   onSelectStarterDilemma,
+  onNavigateToMode,
 }) => {
-  const [selectedDilemmaIdx, setSelectedDilemmaIdx] = useState<number>(0);
-  const [activeHoverAgent, setActiveHoverAgent] = useState<string>('analyst');
-  const [marketFriction, setMarketFriction] = useState<number>(14);
-  const [revenueShift, setRevenueShift] = useState<number>(8);
+  const [quickThought, setQuickThought] = useState('');
+  const [activeAgentIndex, setActiveAgentIndex] = useState(0);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [selectedDemoNodeId, setSelectedDemoNodeId] = useState<string>('n1');
 
-  const currentDilemma = STARTER_DILEMMAS[selectedDilemmaIdx];
+  // Modals
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+  const [privacyTab, setPrivacyTab] = useState<'privacy' | 'terms' | 'specs'>('privacy');
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [contactForm, setContactForm] = useState({ name: '', email: '', org: '', message: '' });
+  const [contactSubmitted, setContactSubmitted] = useState(false);
 
-  // Calculated Monte Carlo Metrics
-  const baseConfidence = 82;
-  const p10Score = Math.max(38, Math.round(baseConfidence - marketFriction * 1.15 + Math.min(0, revenueShift)));
-  const p50Score = Math.min(94, Math.max(48, Math.round(baseConfidence - marketFriction * 0.45 + revenueShift * 0.6)));
-  const p90Score = Math.min(98, Math.round(baseConfidence + Math.max(0, revenueShift * 0.9) - marketFriction * 0.15));
+  const selectedDemoNode = HERO_DEMO_NODES.find((n) => n.id === selectedDemoNodeId) || HERO_DEMO_NODES[0];
 
-  const selectedAgentObj = AGENTS_DATA.find(a => a.id === activeHoverAgent) || AGENTS_DATA[0];
+  const handleLaunchThought = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickThought.trim()) {
+      onGetStarted();
+      return;
+    }
+    soundService.playChime();
+    onSelectStarterDilemma({
+      title: quickThought.trim(),
+      context: 'Synthesized directly from FlowMind portal.',
+      options: [
+        { title: 'Action Track A', description: 'Primary strategic execution pathway.' },
+        { title: 'Action Track B', description: 'Alternative defensive contingency.' },
+      ],
+    });
+  };
+
+  const handleModeClick = (mode: LandingNavigateMode) => {
+    soundService.playClick();
+    if (onNavigateToMode) {
+      onNavigateToMode(mode);
+    } else {
+      onGetStarted();
+    }
+  };
+
+  const handleContactSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!contactForm.email) return;
+    soundService.playSuccess();
+    setContactSubmitted(true);
+    setTimeout(() => {
+      setContactSubmitted(false);
+      setIsContactModalOpen(false);
+      setContactForm({ name: '', email: '', org: '', message: '' });
+    }, 2000);
+  };
+
+  const selectedAgent = AGENTS[activeAgentIndex];
 
   return (
-    <div className="relative min-h-screen bg-[#030408] text-white selection:bg-cyan-500/30 selection:text-cyan-200 overflow-x-hidden font-sans">
-      {/* Ambient Neural Lighting Fields */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-[950px] h-[550px] bg-gradient-to-br from-cyan-500/[0.08] via-indigo-600/[0.06] to-transparent blur-[160px] rounded-full" />
-        <div className="absolute top-[35%] right-0 w-[750px] h-[600px] bg-amber-500/[0.05] blur-[180px] rounded-full" />
-        <div className="absolute top-[70%] left-[-10%] w-[800px] h-[600px] bg-violet-600/[0.06] blur-[180px] rounded-full" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,240,255,0.03)_0%,transparent_70%)]" />
-      </div>
+    <div className="flex-1 h-full overflow-y-auto bg-[#08090D] text-[#F4F5F7] selection:bg-[#7C5CFF] selection:text-white custom-scrollbar">
+      {/* TOP NAVIGATION BAR */}
+      <header className="sticky top-0 z-50 bg-[#08090D]/90 backdrop-blur-xl border-b border-white/[0.08] transition-all">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <FlowMindLogo size="md" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
 
-      <div className="relative z-10 flex flex-col">
-        {/* ========================================================================= */}
-        {/* SECTION 1: THE COGNITIVE FLOW HERO // ASYMMETRIC STORYTELLING */}
-        {/* ========================================================================= */}
-        <section className="min-h-[94vh] flex items-center pt-28 pb-16 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center w-full">
-            {/* Left Column (5 cols): Master Asymmetric Editorial Narrative */}
-            <div className="lg:col-span-5 flex flex-col justify-center text-left space-y-6">
-              {/* Technical Cognitive Badge */}
-              <motion.div
-                initial={{ opacity: 0, x: -16 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6 }}
-                className="inline-flex items-center space-x-2.5 px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-cyan-400/25 text-[11px] font-mono w-fit backdrop-blur-xl shadow-[0_0_15px_rgba(0,240,255,0.1)]"
-              >
-                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
-                <span className="text-slate-300 uppercase tracking-wider font-semibold">DECISION INTELLIGENCE CORE</span>
-                <span className="text-slate-600">|</span>
-                <span className="text-cyan-400 font-bold">7 AGENTS ACTIVE</span>
-              </motion.div>
+          <nav className="hidden md:flex items-center space-x-6 text-xs text-[#A7ACB8]">
+            <a href="#modes" className="hover:text-white transition-colors">Workspace Modes</a>
+            <a href="#council" className="hover:text-white transition-colors">Cognitive Council</a>
+            <a href="#dilemmas" className="hover:text-white transition-colors">Scenarios</a>
+            <a href="#comparison" className="hover:text-white transition-colors">Philosophy</a>
+            <a href="#testimonials" className="hover:text-white transition-colors">Voices</a>
+            <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
+          </nav>
 
-              {/* Master Editorial Headline */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.1 }}
-                className="space-y-3"
-              >
-                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[0.93] text-white font-sans uppercase">
-                  A decision <br />
-                  is never <br />
-                  just one <br />
-                  <span className="bg-gradient-to-r from-cyan-400 via-indigo-300 to-amber-300 bg-clip-text text-transparent">
-                    thought.
-                  </span>
-                </h1>
+          <div className="hidden sm:flex items-center space-x-3 text-xs font-medium">
+            <button
+              onClick={() => {
+                soundService.playClick();
+                setIsContactModalOpen(true);
+              }}
+              className="px-3.5 py-1.5 rounded-xl text-[#A7ACB8] hover:text-white hover:bg-white/[0.04] transition-colors"
+            >
+              Contact
+            </button>
 
-                {/* Trajectory Directional Indicator */}
-                <div className="flex items-center space-x-3 py-1">
-                  <div className="h-[2px] w-28 bg-gradient-to-r from-cyan-400 via-indigo-500 to-transparent relative overflow-hidden">
-                    <div className="absolute inset-0 bg-white/80 animate-flow-dash" />
-                  </div>
-                  <span className="text-cyan-400 text-xs font-mono font-bold tracking-widest">
-                    ───────→
-                  </span>
-                </div>
-              </motion.div>
+            <button
+              onClick={onExplore}
+              className="px-3.5 py-1.5 rounded-xl text-[#A7ACB8] hover:text-white hover:bg-white/[0.04] transition-colors"
+            >
+              Directory
+            </button>
 
-              {/* Cognitive Philosophy */}
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.2 }}
-                className="space-y-2 text-slate-400 text-sm sm:text-base font-light leading-relaxed"
-              >
-                <p className="text-slate-200 font-medium font-sans text-base sm:text-lg">
-                  One decision. Seven perspectives. Enter the flow of thought.
-                </p>
-                <p className="text-xs sm:text-sm text-slate-400 leading-normal">
-                  Weighing asymmetric compounding upside against irreversible traps. Uncovering what survives adversarial tension.
-                </p>
-              </motion.div>
+            <button
+              onClick={() => {
+                soundService.playClick();
+                onGetStarted();
+              }}
+              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#7C5CFF] to-[#5EE7FF] text-white font-semibold shadow-[0_0_20px_rgba(124,92,255,0.3)] hover:opacity-95 transition-all"
+            >
+              <span>Enter Workspace</span>
+              <ArrowRight size={14} />
+            </button>
+          </div>
 
-              {/* Action Triggers */}
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.3 }}
-                className="flex flex-wrap items-center gap-3 pt-2"
-              >
+          {/* Mobile Hamburger Button */}
+          <div className="flex sm:hidden items-center space-x-2">
+            <button
+              onClick={() => {
+                soundService.playClick();
+                onGetStarted();
+              }}
+              className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#7C5CFF] to-[#5EE7FF] text-white font-semibold text-xs"
+            >
+              Workspace
+            </button>
+            <button
+              onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+              className="p-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-[#A7ACB8] hover:text-white"
+              aria-label="Toggle Navigation Menu"
+            >
+              {isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Dropdown Drawer */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="sm:hidden border-b border-white/[0.08] bg-[#0F1118]/95 px-6 py-4 space-y-3 text-xs"
+            >
+              <div className="flex flex-col space-y-2 text-[#A7ACB8]">
+                <a
+                  href="#modes"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="py-1.5 hover:text-white"
+                >
+                  Workspace Modes (FLOW, THINK, ACT)
+                </a>
+                <a
+                  href="#council"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="py-1.5 hover:text-white"
+                >
+                  7-Agent Cognitive Council
+                </a>
+                <a
+                  href="#dilemmas"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="py-1.5 hover:text-white"
+                >
+                  Simulate Scenarios
+                </a>
+                <a
+                  href="#comparison"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="py-1.5 hover:text-white"
+                >
+                  Product Philosophy &amp; Manifesto
+                </a>
+                <a
+                  href="#testimonials"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="py-1.5 hover:text-white"
+                >
+                  Architect Voices
+                </a>
+                <a
+                  href="#faq"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="py-1.5 hover:text-white"
+                >
+                  Frequently Asked Questions
+                </a>
+              </div>
+
+              <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between gap-2">
                 <button
                   onClick={() => {
-                    soundService.playSuccess();
+                    setIsMobileMenuOpen(false);
+                    onExplore();
+                  }}
+                  className="flex-1 py-2 rounded-xl bg-white/[0.04] text-[#A7ACB8] text-center"
+                >
+                  Directory
+                </button>
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
                     onGetStarted();
                   }}
-                  className="px-7 py-3.5 rounded-xl bg-gradient-to-r from-cyan-400 via-indigo-400 to-violet-500 hover:from-cyan-300 hover:via-indigo-300 hover:to-violet-400 text-slate-950 font-mono font-bold text-xs uppercase tracking-wider flex items-center space-x-2 shadow-[0_0_30px_rgba(0,240,255,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  className="flex-1 py-2 rounded-xl bg-gradient-to-r from-[#7C5CFF] to-[#5EE7FF] text-white font-semibold text-center"
                 >
-                  <span>Enter the Flow</span>
-                  <ArrowRight className="w-4 h-4" />
+                  Launch App
                 </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </header>
 
-                <button
-                  onClick={() => onOpenAskAI()}
-                  className="px-5 py-3.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-white border border-white/[0.08] hover:border-cyan-400/40 text-xs font-mono flex items-center space-x-2 transition-all backdrop-blur-xl"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Ask AI ✦</span>
-                </button>
-              </motion.div>
+      {/* HERO SECTION */}
+      <main className="max-w-6xl mx-auto px-6 pt-16 pb-24 space-y-24">
+        <section className="text-center space-y-6 max-w-3xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs font-medium text-[#A7ACB8]"
+          >
+            <span className="w-2 h-2 rounded-full bg-[#5EE7FF] animate-pulse" />
+            <span className="font-mono uppercase text-[11px] tracking-wider text-white">FlowMind Cognitive OS v2.4</span>
+          </motion.div>
 
-              {/* Active Dilemma Switcher: Dynamically reroutes the reasoning visual */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-                className="pt-4 border-t border-white/[0.06] space-y-2 font-mono"
+          <motion.h1
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08 }}
+            className="text-4xl sm:text-6xl font-semibold tracking-tight text-white leading-[1.12]"
+          >
+            Turn thoughts into <br />
+            <span className="text-flow-gradient font-bold">structured flow.</span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.14 }}
+            className="text-base sm:text-lg text-[#A7ACB8] leading-relaxed max-w-2xl mx-auto font-normal"
+          >
+            A visual workspace that transforms fragmented ideas into living knowledge graphs, multi-agent insights, and concrete action items.
+          </motion.p>
+
+          {/* INTERACTIVE THOUGHT ENTRY */}
+          <motion.form
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            onSubmit={handleLaunchThought}
+            className="pt-2 max-w-xl mx-auto flex items-center p-2 rounded-2xl bg-[#0F1118] border border-white/[0.1] hover:border-white/[0.2] focus-within:border-[#7C5CFF] focus-within:shadow-[0_0_24px_rgba(124,92,255,0.25)] transition-all shadow-2xl"
+          >
+            <input
+              type="text"
+              value={quickThought}
+              onChange={(e) => setQuickThought(e.target.value)}
+              placeholder="What are you thinking about or deciding today?"
+              className="flex-1 bg-transparent px-4 py-2.5 text-white placeholder-[#686E7C] text-sm focus:outline-none"
+            />
+            <button
+              type="submit"
+              className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#7C5CFF] to-[#5EE7FF] text-white text-xs font-semibold hover:opacity-95 transition-opacity shrink-0"
+            >
+              <span>Synthesize</span>
+              <ArrowRight size={13} />
+            </button>
+          </motion.form>
+
+          {/* LIVE INTERACTIVE HERO CANVAS SANDBOX */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.28 }}
+            className="mt-12 rounded-2xl bg-[#0F1118] border border-white/[0.1] p-4 sm:p-6 shadow-2xl space-y-4 text-left relative overflow-hidden"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] pb-3">
+              <div className="flex items-center space-x-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#5EE7FF]" />
+                <span className="text-xs font-semibold text-white">Live Knowledge Topology Preview</span>
+                <span className="text-[10px] font-mono text-[#686E7C] hidden sm:inline">• Click any node to inspect</span>
+              </div>
+              <button
+                onClick={() => handleModeClick('canvas')}
+                className="text-xs font-medium text-[#5EE7FF] hover:underline flex items-center space-x-1"
               >
-                <div className="flex items-center justify-between text-[10px] text-slate-400 uppercase tracking-widest">
-                  <span>SELECT ACTIVE DILEMMA:</span>
-                  <span className="text-cyan-400 font-bold">REROUTES GRAPH ↓</span>
-                </div>
-
-                <div className="space-y-1.5">
-                  {STARTER_DILEMMAS.map((d, idx) => {
-                    const isSelected = selectedDilemmaIdx === idx;
-                    return (
-                      <button
-                        key={d.id}
-                        onClick={() => {
-                          soundService.playClick();
-                          setSelectedDilemmaIdx(idx);
-                        }}
-                        className={`w-full p-2.5 rounded-xl text-left flex items-center justify-between transition-all text-xs border ${
-                          isSelected
-                            ? 'bg-cyan-500/10 border-cyan-400/50 text-white shadow-[0_0_15px_rgba(0,240,255,0.15)]'
-                            : 'bg-white/[0.02] hover:bg-white/[0.05] border-white/[0.06] text-slate-400'
-                        }`}
-                      >
-                        <div className="flex items-center space-x-2 truncate">
-                          <span className={isSelected ? 'text-cyan-400 font-bold' : 'text-slate-600'}>
-                            0{idx + 1} //
-                          </span>
-                          <span className="truncate font-sans font-medium text-slate-200">
-                            {d.title}
-                          </span>
-                        </div>
-                        <span className="text-[10px] text-emerald-400 font-bold ml-2 shrink-0">
-                          {d.confidence}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </motion.div>
+                <span>Launch Interactive Canvas</span>
+                <ArrowRight size={12} />
+              </button>
             </div>
 
-            {/* Right Column (7 cols): The Hero of the Screen — The Living Cognitive Mind */}
-            <div className="lg:col-span-7 relative w-full flex flex-col items-center justify-center">
-              <div className="relative w-full rounded-3xl bg-[#060814]/95 border border-white/[0.1] backdrop-blur-2xl p-4 sm:p-6 shadow-[0_30px_90px_rgba(0,0,0,0.95)] overflow-hidden group">
-                {/* Visual Header Telemetry */}
-                <div className="flex items-center justify-between pb-3 mb-2 border-b border-white/[0.06] font-mono text-xs">
-                  <div className="flex items-center space-x-2">
-                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
-                    <span className="font-bold text-white tracking-widest text-[11px] uppercase">
-                      COGNITIVE REASONING ARCHITECTURE
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-[10px] text-slate-400">
-                    <span className="text-cyan-400 font-bold">{currentDilemma.code}</span>
-                    <span>•</span>
-                    <span className="text-emerald-400 font-bold">{currentDilemma.confidence} SIGNAL</span>
-                  </div>
+            {/* Simulated Live Spatial Canvas */}
+            <div className="relative h-64 sm:h-72 w-full rounded-xl bg-[#08090D] border border-white/[0.06] overflow-hidden p-4 select-none">
+              {/* SVG Connecting Wires */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                <path
+                  d="M 120,110 C 180,60 220,60 260,60"
+                  fill="none"
+                  stroke="#7C5CFF"
+                  strokeWidth="2"
+                  strokeOpacity="0.6"
+                />
+                <path
+                  d="M 120,110 C 180,160 220,170 280,180"
+                  fill="none"
+                  stroke="#5EE7FF"
+                  strokeWidth="2"
+                  strokeOpacity="0.6"
+                />
+                <path
+                  d="M 260,60 C 340,60 380,80 430,90"
+                  fill="none"
+                  stroke="#5EE7FF"
+                  strokeWidth="1.75"
+                  strokeDasharray="4 4"
+                  className="animate-flow-dash opacity-70"
+                />
+                <path
+                  d="M 280,180 C 360,180 380,200 440,210"
+                  fill="none"
+                  stroke="#45E0A8"
+                  strokeWidth="2"
+                  strokeOpacity="0.7"
+                />
+              </svg>
+
+              {/* Node 1: Root Core */}
+              <div
+                onClick={() => {
+                  soundService.playClick();
+                  setSelectedDemoNodeId('n1');
+                }}
+                className={`absolute left-4 sm:left-8 top-20 p-3 rounded-xl border transition-all cursor-pointer w-48 sm:w-56 ${
+                  selectedDemoNodeId === 'n1'
+                    ? 'bg-[#151823] border-[#7C5CFF] shadow-[0_0_20px_rgba(124,92,255,0.3)] scale-105'
+                    : 'bg-[#0F1118]/90 border-white/[0.1] hover:border-white/[0.2]'
+                }`}
+              >
+                <div className="flex items-center justify-between text-[10px] font-mono text-[#9B84FF] mb-1">
+                  <span>CORE GOAL</span>
+                  <span>4 LINKS</span>
                 </div>
+                <h4 className="text-xs font-semibold text-white">Distributed Scalability</h4>
+                <p className="text-[10px] text-[#A7ACB8] mt-0.5 line-clamp-1">Target Tier-1 staff backend architecture.</p>
+              </div>
 
-                {/* THE CINEMATIC COGNITIVE MIND CANVAS */}
-                <div className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden border border-white/[0.08] bg-black/60 shadow-inner">
-                  {/* High-Resolution Conceptual Mind Artwork */}
-                  <img
-                    src="/assets/hero_mind.jpg"
-                    alt="FlowMind Living Cognitive Core"
-                    className="w-full h-full object-cover object-center scale-105 group-hover:scale-100 transition-transform duration-1000 ease-out"
-                  />
+              {/* Node 2: Decision */}
+              <div
+                onClick={() => {
+                  soundService.playClick();
+                  setSelectedDemoNodeId('n2');
+                }}
+                className={`absolute left-48 sm:left-64 top-6 p-2.5 rounded-xl border transition-all cursor-pointer w-40 sm:w-48 ${
+                  selectedDemoNodeId === 'n2'
+                    ? 'bg-[#151823] border-[#F5B84B] shadow-[0_0_20px_rgba(245,184,75,0.3)] scale-105'
+                    : 'bg-[#0F1118]/90 border-white/[0.1] hover:border-white/[0.2]'
+                }`}
+              >
+                <div className="flex items-center justify-between text-[10px] font-mono text-[#F5B84B] mb-0.5">
+                  <span>DECISION</span>
+                </div>
+                <h4 className="text-xs font-semibold text-white">Raft Consensus</h4>
+                <p className="text-[10px] text-[#A7ACB8] line-clamp-1">Tradeoff vs Paxos.</p>
+              </div>
 
-                  {/* Atmospheric Vignette & Color Grading Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#060814] via-transparent to-[#060814]/40 pointer-events-none" />
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_30%,#060814_90%)] pointer-events-none" />
+              {/* Node 3: Thought */}
+              <div
+                onClick={() => {
+                  soundService.playClick();
+                  setSelectedDemoNodeId('n3');
+                }}
+                className={`absolute left-52 sm:left-72 top-36 p-2.5 rounded-xl border transition-all cursor-pointer w-40 sm:w-48 ${
+                  selectedDemoNodeId === 'n3'
+                    ? 'bg-[#151823] border-[#5EE7FF] shadow-[0_0_20px_rgba(94,231,255,0.3)] scale-105'
+                    : 'bg-[#0F1118]/90 border-white/[0.1] hover:border-white/[0.2]'
+                }`}
+              >
+                <div className="flex items-center justify-between text-[10px] font-mono text-[#5EE7FF] mb-0.5">
+                  <span>THOUGHT</span>
+                </div>
+                <h4 className="text-xs font-semibold text-white">Kafka Partitions</h4>
+                <p className="text-[10px] text-[#A7ACB8] line-clamp-1">Ordered event streaming.</p>
+              </div>
 
-                  {/* Dynamic 7-Agent Interactive Hotspot Overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
-                    {AGENTS_DATA.map((agent, i) => {
-                      // Position 7 nodes circularly around the central mind orb
-                      const angle = (i * (360 / 7) - 90) * (Math.PI / 180);
-                      const radius = 38; // percentage radius from center
-                      const x = 50 + radius * Math.cos(angle);
-                      const y = 48 + (radius * 0.72) * Math.sin(angle);
-                      const isHovered = activeHoverAgent === agent.id;
+              {/* Node 4: Action */}
+              <div
+                onClick={() => {
+                  soundService.playClick();
+                  setSelectedDemoNodeId('n5');
+                }}
+                className={`absolute right-4 sm:right-12 top-28 p-2.5 rounded-xl border transition-all cursor-pointer w-44 sm:w-52 ${
+                  selectedDemoNodeId === 'n5'
+                    ? 'bg-[#151823] border-[#45E0A8] shadow-[0_0_20px_rgba(69,224,168,0.3)] scale-105'
+                    : 'bg-[#0F1118]/90 border-white/[0.1] hover:border-white/[0.2]'
+                }`}
+              >
+                <div className="flex items-center justify-between text-[10px] font-mono text-[#45E0A8] mb-0.5">
+                  <span>ACTION</span>
+                  <CheckCircle2 size={11} />
+                </div>
+                <h4 className="text-xs font-semibold text-white">Concurrency Drill</h4>
+                <p className="text-[10px] text-[#A7ACB8] line-clamp-1">45m Deep Focus Sprint.</p>
+              </div>
+            </div>
 
-                      return (
-                        <button
-                          key={agent.id}
-                          onClick={() => {
-                            soundService.playClick();
-                            setActiveHoverAgent(agent.id);
-                          }}
-                          onMouseEnter={() => {
-                            soundService.playClick();
-                            setActiveHoverAgent(agent.id);
-                          }}
-                          style={{
-                            left: `${x}%`,
-                            top: `${y}%`,
-                            transform: 'translate(-50%, -50%)',
-                          }}
-                          className={`absolute group/node flex flex-col items-center transition-all duration-300 z-20 ${
-                            isHovered ? 'scale-115 z-30' : 'scale-95 opacity-85 hover:opacity-100'
-                          }`}
-                        >
-                          <div
-                            style={{
-                              borderColor: isHovered ? agent.color : 'rgba(255,255,255,0.2)',
-                              boxShadow: isHovered ? `0 0 20px ${agent.color}` : '0 4px 12px rgba(0,0,0,0.6)',
-                              backgroundColor: '#090D1A',
-                            }}
-                            className="w-9 h-9 sm:w-11 sm:h-11 rounded-full border flex items-center justify-center text-sm sm:text-base backdrop-blur-md transition-all cursor-pointer"
-                          >
-                            <span>{agent.icon}</span>
-                          </div>
+            {/* LIVE HERO INSPECTOR CARD: Reflects the selected node */}
+            <div className="p-3.5 rounded-xl bg-[#151823] border border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="space-y-1">
+                <div className="flex items-center space-x-2">
+                  <span
+                    className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase"
+                    style={{ backgroundColor: `${selectedDemoNode.color}20`, color: selectedDemoNode.color }}
+                  >
+                    {selectedDemoNode.tag}
+                  </span>
+                  <span className="font-semibold text-white">{selectedDemoNode.label}</span>
+                  <span className="text-[11px] text-[#686E7C] hidden sm:inline">• {selectedDemoNode.connections}</span>
+                </div>
+                <p className="text-[#A7ACB8] text-[11px] leading-relaxed">
+                  {selectedDemoNode.detail}
+                </p>
+              </div>
 
-                          <span
-                            style={{ color: isHovered ? agent.color : '#94A3B8' }}
-                            className="text-[9px] font-mono font-bold uppercase tracking-wider mt-1 px-1.5 py-0.5 rounded bg-black/80 border border-white/[0.08] backdrop-blur-sm whitespace-nowrap shadow-md"
-                          >
-                            {agent.name.replace('The ', '')}
-                          </span>
-                        </button>
-                      );
-                    })}
+              <div className="flex items-center space-x-2 shrink-0">
+                <button
+                  onClick={() => handleModeClick('canvas')}
+                  className="px-3 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/[0.1] text-white font-medium text-[11px] transition-colors"
+                >
+                  Open in FLOW
+                </button>
+                <button
+                  onClick={() => handleModeClick('ai-think')}
+                  className="px-3 py-1.5 rounded-lg bg-[#7C5CFF]/20 border border-[#7C5CFF]/40 text-[#9B84FF] hover:bg-[#7C5CFF]/30 font-medium text-[11px] transition-colors"
+                >
+                  THINK Reasoning →
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </section>
 
-                    {/* Central Equilibrium Target */}
-                    <div className="absolute pointer-events-none flex flex-col items-center justify-center text-center">
-                      <div className="w-20 h-20 rounded-full border border-cyan-400/30 bg-cyan-500/[0.04] animate-ping" />
-                      <div className="absolute px-3 py-1 rounded-full bg-black/80 border border-cyan-400/40 text-[10px] font-mono text-cyan-300 font-bold tracking-widest shadow-[0_0_15px_rgba(0,240,255,0.3)]">
-                        SYNTHESIS // {currentDilemma.confidence}
+        {/* COGNITIVE PROGRESSION NARRATIVE */}
+        <section className="p-8 rounded-3xl bg-[#0F1118] border border-white/[0.08] space-y-6 shadow-2xl">
+          <div className="text-center space-y-1">
+            <span className="text-xs font-mono uppercase tracking-widest text-[#5EE7FF]">
+              System Architecture
+            </span>
+            <h2 className="text-2xl font-semibold text-white">
+              The Seven Stages of FlowMind
+            </h2>
+            <p className="text-xs text-[#A7ACB8] max-w-xl mx-auto">
+              How ambiguous, chaotic thinking is systematically refined into concrete, observable progress.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 text-left">
+            {[
+              { stage: '1. THOUGHT', desc: 'Raw spark or dilemma', color: 'text-white' },
+              { stage: '2. CONNECT', desc: 'Contextual graph links', color: 'text-[#5EE7FF]' },
+              { stage: '3. ANALYSIS', desc: 'Friction deconstruction', color: 'text-[#9B84FF]' },
+              { stage: '4. INSIGHT', desc: 'Synthesized breakthrough', color: 'text-[#7C5CFF]' },
+              { stage: '5. DECISION', desc: 'Calibrated choice', color: 'text-[#F5B84B]' },
+              { stage: '6. ACTION', desc: 'Anchored task item', color: 'text-[#45E0A8]' },
+              { stage: '7. PROGRESS', desc: 'Empirical execution', color: 'text-white' },
+            ].map((st, i) => (
+              <div key={i} className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-1">
+                <span className={`text-xs font-mono font-bold ${st.color}`}>{st.stage}</span>
+                <p className="text-[11px] text-[#A7ACB8]">{st.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 3 WORKSPACE MODES DEEP DIVE */}
+        <section id="modes" className="space-y-8 scroll-mt-20">
+          <div className="text-center space-y-2 max-w-xl mx-auto">
+            <span className="text-xs font-mono uppercase tracking-widest text-[#9B84FF]">
+              Connected Workspaces
+            </span>
+            <h2 className="text-3xl font-semibold text-white tracking-tight">
+              Three Modes for Every Thinking State
+            </h2>
+            <p className="text-xs text-[#A7ACB8] leading-relaxed">
+              Never get trapped in a single inflexible view. Seamlessly transition between spatial synthesis, AI reasoning, and high-velocity execution.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {WORKSPACE_MODES.map((mode) => {
+              const Icon = mode.icon;
+
+              return (
+                <div
+                  key={mode.id}
+                  className="p-6 rounded-2xl bg-[#0F1118] border border-white/[0.08] hover:border-white/[0.16] flex flex-col justify-between space-y-6 transition-all group shadow-xl"
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className={`p-3 rounded-xl ${mode.accentBg} border ${mode.accentBorder}`}>
+                        <Icon size={22} style={{ color: mode.accent }} />
                       </div>
+                      <span className="text-[11px] font-mono uppercase tracking-widest text-[#686E7C]">
+                        MODE
+                      </span>
                     </div>
-                  </div>
-                </div>
 
-                {/* Live Node Inspection Micro-Card */}
-                <div className="mt-3 p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between text-left font-mono gap-3">
-                  <div className="flex items-center space-x-3 truncate">
-                    <span className="text-3xl shrink-0">{selectedAgentObj.icon}</span>
-                    <div className="truncate">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs font-bold text-white uppercase">{selectedAgentObj.name}</span>
-                        <span className="text-[10px] text-cyan-400 font-semibold">[{selectedAgentObj.tag}]</span>
-                        <span className="text-[10px] text-emerald-400 font-bold">({selectedAgentObj.confidence})</span>
-                      </div>
-                      <p className="text-xs text-slate-300 italic font-editorial truncate max-w-md">
-                        "{selectedAgentObj.question}"
+                    <div className="space-y-1">
+                      <h3 className="text-xl font-semibold text-white">
+                        {mode.title}
+                      </h3>
+                      <p className="text-xs font-medium" style={{ color: mode.accent }}>
+                        {mode.tagline}
                       </p>
+                    </div>
+
+                    <p className="text-xs text-[#A7ACB8] leading-relaxed">
+                      {mode.description}
+                    </p>
+
+                    <div className="pt-2 space-y-1.5 border-t border-white/[0.06]">
+                      {mode.features.map((feat, fi) => (
+                        <div key={fi} className="flex items-center space-x-2 text-[11px] text-[#A7ACB8]">
+                          <span className="text-[#5EE7FF]">•</span>
+                          <span>{feat}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
                   <button
-                    onClick={() => {
-                      soundService.playSuccess();
-                      onSelectStarterDilemma({
-                        title: currentDilemma.title,
-                        context: currentDilemma.context,
-                        options: currentDilemma.options,
-                      });
-                    }}
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-indigo-500 hover:from-cyan-300 hover:to-indigo-400 text-black text-xs font-bold font-mono transition-all shrink-0 flex items-center space-x-1.5 shadow-md w-full sm:w-auto justify-center"
+                    onClick={() => handleModeClick(mode.id)}
+                    className="pt-4 border-t border-white/[0.06] text-xs font-semibold text-white flex items-center justify-between group-hover:text-[#5EE7FF] transition-colors"
                   >
-                    <span>Convene Council</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <span>Launch {mode.title} Workspace</span>
+                    <ArrowRight size={14} />
                   </button>
                 </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </section>
 
-        {/* ========================================================================= */}
-        {/* THE HUMAN DIMENSION // EMOTIONAL ATMOSPHERE & CONTEMPLATION */}
-        {/* ========================================================================= */}
-        <section className="py-24 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full border-t border-white/[0.06]">
-          <div className="relative rounded-3xl overflow-hidden border border-white/[0.08] bg-gradient-to-b from-[#090C16] to-[#04060C] p-8 sm:p-14 shadow-2xl">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-              {/* Left Column (6 cols): Large Human Contemplative Imagery */}
-              <div className="lg:col-span-6 relative rounded-2xl overflow-hidden aspect-[16/10] border border-white/[0.1] shadow-2xl">
-                <img
-                  src="/assets/human_mind.jpg"
-                  alt="Human Contemplation & Deep Thought"
-                  className="w-full h-full object-cover object-center"
-                />
-                <div className="absolute inset-0 bg-gradient-to-tr from-[#090C16]/80 via-transparent to-transparent pointer-events-none" />
-                <div className="absolute bottom-4 left-4 right-4 p-3 rounded-xl bg-black/60 backdrop-blur-md border border-white/[0.08] flex items-center justify-between text-[11px] font-mono">
-                  <span className="text-slate-300 flex items-center space-x-2">
-                    <Brain className="w-3.5 h-3.5 text-amber-400" />
-                    <span>HUMAN AGENCY & REASONING</span>
-                  </span>
-                  <span className="text-amber-400 font-bold">SOVEREIGN MIND</span>
-                </div>
-              </div>
-
-              {/* Right Column (6 cols): The Philosophical Imperative */}
-              <div className="lg:col-span-6 space-y-6 text-left">
-                <span className="text-xs font-mono tracking-widest text-amber-400 uppercase font-bold flex items-center space-x-2">
-                  <Compass className="w-4 h-4 text-amber-400" />
-                  <span>THE HUMAN STRUGGLE OF HIGH-STAKES DECISIONS</span>
-                </span>
-
-                <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight font-sans">
-                  Every decision begins as an internal tension before it becomes an outcome.
-                </h2>
-
-                <p className="text-slate-300 text-sm sm:text-base leading-relaxed font-light">
-                  FlowMind does not replace human sovereignty with black-box speculation. Instead, it provides the cognitive architecture to hold seven opposing futures in your mind simultaneously—interrogating blind spots until only calibrated conviction survives.
-                </p>
-
-                {/* 3 Human Axioms */}
-                <div className="space-y-3 pt-2 font-mono text-xs">
-                  <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-start space-x-3">
-                    <span className="text-cyan-400 font-bold text-sm">01</span>
-                    <div>
-                      <span className="text-white font-semibold font-sans block text-xs">Cognitive Decoupling</span>
-                      <p className="text-slate-400 font-sans text-xs">Separate emotional sunk costs from empirical probabilistic base rates.</p>
-                    </div>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-start space-x-3">
-                    <span className="text-rose-400 font-bold text-sm">02</span>
-                    <div>
-                      <span className="text-white font-semibold font-sans block text-xs">Adversarial Stress-Testing</span>
-                      <p className="text-slate-400 font-sans text-xs">Expose confirmation bias before personal reputation or capital is committed.</p>
-                    </div>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-start space-x-3">
-                    <span className="text-emerald-400 font-bold text-sm">03</span>
-                    <div>
-                      <span className="text-white font-semibold font-sans block text-xs">Equilibrium Clarity</span>
-                      <p className="text-slate-400 font-sans text-xs">Synthesize chaotic divergent tension into an actionable, bounded verdict.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        {/* 7-AGENT COGNITIVE COUNCIL MATRIX */}
+        <section id="council" className="p-8 sm:p-10 rounded-3xl bg-[#0F1118] border border-white/[0.08] space-y-8 shadow-2xl scroll-mt-20">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/[0.08] pb-6">
+            <div className="space-y-1">
+              <span className="text-xs font-mono uppercase tracking-widest text-[#F5B84B]">
+                Deliberation Architecture
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-semibold text-white">
+                The 7-Agent Cognitive Council
+              </h2>
+              <p className="text-xs text-[#A7ACB8]">
+                Multi-agent dialectic system stress-testing every decision from 7 orthogonal perspectives.
+              </p>
             </div>
-          </div>
-        </section>
 
-        {/* ========================================================================= */}
-        {/* SECTION 2: THE PERSPECTIVES // 7 AUTONOMOUS REASONING ENGINES */}
-        {/* ========================================================================= */}
-        <section className="py-20 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full border-t border-white/[0.06]">
-          <div className="max-w-3xl mb-12 text-left space-y-2">
-            <span className="text-xs font-mono tracking-widest text-cyan-400 uppercase font-bold">
-              02 // THE SEVEN REASONING ENGINES
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
-              Seven perspectives. Zero consensus groupthink.
-            </h2>
-            <p className="text-sm text-slate-400 font-sans leading-relaxed">
-              Human judgment suffers from confirmation bias and premature closure. FlowMind convenes seven autonomous cognitive models, each interrogating your decision from an opposing strategic angle.
-            </p>
+            <button
+              onClick={() => onOpenAskAI('Simulate Cognitive Council deliberation on active dilemma')}
+              className="px-4 py-2 rounded-xl bg-white/[0.04] border border-white/[0.1] text-xs text-white font-medium hover:bg-white/[0.08] transition-colors shrink-0"
+            >
+              Query Council →
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-left font-mono">
-            {AGENTS_DATA.map((agent) => (
-              <div
-                key={agent.id}
-                className="p-5 rounded-2xl bg-[#070912]/80 border border-white/[0.06] hover:border-cyan-500/40 transition-all flex flex-col justify-between group backdrop-blur-xl"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-2xl">{agent.icon}</span>
-                      <div>
-                        <div className="text-xs font-bold text-white">{agent.code} // {agent.name}</div>
-                        <div className="text-[10px] text-slate-400">{agent.role}</div>
-                      </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Agent Selector Column */}
+            <div className="lg:col-span-5 space-y-2">
+              {AGENTS.map((agent, idx) => {
+                const isSelected = activeAgentIndex === idx;
+
+                return (
+                  <button
+                    key={agent.pid}
+                    onClick={() => {
+                      soundService.playClick();
+                      setActiveAgentIndex(idx);
+                    }}
+                    className={`w-full p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
+                      isSelected
+                        ? 'bg-[#151823] border-[#7C5CFF] text-white shadow-md'
+                        : 'bg-white/[0.02] border-white/[0.06] text-[#A7ACB8] hover:text-white hover:bg-white/[0.04]'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <span className="text-[10px] font-mono text-[#686E7C]">#{agent.pid}</span>
+                      <span className="text-xs font-semibold">{agent.name}</span>
+                      <span className="text-[11px] text-[#686E7C] hidden sm:inline">• {agent.role}</span>
                     </div>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] text-cyan-400 border border-white/[0.08] font-bold">
-                      {agent.confidence}
+
+                    <span className="text-[10px] font-mono text-[#45E0A8] font-medium">
+                      {agent.conf}% CONF
                     </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Active Agent Viewpoint Card */}
+            <div className="lg:col-span-7 p-6 rounded-2xl bg-[#151823] border border-white/[0.08] flex flex-col justify-between space-y-4 shadow-xl">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="px-2.5 py-1 rounded-md text-[10px] font-mono font-semibold uppercase tracking-wider bg-[#7C5CFF]/20 text-[#9B84FF] border border-[#7C5CFF]/30">
+                    AGENT #{selectedAgent.pid} // {selectedAgent.role}
+                  </span>
+                  <span className="text-xs font-mono text-[#45E0A8]">{selectedAgent.conf}% Calibrated Accuracy</span>
+                </div>
+
+                <h3 className="text-xl font-semibold text-white">
+                  {selectedAgent.name}’s Deliberation Lens
+                </h3>
+
+                <p className="text-sm text-[#F4F5F7] leading-relaxed italic bg-white/[0.02] p-4 rounded-xl border border-white/[0.06]">
+                  &quot;{selectedAgent.lens}&quot;
+                </p>
+              </div>
+
+              <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs text-[#686E7C]">
+                <span>Status: Continuous Background Dialectic</span>
+                <button
+                  onClick={() => onOpenAskAI(`How does the ${selectedAgent.name} agent analyze high-stakes trade-offs?`)}
+                  className="text-[#5EE7FF] hover:underline font-medium"
+                >
+                  Ask {selectedAgent.name} →
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* STARTER SCENARIOS PLAYGROUND */}
+        <section id="dilemmas" className="space-y-6 scroll-mt-20">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+            <div className="space-y-1">
+              <span className="text-xs font-mono uppercase tracking-widest text-[#5EE7FF]">
+                Simulate Scenarios
+              </span>
+              <h2 className="text-2xl font-semibold text-white tracking-tight">
+                Pre-Built High-Stakes Dilemmas
+              </h2>
+              <p className="text-xs text-[#A7ACB8]">
+                Click any dilemma to instantly deconstruct its strategic graph inside FlowMind.
+              </p>
+            </div>
+            <button
+              onClick={onExplore}
+              className="text-xs text-[#5EE7FF] hover:underline font-medium"
+            >
+              Browse All Precedents →
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {STARTER_DILEMMAS.map((d) => (
+              <div
+                key={d.code}
+                onClick={() => {
+                  soundService.playClick();
+                  onSelectStarterDilemma(d);
+                }}
+                className="p-5 rounded-2xl bg-[#0F1118] border border-white/[0.08] hover:border-[#7C5CFF]/50 hover:bg-[#151823] transition-all cursor-pointer space-y-4 flex flex-col justify-between group shadow-lg"
+              >
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between text-[11px] font-mono text-[#686E7C]">
+                    <span>{d.code}</span>
+                    <span className="text-[#5EE7FF]">{d.category}</span>
                   </div>
-
-                  <p className="text-xs text-slate-300 font-medium italic mb-3 font-editorial">
-                    "{agent.question}"
-                  </p>
-
-                  <p className="text-xs text-slate-400 font-sans leading-relaxed mb-4">
-                    {agent.lens}
+                  <h3 className="text-sm font-semibold text-white group-hover:text-[#5EE7FF] transition-colors leading-snug">
+                    {d.title}
+                  </h3>
+                  <p className="text-xs text-[#A7ACB8] line-clamp-2 leading-relaxed">
+                    {d.context}
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between text-[10px] text-slate-400">
-                  <span className="text-rose-400/90 font-semibold">Vulnerability Focus</span>
-                  <span className="truncate max-w-[170px] text-slate-300">{agent.risk}</span>
+                <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs text-[#686E7C]">
+                  <span>2 Paths Structured</span>
+                  <span className="text-[#5EE7FF] font-medium group-hover:translate-x-0.5 transition-transform flex items-center space-x-1">
+                    <span>Simulate</span>
+                    <ArrowRight size={12} />
+                  </span>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* ========================================================================= */}
-        {/* SECTION 3: THE CONFLICT // DIALECTIC OPPOSITION */}
-        {/* ========================================================================= */}
-        <section className="py-20 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full border-t border-white/[0.06]">
-          <div className="max-w-3xl mb-12 text-left space-y-2">
-            <span className="text-xs font-mono tracking-widest text-rose-400 uppercase font-bold">
-              03 // DIALECTIC TENSION
+        {/* COMPARISON TABLE: PHILOSOPHY & MANIFESTO */}
+        <section id="comparison" className="p-8 sm:p-10 rounded-3xl bg-[#0F1118] border border-white/[0.08] space-y-6 shadow-2xl scroll-mt-20">
+          <div className="text-center space-y-1 max-w-xl mx-auto">
+            <span className="text-xs font-mono uppercase tracking-widest text-[#9B84FF]">
+              Product Philosophy
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
-              Where consensus breaks.
+            <h2 className="text-2xl sm:text-3xl font-semibold text-white">
+              Why A Thinking OS?
             </h2>
-            <p className="text-sm text-slate-400 font-sans leading-relaxed">
-              Real clarity does not come from instant agreement. It emerges when competing strategic viewpoints are locked in direct, unsparing dialectic opposition.
+            <p className="text-xs text-[#A7ACB8]">
+              Traditional tools fragment knowledge into static folders, flat lists, or disposable chat logs. FlowMind is engineered for interconnected thought.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 text-left font-mono">
-            {/* Clash 1: Optimist vs Skeptic */}
-            <div className="p-6 rounded-3xl bg-gradient-to-b from-[#0B0D1B] to-[#05060D] border border-white/[0.08] space-y-4">
-              <div className="flex items-center justify-between text-xs pb-2 border-b border-white/[0.06]">
-                <span className="text-emerald-400 font-bold">OPTIMIST</span>
-                <span className="text-slate-500 font-bold">VS</span>
-                <span className="text-rose-400 font-bold">SKEPTIC</span>
-              </div>
-
-              <div className="space-y-3 font-sans text-xs">
-                <div className="p-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/20">
-                  <span className="text-[10px] font-mono text-emerald-400 font-bold block mb-0.5">THE UPSIDE THESIS</span>
-                  <p className="text-slate-200 leading-relaxed">
-                    "Early equity ownership compounds exponentially. First-mover advantage secures an insurmountable distribution moat."
-                  </p>
-                </div>
-
-                <div className="p-3 rounded-xl bg-rose-500/[0.06] border border-rose-500/20">
-                  <span className="text-[10px] font-mono text-rose-400 font-bold block mb-0.5">THE DOWNSIDE REALITY</span>
-                  <p className="text-slate-200 leading-relaxed">
-                    "This is an irreversible Type 1 door. Exiting early destroys reputational goodwill and forfeits unvested equity."
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-[10px] text-slate-400 border-t border-white/[0.06] pt-3 flex items-center justify-between">
-                <span>TENSION VECTOR</span>
-                <span className="text-cyan-400 font-bold">LEVERAGE vs LOCK-IN</span>
-              </div>
-            </div>
-
-            {/* Clash 2: Analyst vs Devil's Advocate */}
-            <div className="p-6 rounded-3xl bg-gradient-to-b from-[#0B0D1B] to-[#05060D] border border-white/[0.08] space-y-4">
-              <div className="flex items-center justify-between text-xs pb-2 border-b border-white/[0.06]">
-                <span className="text-cyan-400 font-bold">ANALYST</span>
-                <span className="text-slate-500 font-bold">VS</span>
-                <span className="text-red-400 font-bold">DEVIL'S ADVOCATE</span>
-              </div>
-
-              <div className="space-y-3 font-sans text-xs">
-                <div className="p-3 rounded-xl bg-cyan-500/[0.06] border border-cyan-500/20">
-                  <span className="text-[10px] font-mono text-cyan-400 font-bold block mb-0.5">EMPIRICAL PRECEDENT</span>
-                  <p className="text-slate-200 leading-relaxed">
-                    "Historical cohort data verifies that top-quartile founders in this sector average 3.4x higher enterprise value over 5 years."
-                  </p>
-                </div>
-
-                <div className="p-3 rounded-xl bg-red-500/[0.06] border border-red-500/20">
-                  <span className="text-[10px] font-mono text-red-400 font-bold block mb-0.5">BIAS DESTRUCTION</span>
-                  <p className="text-slate-200 leading-relaxed">
-                    "Survivorship bias: you are ignoring the 58% of peer ventures that ran out of cash before enterprise contracts materialized."
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-[10px] text-slate-400 border-t border-white/[0.06] pt-3 flex items-center justify-between">
-                <span>TENSION VECTOR</span>
-                <span className="text-cyan-400 font-bold">BASE RATES vs BLIND SPOTS</span>
-              </div>
-            </div>
-
-            {/* Clash 3: Financial Analyst vs Long-Term Planner */}
-            <div className="p-6 rounded-3xl bg-gradient-to-b from-[#0B0D1B] to-[#05060D] border border-white/[0.08] space-y-4">
-              <div className="flex items-center justify-between text-xs pb-2 border-b border-white/[0.06]">
-                <span className="text-amber-400 font-bold">FINANCE</span>
-                <span className="text-slate-500 font-bold">VS</span>
-                <span className="text-indigo-400 font-bold">PLANNER</span>
-              </div>
-
-              <div className="space-y-3 font-sans text-xs">
-                <div className="p-3 rounded-xl bg-amber-500/[0.06] border border-amber-500/20">
-                  <span className="text-[10px] font-mono text-amber-400 font-bold block mb-0.5">CAPITAL RUNWAY</span>
-                  <p className="text-slate-200 leading-relaxed">
-                    "Cash burn accelerates under Option A. Runway decreases from 24 months to 11 months before break-even."
-                  </p>
-                </div>
-
-                <div className="p-3 rounded-xl bg-indigo-500/[0.06] border border-indigo-500/20">
-                  <span className="text-[10px] font-mono text-indigo-400 font-bold block mb-0.5">COMPOUNDING HORIZON</span>
-                  <p className="text-slate-200 leading-relaxed">
-                    "A narrower runway is offset by strategic talent density that unlocks tier-1 venture follow-on rounds."
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-[10px] text-slate-400 border-t border-white/[0.06] pt-3 flex items-center justify-between">
-                <span>TENSION VECTOR</span>
-                <span className="text-cyan-400 font-bold">LIQUIDITY vs TRAJECTORY</span>
-              </div>
-            </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse min-w-[600px]">
+              <thead>
+                <tr className="border-b border-white/[0.08] text-[#686E7C] font-mono text-[11px]">
+                  <th className="py-3 px-4">DIMENSION</th>
+                  <th className="py-3 px-4">NOTES APPS</th>
+                  <th className="py-3 px-4">KANBAN BOARDS</th>
+                  <th className="py-3 px-4">AI CHATBOTS</th>
+                  <th className="py-3 px-4 text-[#5EE7FF]">FLOWMIND COGNITIVE OS</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/[0.04]">
+                {COMPARISON_ROWS.map((row, idx) => (
+                  <tr key={idx} className="hover:bg-white/[0.02] transition-colors">
+                    <td className="py-3 px-4 font-semibold text-white">{row.dimension}</td>
+                    <td className="py-3 px-4 text-[#686E7C]">{row.notesApp}</td>
+                    <td className="py-3 px-4 text-[#686E7C]">{row.kanban}</td>
+                    <td className="py-3 px-4 text-[#686E7C]">{row.aiChat}</td>
+                    <td className="py-3 px-4 text-[#5EE7FF] font-medium bg-[#7C5CFF]/5">{row.flowMind}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </section>
 
-        {/* ========================================================================= */}
-        {/* SECTION 4: RED TEAM MODE // ASSUMPTION UNDER ATTACK */}
-        {/* ========================================================================= */}
-        <section className="py-20 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full border-t border-white/[0.06]">
-          <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-b from-[#100609] via-[#090306] to-[#040102] border border-rose-500/30 shadow-[0_30px_90px_rgba(244,63,94,0.15)] text-left">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-rose-500/20">
-              <div>
-                <span className="text-xs font-mono tracking-widest text-rose-400 uppercase font-bold flex items-center space-x-2">
-                  <Swords className="w-3.5 h-3.5 text-rose-400" />
-                  <span>04 // ADVERSARIAL RED TEAM PROTOCOL</span>
-                </span>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1 font-sans">
-                  Assumption Under Attack
-                </h2>
-                <p className="text-xs sm:text-sm text-slate-300 font-sans mt-0.5">
-                  FlowMind does not cheerlead your preferred choice. It aggressively stress-tests what could destroy it.
-                </p>
-              </div>
-
-              <div className="flex items-center space-x-3 bg-black/60 px-4 py-2 rounded-2xl border border-rose-500/30 shrink-0 font-mono text-xs">
-                <div className="text-right">
-                  <div className="text-[10px] text-slate-400">Calibrated Haircut</div>
-                  <div className="text-rose-400 font-bold">-12% Confidence</div>
-                </div>
-                <div className="text-xl font-bold text-white">
-                  88% → <span className="text-rose-400">76%</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 4-Step Assumption Attack Framework */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 font-mono text-xs">
-              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06] space-y-2">
-                <span className="text-[10px] text-slate-400 font-bold block">01 // ASSUMPTION</span>
-                <div className="text-white font-semibold font-sans">What must be true?</div>
-                <p className="text-slate-300 font-sans text-xs leading-relaxed">
-                  "Assumes the enterprise pipeline will convert at 25% within 90 days without price concessions."
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-rose-500/[0.06] border border-rose-500/25 space-y-2">
-                <span className="text-[10px] text-rose-400 font-bold block">02 // THE ATTACK</span>
-                <div className="text-white font-semibold font-sans">What invalidates it?</div>
-                <p className="text-slate-300 font-sans text-xs leading-relaxed">
-                  "Zero signed enterprise purchase orders exist. Verbal enthusiasm is being treated as contractual revenue."
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-amber-500/[0.06] border border-amber-500/25 space-y-2">
-                <span className="text-[10px] text-amber-400 font-bold block">03 // COUNTERFACTUAL</span>
-                <div className="text-white font-semibold font-sans">What if growth is 50% slower?</div>
-                <p className="text-slate-300 font-sans text-xs leading-relaxed">
-                  "Cash runway drops to 7 months. The firm is forced into a punitive recapitalization."
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-emerald-500/[0.06] border border-emerald-500/25 space-y-2">
-                <span className="text-[10px] text-emerald-400 font-bold block">04 // SURVIVAL GATE</span>
-                <div className="text-white font-semibold font-sans">Does the decision survive?</div>
-                <p className="text-slate-300 font-sans text-xs leading-relaxed">
-                  "Survives only if milestone gates (2 enterprise LOIs before hiring) are strictly enforced."
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ========================================================================= */}
-        {/* SECTION 5: SIMULATION // 1,000 MONTE CARLO STOCHASTIC FUTURES */}
-        {/* ========================================================================= */}
-        <section className="py-20 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full border-t border-white/[0.06]">
-          <div className="max-w-3xl mb-12 text-left space-y-2">
-            <span className="text-xs font-mono tracking-widest text-amber-400 uppercase font-bold">
-              05 // MONTE CARLO SIMULATION
+        {/* TESTIMONIALS & USE CASES */}
+        <section id="testimonials" className="space-y-6 scroll-mt-20">
+          <div className="text-center space-y-1 max-w-xl mx-auto">
+            <span className="text-xs font-mono uppercase tracking-widest text-[#45E0A8]">
+              Architect Testimonials
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
-              1,000 possible futures. Not one single outcome.
+            <h2 className="text-2xl sm:text-3xl font-semibold text-white">
+              Trusted by Decision-Makers
             </h2>
-            <p className="text-sm text-slate-400 font-sans leading-relaxed">
-              Every decision enters an uncertain world. FlowMind models 1,000 stochastic scenario variations to map your downside floor and compounding upside ceiling.
+            <p className="text-xs text-[#A7ACB8]">
+              Engineers, founders, and leaders rely on FlowMind to navigate high-stakes ambiguity.
             </p>
           </div>
 
-          <div className="p-8 rounded-3xl bg-[#080B14] border border-white/[0.08] space-y-8 text-left font-mono">
-            {/* Interactive Sensitivity Levers */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06] space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span className="text-slate-300">Execution Friction Drag</span>
-                  <span className="text-cyan-400 font-bold">+{marketFriction}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="40"
-                  value={marketFriction}
-                  onChange={(e) => setMarketFriction(Number(e.target.value))}
-                  className="w-full accent-cyan-400 cursor-pointer"
-                />
-                <div className="flex justify-between text-[10px] text-slate-500">
-                  <span>Zero Delay</span>
-                  <span>Severe Market Drag (+40%)</span>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06] space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span className="text-slate-300">Revenue / Macro Growth Shift</span>
-                  <span className="text-emerald-400 font-bold">{revenueShift > 0 ? `+${revenueShift}%` : `${revenueShift}%`}</span>
-                </div>
-                <input
-                  type="range"
-                  min="-25"
-                  max="25"
-                  value={revenueShift}
-                  onChange={(e) => setRevenueShift(Number(e.target.value))}
-                  className="w-full accent-emerald-400 cursor-pointer"
-                />
-                <div className="flex justify-between text-[10px] text-slate-500">
-                  <span>Downside Contraction (-25%)</span>
-                  <span>Bull Market (+25%)</span>
-                </div>
-              </div>
-            </div>
-
-            {/* 3-Percentile Distribution Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-5 rounded-2xl bg-rose-500/[0.06] border border-rose-500/30 text-center">
-                <div className="text-[10px] uppercase text-rose-400 font-bold tracking-wider">P10 STRESS FLOOR</div>
-                <div className="text-3xl font-bold text-rose-400 mt-1">{p10Score}%</div>
-                <p className="text-[11px] text-slate-400 font-sans mt-1">Worst 10% outcome floor</p>
-              </div>
-
-              <div className="p-5 rounded-2xl bg-indigo-500/[0.06] border border-indigo-500/30 text-center">
-                <div className="text-[10px] uppercase text-indigo-400 font-bold tracking-wider">P50 MEDIAN BASE</div>
-                <div className="text-3xl font-bold text-indigo-300 mt-1">{p50Score}%</div>
-                <p className="text-[11px] text-slate-400 font-sans mt-1">Expected equilibrium outcome</p>
-              </div>
-
-              <div className="p-5 rounded-2xl bg-emerald-500/[0.06] border border-emerald-500/30 text-center">
-                <div className="text-[10px] uppercase text-emerald-400 font-bold tracking-wider">P90 BULL CEILING</div>
-                <div className="text-3xl font-bold text-emerald-400 mt-1">{p90Score}%</div>
-                <p className="text-[11px] text-slate-400 font-sans mt-1">90th percentile asymmetric upside</p>
-              </div>
-            </div>
-
-            {/* Statistical Transparency Disclaimer */}
-            <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] text-xs text-slate-400 font-sans flex items-start space-x-2.5">
-              <span className="text-amber-400 font-bold">ℹ</span>
-              <p>
-                <strong className="text-slate-200 font-mono">SCENARIO-BASED SENSITIVITY DISCLAIMER:</strong> These 1,000 iterations model parametric sensitivity under varied assumptions. They provide relative distribution boundaries rather than claiming absolute predictive certainty.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* ========================================================================= */}
-        {/* SECTION 6: EVIDENCE // GROUNDED KNOWLEDGE GRAPH */}
-        {/* ========================================================================= */}
-        <section className="py-20 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full border-t border-white/[0.06]">
-          <div className="max-w-3xl mb-12 text-left space-y-2">
-            <span className="text-xs font-mono tracking-widest text-emerald-400 uppercase font-bold">
-              06 // GROUNDED RAG PROVENANCE
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
-              Evidence connected to reasoning.
-            </h2>
-            <p className="text-sm text-slate-400 font-sans leading-relaxed">
-              No ungrounded AI speculation. Every claim in FlowMind links directly to uploaded PDFs, DOCX term sheets, and financial models.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-left font-mono">
-            <div className="p-6 rounded-3xl bg-[#070912] border border-white/[0.08] space-y-4">
-              <div className="flex items-center justify-between text-xs pb-3 border-b border-white/[0.06]">
-                <div className="flex items-center space-x-2">
-                  <FileText className="w-4 h-4 text-cyan-400" />
-                  <span className="font-bold text-white">SERIES_B_TERMSHEET.PDF</span>
-                </div>
-                <span className="text-[10px] text-emerald-400 font-bold">VERIFIED CITATION</span>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06] text-xs font-sans text-slate-300">
-                <span className="text-[10px] font-mono text-cyan-400 font-bold block mb-1">EVIDENCE EXCERPT // SECTION 4.2</span>
-                "1x Non-participating liquidation preference applies. Employee pool expands by 4% prior to round closing, resulting in 18.2% total effective founder dilution."
-              </div>
-
-              <div className="flex items-center space-x-2 text-[10px]">
-                <span className="text-slate-400">USED BY AGENTS:</span>
-                <span className="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">Analyst</span>
-                <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">Financial Analyst</span>
-                <span className="px-2 py-0.5 rounded bg-rose-500/10 text-rose-300 border border-rose-500/30">Skeptic</span>
-              </div>
-            </div>
-
-            <div className="p-6 rounded-3xl bg-[#070912] border border-white/[0.08] space-y-4">
-              <div className="flex items-center justify-between text-xs pb-3 border-b border-white/[0.06]">
-                <div className="flex items-center space-x-2">
-                  <FileText className="w-4 h-4 text-indigo-400" />
-                  <span className="font-bold text-white">ARCHITECTURE_RFC_v3.DOCX</span>
-                </div>
-                <span className="text-[10px] text-emerald-400 font-bold">VERIFIED CITATION</span>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06] text-xs font-sans text-slate-300">
-                <span className="text-[10px] font-mono text-indigo-400 font-bold block mb-1">EVIDENCE EXCERPT // BENCHMARK 7</span>
-                "P99 latency across cross-region gRPC event mesh increases by 34ms compared to monolithic database transactions under peak load."
-              </div>
-
-              <div className="flex items-center space-x-2 text-[10px]">
-                <span className="text-slate-400">USED BY AGENTS:</span>
-                <span className="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">Analyst</span>
-                <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">Long-Term Planner</span>
-                <span className="px-2 py-0.5 rounded bg-red-500/10 text-red-300 border border-red-500/30">Devil's Advocate</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ========================================================================= */}
-        {/* SECTION 7 & 8: SYNTHESIS & CLARITY // THE EQUILIBRIUM SIGNAL */}
-        {/* ========================================================================= */}
-        <section className="py-20 px-6 sm:px-10 lg:px-16 max-w-7xl mx-auto w-full border-t border-white/[0.06]">
-          <div className="max-w-3xl mb-12 text-left space-y-2">
-            <span className="text-xs font-mono tracking-widest text-violet-400 uppercase font-bold">
-              07 // SYNTHESIS TO CLARITY
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
-              Noise dissolves. The signal crystallizes.
-            </h2>
-            <p className="text-sm text-slate-400 font-sans leading-relaxed">
-              When seven perspectives debate, bias is cancelled out. The Synthesizer harmonizes divergent viewpoints into a high-confidence equilibrium verdict.
-            </p>
-          </div>
-
-          <div className="p-8 sm:p-10 rounded-3xl bg-gradient-to-b from-[#0B0D1B] to-[#04060E] border border-white/[0.08] shadow-2xl text-left space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-white/[0.06] gap-4">
-              <div>
-                <span className="text-xs font-mono text-emerald-400 font-bold uppercase tracking-wider block">
-                  RECOMMENDED TRAJECTORY // EQUILIBRIUM VERDICT
-                </span>
-                <h3 className="text-2xl font-bold text-white font-sans mt-1">
-                  Series B Startup Lead with 90-Day Enterprise Gates
-                </h3>
-              </div>
-              <div className="px-4 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-base font-bold text-center shrink-0">
-                88.5% Calibrated Confidence
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
-              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
-                <span className="text-[10px] text-cyan-400 font-bold block mb-1">SURVIVING VALUE DRIVER</span>
-                <p className="text-slate-300 font-sans text-xs leading-relaxed">
-                  Asymmetric equity compounding dwarfs salary differential over 5 years.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
-                <span className="text-[10px] text-rose-400 font-bold block mb-1">KEY RISK BOUNDARY</span>
-                <p className="text-slate-300 font-sans text-xs leading-relaxed">
-                  Type 1 irreversible door: requires mandatory 60-day runway validation.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
-                <span className="text-[10px] text-indigo-400 font-bold block mb-1">90-DAY PROGRESS GATE</span>
-                <p className="text-slate-300 font-sans text-xs leading-relaxed">
-                  Lock in 2 enterprise pilots before committing to relocation or long-term lease.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ========================================================================= */}
-        {/* SECTION 9: ENTER FLOWMIND // CINEMATIC FINAL CALL TO ACTION */}
-        {/* ========================================================================= */}
-        <section className="py-28 px-6 sm:px-10 lg:px-16 max-w-5xl mx-auto w-full text-center border-t border-white/[0.06]">
-          <div className="space-y-6">
-            <span className="text-xs font-mono uppercase tracking-[0.3em] text-cyan-400 font-bold block">
-              ENTER FLOWMIND
-            </span>
-            <h2 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-tight uppercase font-sans">
-              Enter the flow <br />
-              of thought.
-            </h2>
-            <p className="text-base text-slate-400 max-w-xl mx-auto font-light leading-relaxed">
-              Stop making high-stakes decisions in the dark. Convene the 7-agent intelligence council on your career, venture, and architecture dilemmas.
-            </p>
-
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button
-                onClick={() => {
-                  soundService.playSuccess();
-                  onGetStarted();
-                }}
-                className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-400 via-indigo-400 to-violet-500 hover:from-cyan-300 hover:via-indigo-300 hover:to-violet-400 text-slate-950 font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center space-x-2 shadow-[0_0_35px_rgba(0,240,255,0.35)] transition-all"
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {TESTIMONIALS.map((t, idx) => (
+              <div
+                key={idx}
+                className="p-6 rounded-2xl bg-[#0F1118] border border-white/[0.08] flex flex-col justify-between space-y-4 shadow-xl"
               >
-                <span>Launch FlowMind Intelligence</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+                <div className="space-y-3">
+                  <Quote size={20} className="text-[#7C5CFF] opacity-60" />
+                  <p className="text-xs text-[#F4F5F7] leading-relaxed italic">
+                    &quot;{t.quote}&quot;
+                  </p>
+                </div>
 
-              <button
-                onClick={onExplore}
-                className="w-full sm:w-auto px-6 py-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-white border border-white/[0.08] text-xs font-mono flex items-center justify-center space-x-2 transition-all"
-              >
-                <Eye className="w-4 h-4 text-cyan-400" />
-                <span>Explore Curated Dilemmas</span>
-              </button>
-            </div>
+                <div className="flex items-center space-x-3 pt-3 border-t border-white/[0.06]">
+                  <div className={`w-8 h-8 rounded-full bg-gradient-to-tr ${t.avatarColor} p-0.5 shrink-0`}>
+                    <div className="w-full h-full rounded-full bg-[#08090D] flex items-center justify-center text-[10px] font-bold text-white">
+                      {t.name[0]}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-semibold text-white">{t.name}</h4>
+                    <p className="text-[10px] text-[#686E7C]">{t.role} • {t.company}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
-      </div>
+
+        {/* INTERACTIVE FAQ ACCORDION */}
+        <section id="faq" className="space-y-6 max-w-3xl mx-auto scroll-mt-20">
+          <div className="text-center space-y-1">
+            <span className="text-xs font-mono uppercase tracking-widest text-[#5EE7FF]">
+              Got Questions?
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-semibold text-white">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-xs text-[#A7ACB8]">
+              Everything you need to know about FlowMind’s architecture and reasoning engine.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {FAQ_ITEMS.map((item, idx) => {
+              const isOpen = openFaqIndex === idx;
+
+              return (
+                <div
+                  key={idx}
+                  className="rounded-2xl bg-[#0F1118] border border-white/[0.08] overflow-hidden transition-all"
+                >
+                  <button
+                    onClick={() => {
+                      soundService.playClick();
+                      setOpenFaqIndex(isOpen ? null : idx);
+                    }}
+                    className="w-full p-4 sm:p-5 flex items-center justify-between text-left text-sm font-semibold text-white hover:text-[#5EE7FF] transition-colors"
+                  >
+                    <span>{item.q}</span>
+                    <ChevronDown
+                      size={16}
+                      className={`text-[#686E7C] transition-transform duration-200 shrink-0 ml-3 ${
+                        isOpen ? 'rotate-180 text-[#5EE7FF]' : ''
+                      }`}
+                    />
+                  </button>
+
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="px-5 pb-5 text-xs text-[#A7ACB8] leading-relaxed border-t border-white/[0.04] pt-3"
+                      >
+                        {item.a}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* FINAL CONVERSION BANNER */}
+        <section className="p-10 sm:p-14 rounded-3xl bg-gradient-to-br from-[#151823] to-[#0F1118] border border-[#7C5CFF]/30 text-center space-y-6 shadow-2xl relative overflow-hidden">
+          <div className="space-y-2 max-w-xl mx-auto">
+            <h2 className="text-3xl sm:text-4xl font-semibold text-white tracking-tight">
+              Ready to turn thoughts into flow?
+            </h2>
+            <p className="text-xs sm:text-sm text-[#A7ACB8] leading-relaxed">
+              Step into your cognitive workspace. Experience spatial knowledge graphs, multi-agent reasoning, and focused execution.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <button
+              onClick={() => {
+                soundService.playChime();
+                onGetStarted();
+              }}
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#7C5CFF] to-[#5EE7FF] text-white font-semibold text-xs shadow-lg shadow-[#7C5CFF]/30 hover:opacity-95 transition-all"
+            >
+              Launch FlowMind Free →
+            </button>
+            <button
+              onClick={onExplore}
+              className="px-5 py-3 rounded-xl bg-white/[0.04] border border-white/[0.1] text-xs text-[#A7ACB8] hover:text-white transition-colors"
+            >
+              Explore Knowledge Directory
+            </button>
+          </div>
+        </section>
+      </main>
+
+      {/* FOOTER */}
+      <footer className="border-t border-white/[0.06] py-12 text-xs text-[#686E7C]">
+        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8 mb-8 text-left">
+          <div className="space-y-3">
+            <FlowMindLogo size="sm" showWordmark={true} />
+            <p className="text-xs text-[#686E7C] leading-relaxed">
+              The thinking operating system. Transforming thoughts into living topologies and decisive action.
+            </p>
+            <button
+              onClick={() => {
+                soundService.playClick();
+                setIsStatusModalOpen(true);
+              }}
+              className="flex items-center space-x-2 text-[11px] text-[#45E0A8] hover:underline"
+            >
+              <span className="w-2 h-2 rounded-full bg-[#45E0A8] animate-pulse" />
+              <span>All Systems Operational (99.98%)</span>
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            <h4 className="text-xs font-mono uppercase tracking-wider text-white">Workspaces</h4>
+            <ul className="space-y-1.5 text-xs text-[#A7ACB8]">
+              <li><button onClick={() => handleModeClick('canvas')} className="hover:text-white">FLOW (Canvas)</button></li>
+              <li><button onClick={() => handleModeClick('ai-think')} className="hover:text-white">THINK (Reasoning)</button></li>
+              <li><button onClick={() => handleModeClick('tasks')} className="hover:text-white">ACT (Tasks &amp; Focus)</button></li>
+              <li><button onClick={onExplore} className="hover:text-white">Flow Directory</button></li>
+            </ul>
+          </div>
+
+          <div className="space-y-2">
+            <h4 className="text-xs font-mono uppercase tracking-wider text-white">Platform</h4>
+            <ul className="space-y-1.5 text-xs text-[#A7ACB8]">
+              <li><a href="#council" className="hover:text-white">7-Agent Council</a></li>
+              <li><a href="#comparison" className="hover:text-white">Manifesto</a></li>
+              <li><a href="#faq" className="hover:text-white">FAQ</a></li>
+              <li><button onClick={() => onOpenAskAI()} className="hover:text-white">Ask Copilot</button></li>
+            </ul>
+          </div>
+
+          <div className="space-y-2">
+            <h4 className="text-xs font-mono uppercase tracking-wider text-white">Security &amp; Specs</h4>
+            <ul className="space-y-1.5 text-xs text-[#A7ACB8]">
+              <li>
+                <button
+                  onClick={() => {
+                    setPrivacyTab('specs');
+                    setIsPrivacyModalOpen(true);
+                  }}
+                  className="hover:text-white"
+                >
+                  Local-first Persistence
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    setPrivacyTab('privacy');
+                    setIsPrivacyModalOpen(true);
+                  }}
+                  className="hover:text-white"
+                >
+                  Zero Server Storage
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    setPrivacyTab('specs');
+                    setIsPrivacyModalOpen(true);
+                  }}
+                  className="hover:text-white"
+                >
+                  Sub-50ms HMR Pipeline
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    setIsContactModalOpen(true);
+                  }}
+                  className="hover:text-[#5EE7FF]"
+                >
+                  Contact &amp; Inquiries →
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-6 pt-6 border-t border-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-[#686E7C]">
+          <span>© 2026 FlowMind Inc. All rights reserved. Built for thinkers, architects, and founders.</span>
+          <div className="flex items-center space-x-4 text-[#A7ACB8]">
+            <button
+              onClick={() => {
+                setPrivacyTab('privacy');
+                setIsPrivacyModalOpen(true);
+              }}
+              className="hover:text-white"
+            >
+              Privacy
+            </button>
+            <button
+              onClick={() => {
+                setPrivacyTab('terms');
+                setIsPrivacyModalOpen(true);
+              }}
+              className="hover:text-white"
+            >
+              Terms
+            </button>
+            <button onClick={onGetStarted} className="hover:text-white">
+              Workspace
+            </button>
+          </div>
+        </div>
+      </footer>
+
+      {/* PRIVACY & MANIFESTO MODAL */}
+      <AnimatePresence>
+        {isPrivacyModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-xl bg-[#0F1118] border border-white/[0.12] rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5 text-left max-h-[85vh] overflow-y-auto custom-scrollbar"
+            >
+              <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+                <div className="flex items-center space-x-2">
+                  <Shield size={18} className="text-[#5EE7FF]" />
+                  <span className="font-semibold text-white text-sm">FlowMind Architecture &amp; Governance</span>
+                </div>
+                <button
+                  onClick={() => setIsPrivacyModalOpen(false)}
+                  className="text-[#686E7C] hover:text-white"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Tabs */}
+              <div className="flex space-x-2 border-b border-white/[0.06] pb-2 text-xs">
+                {(['privacy', 'terms', 'specs'] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setPrivacyTab(tab)}
+                    className={`px-3 py-1.5 rounded-lg capitalize font-medium transition-colors ${
+                      privacyTab === tab
+                        ? 'bg-[#7C5CFF]/20 text-[#9B84FF] border border-[#7C5CFF]/30'
+                        : 'text-[#686E7C] hover:text-white'
+                    }`}
+                  >
+                    {tab === 'specs' ? 'Tech Specs' : tab}
+                  </button>
+                ))}
+              </div>
+
+              {privacyTab === 'privacy' && (
+                <div className="space-y-3 text-xs text-[#A7ACB8] leading-relaxed">
+                  <h4 className="font-semibold text-white text-sm">Cognitive Sovereignty Manifesto</h4>
+                  <p>
+                    Your thoughts are your most valuable intellectual asset. Unlike traditional cloud software that ingests user mental models for training centralized weights, FlowMind is built on the principle of <strong className="text-white">Zero Server Retention</strong>.
+                  </p>
+                  <p>
+                    All graphs, node relationships, notes, and task queues remain strictly stored in your local browser environment. When multi-agent AI deliberation is requested, requests are ephemerally evaluated and never persisted to database logs.
+                  </p>
+                  <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] text-[11px] font-mono text-[#5EE7FF]">
+                    ✓ No telemetry selling • ✓ Local-first persistence • ✓ Ephemeral inference execution
+                  </div>
+                </div>
+              )}
+
+              {privacyTab === 'terms' && (
+                <div className="space-y-3 text-xs text-[#A7ACB8] leading-relaxed">
+                  <h4 className="font-semibold text-white text-sm">Terms of Usage &amp; License</h4>
+                  <p>
+                    FlowMind is distributed for personal and enterprise decision modeling. You retain 100% intellectual property rights over all topology graphs, decisions, and strategies synthesized within the environment.
+                  </p>
+                  <p>
+                    Exported decision briefs, Markdown trees, and JSON structures are fully open to be used in commercial and proprietary software development without restriction.
+                  </p>
+                </div>
+              )}
+
+              {privacyTab === 'specs' && (
+                <div className="space-y-3 text-xs text-[#A7ACB8] leading-relaxed">
+                  <h4 className="font-semibold text-white text-sm">Technical Specifications</h4>
+                  <div className="grid grid-cols-2 gap-3 text-[11px]">
+                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+                      <span className="text-[#686E7C] block">Client Engine</span>
+                      <span className="text-white font-semibold">React 19 + TypeScript + Vite</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+                      <span className="text-[#686E7C] block">Backend API</span>
+                      <span className="text-white font-semibold">FastAPI + Python 3.12</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+                      <span className="text-[#686E7C] block">Audio Engine</span>
+                      <span className="text-white font-semibold">Web Audio API Synthesis</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+                      <span className="text-[#686E7C] block">Graph Engine</span>
+                      <span className="text-white font-semibold">Topological Bezier Mesh</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-3 border-t border-white/[0.06] flex justify-end">
+                <button
+                  onClick={() => setIsPrivacyModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-white/[0.06] text-white hover:bg-white/[0.1] text-xs font-semibold"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* SYSTEM STATUS MODAL */}
+      <AnimatePresence>
+        {isStatusModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-md bg-[#0F1118] border border-white/[0.12] rounded-3xl p-6 shadow-2xl space-y-4 text-left"
+            >
+              <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
+                <div className="flex items-center space-x-2">
+                  <Activity size={18} className="text-[#45E0A8]" />
+                  <span className="font-semibold text-white text-sm">FlowMind Infrastructure Status</span>
+                </div>
+                <button
+                  onClick={() => setIsStatusModalOpen(false)}
+                  className="text-[#686E7C] hover:text-white"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="space-y-2.5 text-xs">
+                {[
+                  { name: 'FastAPI Backend Core', status: 'Operational', latency: '4ms', color: 'text-[#45E0A8]' },
+                  { name: 'Inference Reasoner (Gemini/Local)', status: 'Operational', latency: '42ms', color: 'text-[#45E0A8]' },
+                  { name: 'Web Audio Synthesizer', status: 'Online (DSP Active)', latency: '0ms', color: 'text-[#45E0A8]' },
+                  { name: 'Local Cache & Topology Bus', status: 'Synchronized', latency: '1ms', color: 'text-[#45E0A8]' },
+                ].map((s, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-between"
+                  >
+                    <div>
+                      <span className="font-semibold text-white block">{s.name}</span>
+                      <span className="text-[10px] text-[#686E7C]">Latency: {s.latency}</span>
+                    </div>
+                    <span className={`text-[11px] font-mono font-bold ${s.color}`}>{s.status}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-2 flex justify-end">
+                <button
+                  onClick={() => setIsStatusModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-white/[0.06] text-white hover:bg-white/[0.1] text-xs font-semibold"
+                >
+                  Done
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* CONTACT / INQUIRY MODAL */}
+      <AnimatePresence>
+        {isContactModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-md bg-[#0F1118] border border-white/[0.12] rounded-3xl p-6 sm:p-7 shadow-2xl space-y-4 text-left"
+            >
+              <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
+                <div className="flex items-center space-x-2">
+                  <Send size={16} className="text-[#5EE7FF]" />
+                  <span className="font-semibold text-white text-sm">Contact FlowMind Team</span>
+                </div>
+                <button
+                  onClick={() => setIsContactModalOpen(false)}
+                  className="text-[#686E7C] hover:text-white"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {contactSubmitted ? (
+                <div className="py-8 text-center space-y-2">
+                  <CheckCircle2 size={36} className="text-[#45E0A8] mx-auto" />
+                  <h4 className="text-sm font-semibold text-white">Inquiry Received</h4>
+                  <p className="text-xs text-[#A7ACB8]">Our architecture team will reach back within 24 hours.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleContactSubmit} className="space-y-3 text-xs">
+                  <div>
+                    <label className="block text-[#A7ACB8] mb-1">Your Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={contactForm.name}
+                      onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                      placeholder="e.g. Alex Mercer"
+                      className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white focus:outline-none focus:border-[#7C5CFF]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[#A7ACB8] mb-1">Work Email</label>
+                    <input
+                      type="email"
+                      required
+                      value={contactForm.email}
+                      onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                      placeholder="alex@company.com"
+                      className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white focus:outline-none focus:border-[#7C5CFF]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[#A7ACB8] mb-1">Organization / Role</label>
+                    <input
+                      type="text"
+                      value={contactForm.org}
+                      onChange={(e) => setContactForm({ ...contactForm, org: e.target.value })}
+                      placeholder="e.g. Staff Architect @ TechCorp"
+                      className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white focus:outline-none focus:border-[#7C5CFF]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[#A7ACB8] mb-1">Message or Strategic Objective</label>
+                    <textarea
+                      rows={3}
+                      value={contactForm.message}
+                      onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                      placeholder="How can we help your team with decision mapping and cognitive flow?"
+                      className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white focus:outline-none focus:border-[#7C5CFF] resize-none"
+                    />
+                  </div>
+
+                  <div className="pt-2 flex justify-end space-x-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsContactModalOpen(false)}
+                      className="px-4 py-2 rounded-xl bg-white/[0.04] text-[#A7ACB8] hover:text-white"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#7C5CFF] to-[#5EE7FF] text-white font-semibold shadow-md shadow-[#7C5CFF]/20"
+                    >
+                      Send Message
+                    </button>
+                  </div>
+                </form>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

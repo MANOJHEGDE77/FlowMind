@@ -1,13 +1,33 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
-  Home, GitGraph, Sparkles, Network, CheckSquare,
-  Timer, Library, Settings, User, Volume2, VolumeX
+  Network,
+  Sparkles,
+  CheckSquare,
+  Home,
+  Compass,
+  BarChart3,
+  BookOpen,
+  Layers,
+  Settings,
+  User,
+  Volume2,
+  VolumeX,
+  Globe,
 } from 'lucide-react';
 import { FlowMindLogo } from './FlowMindLogo';
 import { soundService } from '../services/sound';
 
-export type AppView = 'home' | 'flows' | 'ai-think' | 'canvas' | 'tasks' | 'focus' | 'library';
+export type AppView =
+  | 'landing'
+  | 'home'
+  | 'flows'
+  | 'ai-think'
+  | 'canvas'
+  | 'tasks'
+  | 'focus'
+  | 'insights'
+  | 'library';
 
 interface AppNavigationRailProps {
   activeView: AppView;
@@ -16,20 +36,26 @@ interface AppNavigationRailProps {
   onOpenProfile: () => void;
 }
 
-const NAV_ITEMS: Array<{
+interface NavItem {
   id: AppView;
   label: string;
   icon: React.ElementType;
-  shortcut: string;
-  color: string;
-}> = [
-  { id: 'home', label: 'Home', icon: Home, shortcut: '1', color: '#00F0FF' },
-  { id: 'flows', label: 'My Flow', icon: GitGraph, shortcut: '2', color: '#6366F1' },
-  { id: 'canvas', label: 'Mind Canvas', icon: Network, shortcut: '3', color: '#8B5CF6' },
-  { id: 'ai-think', label: 'AI Think', icon: Sparkles, shortcut: '4', color: '#38BDF8' },
-  { id: 'tasks', label: 'Tasks', icon: CheckSquare, shortcut: '5', color: '#10B981' },
-  { id: 'focus', label: 'Focus', icon: Timer, shortcut: '6', color: '#F59E0B' },
-  { id: 'library', label: 'Library', icon: Library, shortcut: '7', color: '#EC4899' },
+  shortcut?: string;
+  isPrimary?: boolean;
+}
+
+const PRIMARY_MODES: NavItem[] = [
+  { id: 'canvas', label: 'FLOW', icon: Network, shortcut: '1', isPrimary: true },
+  { id: 'ai-think', label: 'THINK', icon: Sparkles, shortcut: '2', isPrimary: true },
+  { id: 'tasks', label: 'ACT', icon: CheckSquare, shortcut: '3', isPrimary: true },
+];
+
+const SECONDARY_ITEMS: NavItem[] = [
+  { id: 'home', label: 'Home', icon: Home, shortcut: 'H' },
+  { id: 'landing', label: 'Website', icon: Globe, shortcut: '0' },
+  { id: 'insights', label: 'Insights', icon: BarChart3, shortcut: 'I' },
+  { id: 'library', label: 'Library', icon: BookOpen, shortcut: 'L' },
+  { id: 'flows', label: 'History', icon: Layers, shortcut: 'G' },
 ];
 
 export const AppNavigationRail: React.FC<AppNavigationRailProps> = ({
@@ -38,13 +64,12 @@ export const AppNavigationRail: React.FC<AppNavigationRailProps> = ({
   onOpenSettings,
   onOpenProfile,
 }) => {
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState<boolean>(soundService.getMuted());
 
   return (
-    <aside className="w-18 md:w-20 h-screen shrink-0 bg-[#060812]/95 border-r border-white/[0.07] backdrop-blur-2xl flex flex-col items-center justify-between py-5 z-40 select-none">
-      {/* Top: Brand Logo */}
-      <div className="flex flex-col items-center space-y-6">
+    <aside className="w-16 md:w-20 h-screen shrink-0 bg-[#08090D] border-r border-white/[0.08] flex flex-col items-center justify-between py-4 z-40 select-none">
+      {/* Top: Logo & Primary Workspace Modes */}
+      <div className="flex flex-col items-center space-y-5 w-full px-2">
         <FlowMindLogo
           size="sm"
           showWordmark={false}
@@ -54,104 +79,131 @@ export const AppNavigationRail: React.FC<AppNavigationRailProps> = ({
           }}
         />
 
-        <div className="w-8 h-[1px] bg-white/[0.08]" />
+        {/* PRIMARY WORKSPACE MODES (FLOW • THINK • ACT) */}
+        <div className="flex flex-col items-center space-y-1.5 w-full">
+          <span className="text-[9px] font-mono uppercase tracking-widest text-[#686E7C] mb-1">
+            Modes
+          </span>
 
-        {/* Primary Navigation Rail */}
-        <nav className="flex flex-col items-center space-y-2.5">
-          {NAV_ITEMS.map((item) => {
+          {PRIMARY_MODES.map((item) => {
             const Icon = item.icon;
             const isActive = activeView === item.id;
 
             return (
-              <div key={item.id} className="relative group">
-                <button
-                  onClick={() => {
-                    soundService.playClick();
-                    onNavigate(item.id);
-                  }}
-                  onMouseEnter={() => setHoveredItem(item.id)}
-                  onMouseLeave={() => setHoveredItem(null)}
-                  className={`relative w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-300 ${
-                    isActive
-                      ? 'text-white bg-white/[0.08] shadow-[0_0_20px_rgba(0,240,255,0.2)]'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]'
-                  }`}
-                  aria-label={item.label}
-                >
-                  {/* Subtle Active Accent Pill Indicator */}
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeRailIndicator"
-                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                      className="absolute -left-2.5 top-2.5 bottom-2.5 w-1 rounded-r-full bg-gradient-to-b from-cyan-400 to-indigo-500 shadow-[0_0_10px_#00F0FF]"
-                    />
-                  )}
-
-                  <Icon
-                    className="w-5 h-5 transition-transform group-hover:scale-110"
-                    style={{ color: isActive ? item.color : undefined }}
+              <button
+                key={item.id}
+                onClick={() => {
+                  soundService.playClick();
+                  onNavigate(item.id);
+                }}
+                className={`relative w-full py-2.5 px-1 rounded-xl flex flex-col items-center justify-center transition-all group ${
+                  isActive
+                    ? 'text-white'
+                    : 'text-[#686E7C] hover:text-[#A7ACB8] hover:bg-white/[0.04]'
+                }`}
+                title={`${item.label} Mode [${item.shortcut}]`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeModePill"
+                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                    className="absolute inset-0 rounded-xl bg-[#7C5CFF]/15 border border-[#7C5CFF]/40 shadow-[0_0_12px_rgba(124,92,255,0.25)]"
                   />
-                </button>
-
-                {/* Floating Tooltip with Keyboard Shortcut */}
-                <AnimatePresence>
-                  {hoveredItem === item.id && (
-                    <motion.div
-                      initial={{ opacity: 0, x: 8, scale: 0.95 }}
-                      animate={{ opacity: 1, x: 0, scale: 1 }}
-                      exit={{ opacity: 0, x: 4, scale: 0.95 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute left-14 top-1/2 -translate-y-1/2 z-50 px-3 py-1.5 rounded-xl bg-[#0C1022] border border-white/[0.12] text-xs font-mono text-white shadow-2xl flex items-center space-x-2 whitespace-nowrap pointer-events-none"
-                    >
-                      <span className="font-medium font-sans">{item.label}</span>
-                      <kbd className="text-[10px] px-1.5 py-0.5 rounded bg-black/60 border border-white/10 text-cyan-400">
-                        {item.shortcut}
-                      </kbd>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                )}
+                <Icon
+                  size={19}
+                  className={`relative z-10 transition-transform duration-200 group-hover:scale-110 ${
+                    isActive ? 'text-[#5EE7FF]' : ''
+                  }`}
+                />
+                <span className="relative z-10 text-[9px] font-semibold tracking-wider mt-1 font-sans">
+                  {item.label}
+                </span>
+              </button>
             );
           })}
-        </nav>
+        </div>
+
+        {/* DIVIDER */}
+        <div className="w-8 h-[1px] bg-white/[0.08]" />
+
+        {/* SECONDARY NAVIGATION (Home, Insights, Library, History) */}
+        <div className="flex flex-col items-center space-y-1 w-full">
+          {SECONDARY_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeView === item.id;
+
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  soundService.playClick();
+                  onNavigate(item.id);
+                }}
+                className={`relative w-full py-2 px-1 rounded-lg flex flex-col items-center justify-center transition-all group ${
+                  isActive
+                    ? 'text-white'
+                    : 'text-[#686E7C] hover:text-[#A7ACB8] hover:bg-white/[0.03]'
+                }`}
+                title={item.label}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeSecondaryPill"
+                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                    className="absolute inset-0 rounded-lg bg-white/[0.08] border border-white/[0.12]"
+                  />
+                )}
+                <Icon
+                  size={16}
+                  className={`relative z-10 transition-transform duration-200 group-hover:scale-105 ${
+                    isActive ? 'text-white' : ''
+                  }`}
+                />
+                <span className="relative z-10 text-[9px] font-normal mt-0.5 font-sans">
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Bottom Actions: Audio Mute, Settings, User Profile */}
-      <div className="flex flex-col items-center space-y-3 pt-4 border-t border-white/[0.08] w-full px-3">
-        {/* Audio Mute Toggle */}
+      {/* Bottom: Settings, Profile & Audio toggle */}
+      <div className="flex flex-col items-center space-y-2 w-full px-2 pt-3 border-t border-white/[0.08]">
         <button
           onClick={() => {
             const next = soundService.toggleMute();
             setIsMuted(next);
           }}
-          className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-cyan-300 hover:bg-white/[0.04] transition-colors"
-          title={isMuted ? 'Unmute tactical audio' : 'Mute tactical audio'}
+          className="p-2 rounded-lg text-[#686E7C] hover:text-white hover:bg-white/[0.04] transition-colors"
+          title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
         >
-          {isMuted ? <VolumeX className="w-4 h-4 text-slate-500" /> : <Volume2 className="w-4 h-4 text-cyan-400" />}
+          {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
         </button>
 
-        {/* Settings Button */}
         <button
           onClick={() => {
             soundService.playClick();
             onOpenSettings();
           }}
-          className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/[0.04] transition-colors"
-          title="Workspace Settings"
+          className="p-2 rounded-lg text-[#686E7C] hover:text-white hover:bg-white/[0.04] transition-colors"
+          title="Settings"
         >
-          <Settings className="w-4 h-4" />
+          <Settings size={15} />
         </button>
 
-        {/* User Profile Avatar */}
         <button
           onClick={() => {
             soundService.playClick();
             onOpenProfile();
           }}
-          className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-500/30 to-indigo-600/40 border border-white/[0.15] hover:border-cyan-400 flex items-center justify-center text-xs font-mono font-bold text-white transition-all shadow-md"
+          className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#7C5CFF] to-[#5EE7FF] p-[1px] cursor-pointer hover:opacity-90 transition-opacity"
           title="Account Profile"
         >
-          <span>FM</span>
+          <div className="w-full h-full rounded-full bg-[#0F1118] flex items-center justify-center text-[10px] font-semibold text-white">
+            M
+          </div>
         </button>
       </div>
     </aside>
