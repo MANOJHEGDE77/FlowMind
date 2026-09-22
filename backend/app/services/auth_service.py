@@ -53,31 +53,29 @@ def get_current_user(
     token: Optional[str] = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
 ) -> User:
-    # If no token provided or invalid, provide or create a seamless default guest user for zero-friction exploration
-    if not token:
-        guest = db.query(User).filter(User.email == "guest@flowmind.ai").first()
-        if not guest:
-            guest = User(
-                email="guest@flowmind.ai",
-                hashed_password=hash_password("guest_flowmind_2026"),
-                full_name="Alex Mercer",
-                preferences={"theme": "dark", "ai_risk_tolerance": "balanced"}
-            )
-            db.add(guest)
-            db.commit()
-            db.refresh(guest)
-        return guest
+    # If a valid token is provided, resolve and return the corresponding user
+    if token:
+        user_id = decode_access_token(token)
+        if user_id:
+            try:
+                user = db.query(User).filter(User.id == int(user_id)).first()
+                if user:
+                    return user
+            except Exception:
+                pass
 
-    user_id = decode_access_token(token)
-    if not user_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
+    # Seamless fallback guest user for friction-free exploration
+    guest = db.query(User).filter(User.email == "guest@flowmind.ai").first()
+    if not guest:
+        guest = User(
+            email="guest@flowmind.ai",
+            hashed_password=hash_password("guest_flowmind_2026"),
+            full_name="Alex Mercer",
+            preferences={"theme": "dark", "ai_risk_tolerance": "balanced"}
         )
-    user = db.query(User).filter(User.id == int(user_id)).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
+        db.add(guest)
+        db.commit()
+        db.refresh(guest)
+    return guest
 
 auth_service = AuthService()
