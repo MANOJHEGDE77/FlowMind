@@ -4,6 +4,7 @@ import {
   X, Sparkles, Swords, SlidersHorizontal, BookOpen,
   ArrowRight, Shield, CheckCircle2, HelpCircle
 } from 'lucide-react';
+import { GithubIcon } from './GithubIcon';
 
 interface HelpGuideModalProps {
   isOpen: boolean;
@@ -156,10 +157,22 @@ export const HelpGuideModal: React.FC<HelpGuideModalProps> = ({
         </div>
 
         {/* Action button */}
-        <div className="pt-2 flex justify-between items-center border-t border-[var(--line-color)] text-xs font-mono">
-          <span className="text-[10px] text-slate-500">
-            Press [ESC] to return anytime
-          </span>
+        <div className="pt-2 flex flex-wrap justify-between items-center gap-2 border-t border-[var(--line-color)] text-xs font-mono">
+          <div className="flex items-center space-x-3">
+            <span className="text-[10px] text-slate-500">
+              Press [ESC] to return anytime
+            </span>
+            <a
+              href="https://github.com/MANOJHEGDE77/FlowMind"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] text-cyan-400 hover:text-cyan-300 flex items-center space-x-1 font-mono transition-colors"
+              title="FlowMind GitHub Repository"
+            >
+              <GithubIcon size={12} />
+              <span>MANOJHEGDE77/FlowMind</span>
+            </a>
+          </div>
           {onStartDecision && (
             <button
               onClick={() => {

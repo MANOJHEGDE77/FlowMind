@@ -3,7 +3,7 @@ import {
   SimulationResult, DecisionOutcome, DocumentItem
 } from '../types';
 
-let API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+let API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 class ApiService {
   private token: string | null = localStorage.getItem('flowmind_token');

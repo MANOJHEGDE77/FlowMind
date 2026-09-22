@@ -30,6 +30,7 @@ import {
   Radio,
 } from 'lucide-react';
 import { FlowMindLogo } from '../components/FlowMindLogo';
+import { GithubIcon } from '../components/GithubIcon';
 import { soundService } from '../services/sound';
 
 export type LandingNavigateMode = 'canvas' | 'ai-think' | 'tasks' | 'flows' | 'home';
@@ -353,6 +354,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </nav>
 
           <div className="hidden sm:flex items-center space-x-3 text-xs font-medium">
+            <a
+              href="https://github.com/MANOJHEGDE77/FlowMind"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-white/[0.08] bg-white/[0.03] text-[#A7ACB8] hover:text-white hover:border-white/[0.16] hover:bg-white/[0.06] transition-colors"
+              title="FlowMind GitHub Repository"
+            >
+              <GithubIcon size={14} />
+              <span>GitHub</span>
+            </a>
+
             <button
               onClick={() => {
                 soundService.playClick();
@@ -454,6 +466,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   className="py-1.5 hover:text-white"
                 >
                   Frequently Asked Questions
+                </a>
+                <a
+                  href="https://github.com/MANOJHEGDE77/FlowMind"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-2 py-1.5 text-[#A7ACB8] hover:text-white"
+                >
+                  <GithubIcon size={14} />
+                  <span>GitHub Repository</span>
                 </a>
               </div>
 
@@ -1163,6 +1184,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <li><a href="#comparison" className="hover:text-white">Manifesto</a></li>
               <li><a href="#faq" className="hover:text-white">FAQ</a></li>
               <li><button onClick={() => onOpenAskAI()} className="hover:text-white">Ask Copilot</button></li>
+              <li>
+                <a
+                  href="https://github.com/MANOJHEGDE77/FlowMind"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-1.5 hover:text-white text-[#5EE7FF]"
+                >
+                  <GithubIcon size={13} />
+                  <span>GitHub Source Code</span>
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -1219,6 +1251,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="max-w-6xl mx-auto px-6 pt-6 border-t border-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-[#686E7C]">
           <span>© 2026 FlowMind Inc. All rights reserved. Built for thinkers, architects, and founders.</span>
           <div className="flex items-center space-x-4 text-[#A7ACB8]">
+            <a
+              href="https://github.com/MANOJHEGDE77/FlowMind"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-1.5 hover:text-white"
+              title="MANOJHEGDE77/FlowMind on GitHub"
+            >
+              <GithubIcon size={13} />
+              <span>GitHub</span>
+            </a>
             <button
               onClick={() => {
                 setPrivacyTab('privacy');

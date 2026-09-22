@@ -2,6 +2,7 @@ import React from 'react';
 import { Search, Plus, Sparkles, Bell, CheckCircle2, GitBranch } from 'lucide-react';
 import { useFlow } from '../context/FlowContext';
 import { soundService } from '../services/sound';
+import { GithubIcon } from './GithubIcon';
 
 interface AppTopBarProps {
   onOpenCommand: () => void;
@@ -81,6 +82,17 @@ export const AppTopBar: React.FC<AppTopBarProps> = ({
           <Sparkles size={13} className="text-[#5EE7FF]" />
           <span>Copilot</span>
         </button>
+
+        {/* GitHub Repository Link */}
+        <a
+          href="https://github.com/MANOJHEGDE77/FlowMind"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="p-2 rounded-lg text-[#686E7C] hover:text-white hover:bg-white/[0.04] transition-colors"
+          title="FlowMind GitHub Repository (MANOJHEGDE77/FlowMind)"
+        >
+          <GithubIcon size={15} />
+        </a>
 
         {/* Notifications */}
         <button

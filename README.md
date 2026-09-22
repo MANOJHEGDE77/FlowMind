@@ -6,6 +6,7 @@
 
 *An AI-powered thinking, learning, planning, and productivity platform visually communicating the flow of a human mind — connected, expandable, dynamic, intelligent, and alive.*
 
+[![GitHub Repository](https://img.shields.io/badge/GitHub-MANOJHEGDE77%2FFlowMind-181717?style=flat&logo=github&logoColor=white)](https://github.com/MANOJHEGDE77/FlowMind)
 [![React](https://img.shields.io/badge/React-19.0-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-8.2-646CFF?style=flat&logo=vite&logoColor=white)](https://vite.dev)
@@ -106,6 +107,12 @@ Capturing any thought triggers an animated 4-stage neural transition:
 - Node.js 18+
 - Python 3.11+
 - Git
+
+### Clone Repository
+```bash
+git clone https://github.com/MANOJHEGDE77/FlowMind.git
+cd FlowMind
+```
 
 ### Frontend Setup
 ```bash
