@@ -1,6 +1,6 @@
 import datetime
 from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 # ----------------- Auth & User Schemas -----------------
 
@@ -25,8 +25,7 @@ class UserResponse(BaseModel):
     preferences: Dict[str, Any] = {}
     created_at: datetime.datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # ----------------- Decision Entities -----------------
 
@@ -47,8 +46,7 @@ class DecisionOptionResponse(BaseModel):
     alignment_scores: Dict[str, float] = {}
     is_recommended: bool = False
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class DecisionFactorCreate(BaseModel):
     name: str
@@ -63,8 +61,7 @@ class DecisionFactorResponse(BaseModel):
     weight: float
     description: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class GoalCreate(BaseModel):
     description: str
@@ -77,8 +74,7 @@ class GoalResponse(BaseModel):
     priority: str
     weight: float
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ConstraintCreate(BaseModel):
     description: str
@@ -89,8 +85,7 @@ class ConstraintResponse(BaseModel):
     description: str
     severity: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # ----------------- Evidence & Agents -----------------
 
@@ -106,8 +101,7 @@ class EvidenceResponse(BaseModel):
     relevance_explanation: str
     agent_name: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class AgentRunResponse(BaseModel):
     id: int
@@ -121,8 +115,7 @@ class AgentRunResponse(BaseModel):
     duration_ms: int
     created_at: datetime.datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # ----------------- Decision Request / Response -----------------
 
@@ -164,8 +157,7 @@ class OutcomeResponse(BaseModel):
     ai_accuracy_rating: int
     recorded_at: datetime.datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class DecisionResponse(BaseModel):
     id: int
@@ -191,8 +183,7 @@ class DecisionResponse(BaseModel):
     created_at: datetime.datetime
     updated_at: datetime.datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class DecisionListItem(BaseModel):
     id: int
@@ -274,8 +265,7 @@ class DocumentResponse(BaseModel):
     chunk_count: int = 0
     created_at: datetime.datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # ----------------- AI Question Answering -----------------
 

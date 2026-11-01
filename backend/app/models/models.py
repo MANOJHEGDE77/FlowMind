@@ -5,6 +5,9 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from app.database.session import Base
 
+def utc_now():
+    return datetime.datetime.now(datetime.timezone.utc)
+
 class User(Base):
     __tablename__ = "users"
 
@@ -14,8 +17,8 @@ class User(Base):
     full_name = Column(String(255), nullable=True)
     preferences = Column(JSON, default=dict)
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
 
     decisions = relationship("Decision", back_populates="user", cascade="all, delete-orphan")
     documents = relationship("Document", back_populates="user", cascade="all, delete-orphan")
@@ -39,8 +42,8 @@ class Decision(Base):
     contradictions = Column(JSON, default=list)
     challenge_history = Column(JSON, default=list)
 
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
 
     user = relationship("User", back_populates="decisions")
     options = relationship("DecisionOption", back_populates="decision", cascade="all, delete-orphan")
@@ -112,7 +115,7 @@ class Document(Base):
     file_size = Column(Integer, default=0)
     content_text = Column(Text, nullable=True)
     status = Column(String(50), default="processed")  # uploaded, processed, failed
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
 
     user = relationship("User", back_populates="documents")
     decision = relationship("Decision", back_populates="documents")
@@ -159,7 +162,7 @@ class AgentRun(Base):
     findings = Column(JSON, default=dict)  # structured key takeaways, scores, risks, opportunities
     confidence = Column(Float, default=0.85)
     duration_ms = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
 
     decision = relationship("Decision", back_populates="agent_runs")
 
@@ -174,7 +177,7 @@ class Scenario(Base):
     recalculated_confidence = Column(Float, default=0.0)
     recommended_option = Column(String(255), nullable=False)
     diff_summary = Column(JSON, default=dict)  # {"score_delta": +8.5, "impact_reason": "..."}
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
 
     decision = relationship("Decision", back_populates="scenarios")
 
@@ -193,6 +196,6 @@ class DecisionOutcome(Base):
     lessons_learned = Column(Text, nullable=True)
     satisfaction_score = Column(Integer, default=5)  # 1 to 10
     ai_accuracy_rating = Column(Integer, default=5)  # 1 to 10
-    recorded_at = Column(DateTime, default=datetime.datetime.utcnow)
+    recorded_at = Column(DateTime, default=utc_now)
 
     decision = relationship("Decision", back_populates="outcomes")

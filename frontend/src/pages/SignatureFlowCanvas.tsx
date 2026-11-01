@@ -33,6 +33,7 @@ export const SignatureFlowCanvas: React.FC = () => {
     updateNodePosition,
     addNodeToActiveFlow,
     deleteNodeFromActiveFlow,
+    tasks,
     addTask,
     toggleTask,
   } = useFlow();
@@ -430,18 +431,36 @@ export const SignatureFlowCanvas: React.FC = () => {
                   </div>
 
                   {/* Status / Checkbox for Action nodes */}
-                  {isAction ? (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Find matching task or toggle
-                        soundService.playSuccess();
-                      }}
-                      className="text-[#45E0A8] hover:opacity-80"
-                    >
-                      <CheckCircle2 size={13} />
-                    </button>
-                  ) : node.progress !== undefined ? (
+                  {isAction ? (() => {
+                    const matchingTask = tasks.find((t) => t.nodeId === node.id || t.title.toLowerCase().includes(node.title.toLowerCase()));
+                    const isCompleted = matchingTask ? matchingTask.completed : (node.status === 'completed' || (node.progress ?? 0) >= 100);
+                    return (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (matchingTask) {
+                            toggleTask(matchingTask.id);
+                          } else {
+                            addTask({
+                              title: `Execute: ${node.title}`,
+                              flowId: activeFlow.id,
+                              flowTitle: activeFlow.title,
+                              nodeId: node.id,
+                              nodeTitle: node.title,
+                              completed: true,
+                              priority: node.priority || 'high',
+                              dueDate: 'Today',
+                              estimatedMinutes: 30,
+                            });
+                          }
+                        }}
+                        className="text-[#45E0A8] hover:scale-110 transition-transform"
+                        title={isCompleted ? 'Mark as incomplete' : 'Mark as completed'}
+                      >
+                        {isCompleted ? <CheckCircle2 size={14} /> : <Circle size={14} className="text-[#686E7C] hover:text-[#45E0A8]" />}
+                      </button>
+                    );
+                  })() : node.progress !== undefined ? (
                     <span className="text-[10px] font-mono text-[#686E7C]">
                       {node.progress}%
                     </span>

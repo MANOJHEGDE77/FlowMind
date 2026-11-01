@@ -41,6 +41,7 @@ const getViewFromHash = (): AppView => {
 function FlowMindAppContent() {
   const { showToast } = useToast();
   const {
+    flows,
     activeFlow,
     setActiveFlowId,
     selectedNodeId,
@@ -261,7 +262,13 @@ function FlowMindAppContent() {
 
                     {activeView === 'library' && (
                       <LibraryPage
-                        onOpenFlow={(_flowTitle) => {
+                        onOpenFlow={(flowTitle) => {
+                          const matched = flows.find(
+                            (f) =>
+                              f.title.toLowerCase() === flowTitle.toLowerCase() ||
+                              flowTitle.toLowerCase().includes(f.title.toLowerCase())
+                          );
+                          if (matched) setActiveFlowId(matched.id);
                           setActiveView('canvas');
                         }}
                       />

@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from typing import List, Union
 from dotenv import load_dotenv
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import field_validator
 
 # Automatically locate and load .env from root and backend directories
@@ -43,9 +43,7 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE_MB: int = 25
     EMBEDDING_DIMENSION: int = 384
     
-    class Config:
-        case_sensitive = True
-        extra = "allow"
+    model_config = SettingsConfigDict(case_sensitive=True, extra="allow")
 
 settings = Settings()
 

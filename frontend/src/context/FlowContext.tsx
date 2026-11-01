@@ -450,6 +450,7 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isGeneratingFlow, setIsGeneratingFlow] = useState<boolean>(false);
   const [generatingStep, setGeneratingStep] = useState<number>(1);
   const [generatingPrompt, setGeneratingPrompt] = useState<string>('');
+  const abortGenerationRef = React.useRef(false);
 
   // Persist flows and tasks
   useEffect(() => {
@@ -482,6 +483,28 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
             soundService.playSuccess();
           } else {
             soundService.playClick();
+          }
+          // Bi-directional Sync: Ripple status back into graph nodes
+          if (t.nodeId) {
+            setFlows((flowList) =>
+              flowList.map((flow) => {
+                if (flow.id === t.flowId) {
+                  return {
+                    ...flow,
+                    nodes: flow.nodes.map((node) =>
+                      node.id === t.nodeId
+                        ? {
+                            ...node,
+                            status: nextCompleted ? ('completed' as const) : ('pending' as const),
+                            progress: nextCompleted ? 100 : 0,
+                          }
+                        : node
+                    ),
+                  };
+                }
+                return flow;
+              })
+            );
           }
           return { ...t, completed: nextCompleted };
         }
@@ -578,6 +601,7 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
     prompt: string,
     category: FlowGraph['category'] = 'Projects'
   ): Promise<FlowGraph> => {
+    abortGenerationRef.current = false;
     setIsGeneratingFlow(true);
     setGeneratingPrompt(prompt);
     setGeneratingStep(1);
@@ -585,14 +609,17 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Step 1: Thought Captured
     await new Promise((r) => setTimeout(r, 600));
+    if (abortGenerationRef.current) return null as any;
     setGeneratingStep(2);
 
     // Step 2: AI Understanding
     await new Promise((r) => setTimeout(r, 700));
+    if (abortGenerationRef.current) return null as any;
     setGeneratingStep(3);
 
     // Step 3: Building Connections
     await new Promise((r) => setTimeout(r, 800));
+    if (abortGenerationRef.current) return null as any;
     setGeneratingStep(4);
 
     // Generate smart contextual nodes based on prompt
@@ -803,12 +830,14 @@ export const FlowProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSelectedNodeId('gen-core');
 
     await new Promise((r) => setTimeout(r, 400));
+    if (abortGenerationRef.current) return null as any;
     setIsGeneratingFlow(false);
     soundService.playSuccess();
     return generatedFlow;
   };
 
   const cancelGeneration = () => {
+    abortGenerationRef.current = true;
     setIsGeneratingFlow(false);
   };
 

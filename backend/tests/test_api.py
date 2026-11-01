@@ -175,4 +175,75 @@ def test_suggest_pathway_options():
         assert len(opt["title"]) > 5
         assert opt["title"].lower() != "i want to become an ai engineer"
 
+def test_root_endpoint():
+    resp = client.get("/")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "FlowMind" in data["message"]
+    assert data["docs"] == "/docs"
+
+def test_ai_config_endpoint():
+    resp = client.get("/api/ai/config")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "gemini_configured" in data
+    assert data["provider"] == "Google DeepMind Gemini"
+
+def test_manual_decision_lifecycle_and_evidence():
+    # 1. Create a full decision manually
+    create_payload = {
+        "title": "Cloud Provider: AWS vs GCP for AI Microservices",
+        "context": "Evaluating infrastructure for high-throughput embedding generation and low latency.",
+        "options": [
+            {"title": "AWS ECS + Bedrock", "description": "Managed container cluster with AWS infrastructure", "pros": ["Enterprise reliability"], "cons": ["High egress fees"]},
+            {"title": "GCP Cloud Run + Vertex AI", "description": "Serverless container compute with Gemini models", "pros": ["Best AI native integration"], "cons": ["Less familiar tooling"]}
+        ],
+        "factors": [
+            {"name": "Cost", "category": "financial", "weight": 1.2},
+            {"name": "Developer Velocity", "category": "strategic", "weight": 1.0}
+        ],
+        "goals": [
+            {"description": "Sub-100ms API response time", "priority": "high", "weight": 1.0}
+        ],
+        "constraints": [
+            {"description": "Budget under $2,000/mo", "severity": "hard"}
+        ]
+    }
+    create_resp = client.post("/api/decisions", json=create_payload)
+    assert create_resp.status_code == 200
+    dec_data = create_resp.json()
+    dec_id = dec_data["id"]
+    assert dec_id is not None
+    assert len(dec_data["options"]) == 2
+
+    # 2. List decisions
+    list_resp = client.get("/api/decisions")
+    assert list_resp.status_code == 200
+    dec_list = list_resp.json()
+    assert any(d["id"] == dec_id for d in dec_list)
+
+    # 3. Get evidence items
+    ev_resp = client.get(f"/api/decisions/{dec_id}/evidence")
+    assert ev_resp.status_code == 200
+    assert isinstance(ev_resp.json(), list)
+
+    # 4. Get agent runs
+    agent_resp = client.get(f"/api/decisions/{dec_id}/agents")
+    assert agent_resp.status_code == 200
+    assert len(agent_resp.json()) >= 7
+
+    # 5. Re-run analysis
+    analyze_resp = client.post(f"/api/decisions/{dec_id}/analyze")
+    assert analyze_resp.status_code == 200
+    assert analyze_resp.json()["status"] == "completed"
+
+    # 6. Delete decision
+    del_resp = client.delete(f"/api/decisions/{dec_id}")
+    assert del_resp.status_code == 200
+
+    # 7. Verify deletion
+    get_del = client.get(f"/api/decisions/{dec_id}")
+    assert get_del.status_code == 404
+
+
 
