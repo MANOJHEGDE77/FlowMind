@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Download, Copy, Check, X, FileText, Share2,
-  Crown, Sparkles, ShieldAlert, BookOpen, CheckCircle2
+  Download, Copy, Check, X, Share2, Crown
 } from 'lucide-react';
 import { Decision } from '../types';
 import { useToast } from '../context/ToastContext';

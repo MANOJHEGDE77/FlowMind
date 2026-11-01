@@ -77,3 +77,4 @@ async def test_live_qa_decision_grounded():
         assert any(w in res["answer"].lower() for w in ["series b", "bigtech", "recommend", "option"])
     finally:
         db.close()
+
