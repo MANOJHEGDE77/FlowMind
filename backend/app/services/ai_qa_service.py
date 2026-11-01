@@ -67,17 +67,22 @@ Supporting Grounded Evidence:
 {chr(10).join(evidence_snippets) if evidence_snippets else 'No external evidence attached yet.'}
 """
 
-        # 2. System Prompt: Natural, highly competent AI chatbot & strategic decision advisor
-        system_prompt = f"""You are FlowMind AI, an intelligent, versatile, and articulate AI assistant and decision intelligence advisor.
+        # 2. System Prompt: Simple, clear, human-friendly AI assistant & decision advisor
+        system_prompt = f"""You are FlowMind AI, a helpful, clear, and friendly AI decision advisor.
 
-CORE BEHAVIOR & CONVERSATIONAL TONE:
-- Be helpful, conversational, natural, and perceptive — like a world-class AI chatbot (e.g. Gemini / ChatGPT / Claude).
-- When a user greets you (e.g., "hi", "hello", "hey", "how are you"), greet them back warmly, introduce what you can help with, and invite their questions or dilemmas.
-- Answer ANY question the user asks directly, thoughtfully, and clearly. Provide helpful suggestions, reasoned answers, alternative perspectives, and practical next steps.
-- You specialize in decision intelligence, strategic thinking, career choices, venture strategy, technical trade-offs, and mental models (such as reversible vs irreversible doors, expected value, second-order effects).
-- If there is an active decision context below, treat it as helpful background information. If the user asks about that decision, reference it specifically; if the user asks a general question or conversational query, answer their question directly without forcing it back onto the decision.
-- Format responses cleanly with Markdown, clear headings (###), bullet points, and actionable takeaways when appropriate.
-- Never give rigid refusal templates or claim you can only discuss FlowMind. Be a genuinely helpful AI assistant!
+CRITICAL INSTRUCTION - KEEP IT SIMPLE AND EASY TO UNDERSTAND:
+- Write in plain, everyday English that anyone (whether a beginner, student, user, or administrator) can instantly understand.
+- NEVER use dense academic jargon, philosophical buzzwords, or convoluted phrasing (avoid words like "dialectic cognitive synthesis", "asymmetric payoff boundary", "stochastic distributions", "epistemic closure", or "topological framing").
+- Answer the user's question directly in the very first 1-2 sentences.
+- Use simple bullet points with clear takeaways:
+  1. What to do / Direct Answer
+  2. Why this makes sense (simple pros and cons in plain words)
+  3. Simple next steps (Step 1, Step 2, Step 3)
+- If explaining concepts:
+  - Instead of "Type 1 / Type 2 doors" -> Say "Decisions that are easy to undo vs. decisions that are hard to undo".
+  - Instead of "Adversarial stress-testing" -> Say "Checking what could go wrong".
+  - Instead of "Monte Carlo simulations" -> Say "Testing best-case and worst-case scenarios".
+- Be warm, encouraging, realistic, and practical.
 
 {decision_context}
 {f"Additional Context: {context}" if context else ""}
@@ -251,79 +256,77 @@ CORE BEHAVIOR & CONVERSATIONAL TONE:
         if is_greeting:
             return f"""Hello! 👋 How can I help you today?
 
-I'm **FlowMind AI**, your assistant and strategic decision advisor.
+I'm **FlowMind AI**, your friendly decision assistant.
 
-Here are a few things I can help you with:
-- **Answer Questions & Give Advice**: Ask about career moves, tech decisions, business strategy, or daily challenges.
-- **Brainstorm & Suggest Answers**: Need ideas or options? Tell me what you're working on and I'll lay out high-leverage alternatives.
-- **Compare Choices**: Give me 2 or more paths (e.g. *Option A vs. Option B*) to analyze trade-offs, reversibility, and risks.
-- **Decision Intelligence**: Explore FlowMind's **7-Agent Council**, **Adversarial Red Team**, or **Monte Carlo simulations**.
+Here is what I can help you with in plain, simple terms:
+- **Compare your choices**: Tell me your options (like *Job A vs. Job B*) and I'll break down the pros, cons, and risks.
+- **Give you practical suggestions**: Need ideas or a roadmap? Tell me your goal and I'll give you a simple step-by-step plan.
+- **Spot hidden catches**: I'll help you see what could go wrong before you spend time or money.
+- **Explain the 7 AI Council roles**: Learn how different perspectives (finance, risks, growth) look at your dilemma.
 
-What are you thinking through right now?"""
+What are you deciding on or thinking about right now?"""
 
         # 2. BOT IDENTITY & CAPABILITIES
         if any(w in q_lower for w in ["who are you", "what can you do", "what are you", "introduce yourself", "how can you help", "what do you do"]):
-            return """### ✦ I am FlowMind AI
-I am your interactive AI assistant and decision intelligence advisor on the FlowMind platform.
+            return """### ✦ What is FlowMind AI?
+I am your personal AI decision assistant. My job is to help you make smart, clear choices without getting overwhelmed or stuck.
 
 ---
 
-#### What I Can Help You With:
-1. **Decision Analysis & Structuring**:
-   - Break down complex, high-stakes decisions into clear options, priorities, and constraints.
-   - Separate **Type 1** irreversible one-way doors from **Type 2** flexible two-way doors.
-2. **Brainstorming & Strategic Suggestions**:
-   - Suggest creative alternative pathways you might have overlooked.
-   - Provide realistic roadmaps, timelines, and financial models.
-3. **Adversarial Stress-Testing**:
-   - Play devil's advocate to identify fragile assumptions and failure modes before you commit.
-4. **General Questions & Guidance**:
-   - Answer questions across tech, career, startups, finance, and decision frameworks.
-   - Explain FlowMind features (7-Agent Council, Red Team Mode, 1,000-scenario Monte Carlo simulations, RAG document evidence, and Decision Memory).
+#### How I Can Help You:
+1. **Clear, Simple Comparisons**:
+   - Compare two or more options side-by-side with real pros and cons anyone can understand.
+   - Separate choices that are **easy to undo** (low risk) from choices that are **hard to undo** (high risk).
+2. **Practical Ideas & Suggestions**:
+   - Give you simple, realistic paths to achieve your goals (like learning a skill, switching jobs, or starting a project).
+3. **Catch Hidden Problems**:
+   - Flag potential risks, hidden costs, and stress factors before you make a commitment.
+4. **Step-by-Step Plans**:
+   - Turn big, confusing decisions into simple 14-day and 30-day action steps.
 
-Feel free to ask a question, share a dilemma, or test an idea!"""
+Feel free to ask any question or tell me what decision you're facing!"""
 
         # 2.5. SUGGESTIONS & BRAINSTORMING (Direct, Creative, Actionable)
         if any(w in q_lower for w in ["suggest", "give me suggestions", "give me ideas", "brainstorm", "recommend something", "what are some ideas", "what do you suggest", "suggest answers", "suggest options"]):
             if decision and is_specifically_about_decision:
                 options_summary = "\n".join([f"- **{o}**" for o in options_titles[:4]]) if options_titles else f"- **{d_rec}**"
-                return f"""### ✦ Strategic Recommendations: "{d_title}"
+                return f"""### ✦ Simple Recommendations for: "{d_title}"
 
-Here are targeted suggestions based on FlowMind's multi-agent council analysis:
+Here is the most practical way forward:
 
-1. **Prioritize {d_rec}**:
-   - Focus on this pathway first to maximize early traction and preserve two-way door agility.
-2. **Current Options Under Consideration**:
+1. **Top Recommendation: Start with {d_rec}**
+   - This option gives you the quickest results with the least amount of risk.
+2. **Your Current Choices**:
 {options_summary}
-3. **Recommended Immediate Experiment**:
-   - Set up a 14-day test milestone to validate your core hypothesis before committing long-term resources.
+3. **What To Do Next (14-Day Test)**:
+   - Try a simple 2-week trial or test run before making any big, permanent commitment.
 
-Would you like to explore any of these specific options or stress-test them in Red Team Mode?"""
+Would you like to compare any of these choices directly, or look at the risks?"""
             else:
-                return f"""### ✦ Suggestions & Strategic Ideas
+                return f"""### ✦ Practical Suggestions & Ideas
 
 Regarding: **"{question}"**
 
 ---
 
-Here are structured recommendations and actionable pathways to consider:
+Here are 3 simple, realistic options to consider:
 
-1. **Option 1: The Low-Friction Test (Two-Way Door)**
-   - *Approach*: Design a small, 14-day micro-experiment that generates direct real-world signal without irreversible commitments.
-   - *Key Advantage*: You gather verifiable facts rather than relying on guesswork, with negligible downside risk.
+1. **Option 1: The Quick Test (Low Risk)**
+   - *What to do*: Try a simple 2-week experiment to see if you actually enjoy it and get results, without quitting anything or spending much money.
+   - *Why it's good*: You get real facts quickly with almost zero downside.
 
-2. **Option 2: The Asymmetric Growth Bet (Compounding Upside)**
-   - *Approach*: Invest focused energy into the pathway with the highest long-term leverage, rare skills, or proprietary distribution.
-   - *Key Advantage*: Generates compounding returns and creates strong competitive differentiation.
+2. **Option 2: The High-Growth Bet (Biggest Upside)**
+   - *What to do*: Put focused effort into the path with the biggest long-term career or financial rewards.
+   - *Why it's good*: Can lead to much bigger opportunities and valuable skills over 2–3 years.
 
-3. **Option 3: The Hedged / Phased Transition**
-   - *Approach*: Maintain your existing baseline security while allocating 20% of your weekly bandwidth to the new pathway until key milestones are hit.
-   - *Key Advantage*: Eliminates downside anxiety while steadily building forward momentum.
+3. **Option 3: The Safe Middle Ground (Step-by-Step)**
+   - *What to do*: Keep your current routine or job safe, and spend 5–10 hours a week building the new direction.
+   - *Why it's good*: Zero financial stress, and you can switch over once things are proven.
 
 ---
 
 **Next Steps**:
-Which of these directions resonates most with what you're trying to achieve? You can also give me 2 specific options to compare head-to-head!"""
+Which of these 3 feels right for your situation? You can also give me 2 specific options and I'll compare them directly!"""
 
         # =========================================================================
         # FLOWMIND PLATFORM & WEBSITE ARCHITECTURE INTENTS
@@ -331,167 +334,142 @@ Which of these directions resonates most with what you're trying to achieve? You
 
         # Platform Intent 1: What is FlowMind & What problem does it solve?
         if any(w in q_lower for w in ["what is flowmind", "what is this website", "what does this website do", "about flowmind", "what problem does it solve", "what is this platform", "tell me about this website", "what does flowmind do"]):
-            return """### ✦ FlowMind: AI-Native Decision Intelligence Platform
+            return """### ✦ What is FlowMind?
 
-**FlowMind** is an enterprise-grade Decision Intelligence Platform engineered to eliminate cognitive bias, stress-test high-stakes trade-offs, and ground strategic choices in empirical evidence.
-
----
-
-#### 1. What Core Problems Does FlowMind Solve?
-- **Cognitive Bias & Tunnel Vision**: Traditional decision-makers suffer from confirmation bias and premature closure. FlowMind's **Adversarial Red Team** and **7-Agent Dialectic Council** force objective confrontation with blindspots.
-- **Superficial AI Hallucination**: Generic chatbots give generic, sycophantic advice. FlowMind uses structured **multi-agent arbitration**, **1,000-run Monte Carlo simulations**, and **RAG document grounding**.
-- **Hindsight Bias & Forgotten Assumptions**: People rewrite history after decisions succeed or fail. FlowMind's **Decision Memory** captures baseline expectations to calibrate your judgment over time.
-- **Irreversible Trap Risk**: FlowMind visualizes options on a **2D Strategic Matrix** separating Jeff Bezos' Type 1 (irreversible one-way doors) from Type 2 (rapid two-way doors).
+**FlowMind is your personal AI decision assistant.** It helps you make important life, career, and project choices without feeling confused, overwhelmed, or stuck.
 
 ---
 
-#### 2. Key Architecture Pillars:
-1. **Thought Composer**: Natural language cognitive ingestion that automatically parses ambiguities, priorities, and constraints.
-2. **7-Agent AI Council**: Multi-perspective dialectic debate (Analyst, Optimist, Skeptic, Financial, Planner, Devil's Advocate, Synthesizer).
-3. **Adversarial Red Team**: Automated stress-testing with calibrated confidence haircuts.
-4. **1,000-Run What-If Simulator**: Monte Carlo sensitivity distributions (P10 stress floor, P50 median, P90 bull case).
-5. **Grounded Evidence Engine**: Ingests PDF/DOCX offer letters and notes with 3-tier provenance tracking.
-6. **Decision Memory**: Outcome logging for long-term cognitive calibration.
+#### What FlowMind Does For You:
+1. **Lays Out Your Options Simply**: Put in what you're trying to decide, and FlowMind organizes your choices side-by-side.
+2. **Evaluates from 7 Realistic Angles**: Instead of one quick opinion, 7 different AI perspectives look at your choices (costs, growth, risks, long-term impact, and facts).
+3. **Catches Hidden Pitfalls**: Shows you what could go wrong before you commit time or money.
+4. **Gives You a Clear Recommendation & Next Steps**: Tells you which choice is your strongest bet and gives you 2-3 simple steps to start.
 
-**Bottom Line Directive**:
-Enter any dilemma into the Thought Composer to launch your multi-agent decision space immediately."""
+---
+
+**How to Start**:
+Type your dilemma or question into the Thought Composer box on the canvas, or ask me any question right here!"""
 
         # Platform Intent 2: How FlowMind works / 5-Stage Cognitive Journey
         if any(w in q_lower for w in ["how does flowmind work", "how does this work", "how to use flowmind", "how to use this website", "how do i use", "5-stage", "5 stage", "workflow", "process"]):
-            return """### ✦ How FlowMind Works: The 5-Stage Cognitive Journey
+            return """### ✦ How FlowMind Works (In 4 Simple Steps)
 
-FlowMind guides you through an end-to-end cognitive workflow designed to produce calibrated certainty:
+FlowMind helps you reach a confident decision in 4 clear, easy steps:
 
 ---
 
-#### Stage 01: Think (Natural Ingestion)
-- Type your dilemma in plain language into the **Thought Composer**.
-- FlowMind instantly deconstructs messy thoughts into explicit goals, core factors, and non-negotiable constraints.
+1. **Step 1: Write Down Your Dilemma**
+   - Type what you're deciding in plain English (e.g., *"Should I take Job A or Job B?"* or *"Should I learn AI or Web Development?"*).
 
-#### Stage 02: Structure (Topological Framing)
-- Define candidate pathways or let FlowMind suggest realistic alternative routes.
-- Assign relative priority weights (e.g. Compensation, Velocity, Autonomy, Risk).
+2. **Step 2: Compare Your Options**
+   - FlowMind lists your choices and shows their pros, cons, and scores based on what matters to you.
 
-#### Stage 03: Synthesize (7-Agent Council Arbitration)
-- 7 specialized AI agents debate trade-offs from empirical, financial, operational, and long-term viewpoints.
-- The Synthesizer harmonizes divergent arguments into an equilibrium recommendation score (0–100).
+3. **Step 3: Get 7 AI Council Perspectives**
+   - 7 specialized AI agents deliberate and review your dilemma from practical angles:
+     - The **Analyst** checks the facts.
+     - The **Optimist** looks at the upside.
+     - The **Skeptic** flags the risks and catches.
+     - The **Financial Analyst** checks the budget and pay.
+     - The **Long-Term Planner** checks where you'll be in 3–5 years.
+     - The **Devil's Advocate** tests your blind spots.
+     - The **Synthesizer** combines everything into one clear recommendation.
 
-#### Stage 04: Challenge (Adversarial Interrogation)
-- **Red Team Mode**: Attacks fragile assumptions and applies a calibrated confidence haircut.
-- **What-If Lab**: Adjust financial and operational levers to simulate 1,000 stochastic futures.
-
-#### Stage 05: Decide & Remember (Decision Memory)
-- Commit to the chosen pathway with calibrated confidence.
-- Record the lived outcome months later in **Decision Memory** to eliminate hindsight bias and calibrate your personal decision models.
+4. **Step 4: Take Action**
+   - Review your recommended choice, check the simple next steps, and start executing with confidence!
 
 ---
 
 **Next Action**:
-Press `[ESC]` to return to the workspace or click **Help** in the dock to view the visual interactive guide."""
+Press `[ESC]` to return to the canvas, or click any node to explore its details."""
 
         # Platform Intent 3: 7-Agent AI Council Explained
         if any(w in q_lower for w in ["council", "7 agent", "seven agent", "ai council", "who are the agents", "analyst agent", "skeptic agent", "optimist agent", "synthesizer agent", "devil's advocate agent", "financial agent"]):
-            return """### ✦ The FlowMind 7-Agent AI Reasoning Council
+            return """### ✦ The FlowMind 7-Agent Council (Explained Simply)
 
-Rather than relying on a single fallible prompt, FlowMind convenes 7 specialized autonomous reasoning agents who debate from orthogonal strategic lenses:
+Instead of relying on a single, biased answer, FlowMind convenes a **Council of 7 AI agents** who each look at your dilemma from a different angle:
 
 ---
 
-| Agent | Strategic Lens | Core Focus |
+| AI Agent | Simple Role | What It Asks You |
 | :--- | :--- | :--- |
-| 🔍 **The Analyst** | Empirical Baseline | Validates baseline rates, historical data, and factual premises. |
-| 🚀 **The Optimist** | Asymmetric Upside | Identifies compounding leverage, market tailwinds, and best-case optionality. |
-| 🛡️ **The Skeptic** | Downside Protection | Flags operational friction, organizational drag, and execution vulnerabilities. |
-| 💰 **The Financial Analyst** | Capital Efficiency | Analyzes burn rate, unit economics, compensation ROI, and runway sustainability. |
-| ⏳ **The Long-Term Planner** | Compounding Horizon | Forecasts 3–5 year second-order compounding effects and career trajectory. |
-| ⚔️ **The Devil's Advocate** | Bias Interrogation | Relentlessly attacks confirmation bias, sunk cost fallacies, and groupthink. |
-| ⚖️ **The Synthesizer** | Equilibrium Signal | Harmonizes conflicting arguments into a unified decision score and calibrated signal. |
+| 🔍 **The Analyst** | Facts & Requirements | *"What are the actual facts, numbers, and prerequisites?"* |
+| 🚀 **The Optimist** | Growth & Possibilities | *"What is the best-case outcome and biggest upside?"* |
+| 🛡️ **The Skeptic** | Risks & Hidden Catches | *"What could go wrong, and what might cause burnout?"* |
+| 💰 **Financial Analyst** | Costs & Pay | *"Can you afford this, and is the financial return worth it?"* |
+| ⏳ **Long-Term Planner** | 3–5 Year Horizon | *"Will you still be happy with this choice years from now?"* |
+| ⚔️ **Devil's Advocate** | Stress-Testing | *"Let's be honest: what if your favorite option fails?"* |
+| ⚖️ **The Synthesizer** | Final Recommendation | *"Here is the best balanced choice and your first step."* |
 
 ---
 
 **How to Inspect**:
-Click the **AI Council** button in the bottom dock or in the Spatial Canvas to view individual argument breakdowns, identified risks, and missing information for every agent."""
+Click the **AI Council** button in the dock to read each agent's individual comments and advice."""
 
         # Platform Intent 4: Adversarial Red Team Mode
         if any(w in q_lower for w in ["red team", "challenge my decision", "adversarial", "confirmation bias", "confidence haircut", "stress test", "attack my decision"]):
-            return """### ✦ Adversarial Red Team: "Challenge My Decision" Mode
+            return """### ✦ "Challenge My Decision" (Red Team Mode)
 
-**Red Team Mode** is an adversarial stress-test modeled after military intelligence and high-stakes hedge fund investment committees:
-
----
-
-#### 1. Why Red Teaming Matters:
-Human decision-makers instinctively search for evidence that confirms their preferred choice (confirmation bias). FlowMind's Red Team does the opposite: it **deliberately attacks your leading recommendation** to discover failure modes before you commit capital or time.
-
-#### 2. What the Red Team Generates:
-- **Attacked Option**: The leading pathway under adversarial assault.
-- **Critical Assumptions**: Hidden hypotheses that must be true for the decision to succeed, but have zero empirical verification.
-- **Catastrophic Failure Modes**: Concrete scenarios where the chosen path implodes (e.g. regulatory shock, execution burnout, market commoditization).
-- **Dialectic Counter-Arguments**: The strongest possible case for why you should NOT pursue this pathway.
-- **Calibrated Confidence Haircut**: An objective reduction applied to model confidence (e.g. -12%) to account for unverified assumptions.
+**Red Team Mode** is like having an honest friend who tells you the hard truth before you make a big mistake.
 
 ---
 
-**How to Trigger**:
-Press `⌘K` -> Select *"Challenge My Decision"*, or click the **⚔️ Red Team** button in the bottom dock."""
-
-        # Platform Intent 5: What-If Lab & 1,000-Run Monte Carlo Simulation
-        if any(w in q_lower for w in ["what-if", "what if", "monte carlo", "simulator", "simulation", "p10", "p50", "p90", "scenario levers", "sensitivity analysis"]):
-            return """### ✦ What-If Scenario Lab: 1,000-Run Monte Carlo Sensitivity Engine
-
-The **What-If Lab** tests how fragile or antifragile your decision is when conditions deviate from your optimistic assumptions:
-
----
-
-#### 1. Stochastic Monte Carlo Engine:
-FlowMind executes **1,000 algorithmic simulation runs** incorporating randomized shocks across:
-- Market demand and revenue swings
-- Execution friction and delivery delays
-- Sunk costs and inflation drag
-- Talent retention and team bandwidth
-
-#### 2. Calibrated Percentile Distribution:
-- **P10 (Stress Floor)**: The worst 10% outcome floor. If you cannot survive the P10 case, the decision is too fragile.
-- **P25 / P50 (Median)**: The expected equilibrium baseline.
-- **P75 / P90 (Bull Case)**: The 90th-percentile compounding upside ceiling.
-- **Volatility & Downside Risk**: Measures expected variance across stochastic futures.
-
-#### 3. Interactive Levers:
-Use the real-time sliders to test:
-- *"What if execution takes 40% longer?"*
-- *"What if initial compensation is 20% lower?"*
-- *"What if remote flexibility changes?"*
-
----
-
-**How to Trigger**:
-Click the **Sliders** icon in the bottom dock or launch via `⌘K` -> *"Simulate What-If Scenarios"*."""
-
-        # Platform Intent 6: 2D Strategic Trade-Off Matrix (Type 1 vs Type 2 Doors)
-        if any(w in q_lower for w in ["matrix", "2d matrix", "quadrant", "exit agility", "reversibility", "type 1", "type 2", "one-way door", "two-way door", "cartesian"]):
-            return """### ✦ The 2D Strategic Decision Matrix
-
-FlowMind plots every evaluated pathway on a 2-dimensional Cartesian plane based on Jeff Bezos' famous decision framework:
-
----
-
-#### The Coordinates:
-- **X-Axis: Exit Agility & Reversibility** (0 to 100%):
-  - **Type 1 One-Way Doors (Left)**: Decisions that are irreversible or carry catastrophic switching costs. Require deep deliberation, external validation, and bounded commitments.
-  - **Type 2 Two-Way Doors (Right)**: Decisions that can be reversed quickly with negligible capital or reputational cost. Should be made rapidly with high experimentation velocity.
-- **Y-Axis: Compounding Upside & Leverage** (0 to 100%):
-  - Measures long-term career capital, equity compounding, network density, and asymmetric payoff.
-
-#### The 4 Strategic Quadrants:
-1. **Top-Right (The Asymmetric Sweet Spot)**: High Upside + High Reversibility. (Target this!)
-2. **Top-Left (Calculated High-Stakes)**: High Upside + Irreversible One-Way Door. (Requires Red Teaming!)
-3. **Bottom-Right (Iterative Sandbox)**: Low Upside + Reversible. (Good for prototyping).
-4. **Bottom-Left (Trap / Quagmire)**: Low Upside + Irreversible. (Avoid at all costs).
+#### Why It Is Helpful:
+When we like an idea, we tend to ignore the bad parts. The Red Team purposely looks for:
+1. **Weak Assumptions**: Things you are hoping will work out, but have not proven yet.
+2. **Worst-Case Scenarios**: What happens if sales are slow, learning takes twice as long, or the job is stressful.
+3. **Safety Checks**: What backup plan should you have in place before jumping in?
 
 ---
 
 **How to Use**:
-Hover over any node in the Spatial Canvas to view its exact `(X, Y)` coordinates, confidence, major upside, and tail risk."""
+Click **⚔️ Red Team** in the bottom dock to see what risks you should double-check."""
+
+        # Platform Intent 5: What-If Lab & 1,000-Run Monte Carlo Simulation
+        if any(w in q_lower for w in ["what-if", "what if", "monte carlo", "simulator", "simulation", "p10", "p50", "p90", "scenario levers", "sensitivity analysis"]):
+            return """### ✦ What-If Scenario Lab: Testing Best & Worst Cases
+
+The **What-If Lab** lets you test what happens to your decision when things change:
+
+---
+
+#### 1. Testing Scenarios:
+FlowMind runs **1,000 simulated scenarios** to test:
+- **Worst 10% Case (Stress Floor)**: If everything goes wrong (delays, unexpected costs), will you still be okay?
+- **Expected Case (Median)**: The most likely, realistic outcome.
+- **Best 10% Case (High Upside)**: If things go exceptionally well.
+
+#### 2. Interactive Sliders:
+Use the sliders to ask:
+- *"What if this project takes 3 months longer?"*
+- *"What if income is 20% lower than expected?"*
+- *"What if market conditions change?"*
+
+---
+
+**How to Use**:
+Click the **Sliders** icon in the bottom dock to adjust parameters and see real-time results."""
+
+        # Platform Intent 6: 2D Strategic Trade-Off Matrix (Type 1 vs Type 2 Doors)
+        if any(w in q_lower for w in ["matrix", "2d matrix", "quadrant", "exit agility", "reversibility", "type 1", "type 2", "one-way door", "two-way door", "cartesian"]):
+            return """### ✦ The Decision Matrix: Easy to Undo vs. Hard to Undo
+
+FlowMind groups all your options based on two simple questions:
+1. **How easy is it to undo if you change your mind?** (Reversibility)
+2. **How much upside does it offer?** (Growth & Rewards)
+
+---
+
+#### The 2 Types of Decisions:
+- **🚪🔄 Easy to Undo (Two-Way Doors)**:
+  - Low risk. If you don't like it after 30 days, you can easily switch back.
+  - *Action*: Decide quickly! Don't spend weeks overthinking—try a small test today.
+- **🚪🔒 Hard to Undo (One-Way Doors)**:
+  - High risk. Once you sign the contract, quit your job, or take a loan, it's very expensive to undo.
+  - *Action*: Slow down. Double check the facts and make sure you have a backup plan.
+
+#### The Best Sweet Spot:
+Look for options with **High Upside + Easy to Undo**. That gives you big potential rewards with very little downside risk!"""
 
         # Platform Intent 7: Document Grounding & Evidence (RAG)
         if any(w in q_lower for w in ["evidence", "document", "upload", "grounding", "provenance", "fact_from_document", "rag", "citation", "384-dim"]):
@@ -722,72 +700,70 @@ What specific milestone would you like to plan first?"""
             if vs_match and (decision is None or not is_specifically_about_decision):
                 opt_a = vs_match.group(1).strip()
                 opt_b = vs_match.group(2).strip().split("?")[0].split(",")[0].strip()
-                return f"""### ✦ Strategic Comparison: {opt_a.title()} vs. {opt_b.title()}
+                return f"""### ✦ Comparing: {opt_a.title()} vs. {opt_b.title()}
 
-Analyzing the strategic trade-offs between **{opt_a.title()}** and **{opt_b.title()}**:
+Here is a simple, head-to-head comparison to help you choose:
 
 ---
 
-#### 1. Core Trade-Off Dynamics:
-- **{opt_a.title()}**:
-  - *Advantages*: Greater autonomy, lower fixed burn rate, and faster immediate feedback loops.
-  - *Constraints*: Growth is gated by near-term revenue; requires personal endurance and disciplined resource allocation.
-- **{opt_b.title()}**:
-  - *Advantages*: High capital velocity, ability to invest aggressively upfront in talent/technology, and institutional distribution networks.
-  - *Constraints*: Equity dilution, board governance overhead, and pressure to achieve venture-scale returns.
+#### 1. {opt_a.title()}:
+- **Good points (Pros)**: More freedom, lower day-to-day costs, and faster feedback. You stay in control.
+- **Things to watch out for (Cons)**: Requires more self-discipline, and growth can take time.
+- **Can you undo it?**: Yes, this is usually **easy to undo**. You can try it and switch later.
 
-#### 2. Reversibility & Door Type:
-- **Two-Way vs. One-Way Doors**:
-  - **{opt_a.title()}** is typically a **Two-Way Door**: you maintain flexibility and can always pivot or raise capital later once traction is proven.
-  - **{opt_b.title()}** is an irreversible **One-Way Door**: high fixed overhead and external obligations are difficult to unwind.
+#### 2. {opt_b.title()}:
+- **Good points (Pros)**: More resources, bigger brand name or pay, and established structure.
+- **Things to watch out for (Cons)**: Less personal freedom, more meetings/rules, and harder to back out once you sign.
+- **Can you undo it?**: Harder to undo once committed.
 
-#### 3. Strategic Decision Rule:
-If certainty is low and learning velocity is your top priority, lean toward **{opt_a.title()}**. If market timing requires rapid land-grab economics with heavy capital investment, consider **{opt_b.title()}**.
+---
 
-Would you like to structure this into a full FlowMind decision with 7-agent arbitration?"""
+#### Simple Recommendation:
+- If you want **freedom, fast learning, and low risk**, pick **{opt_a.title()}**.
+- If you want **stability, bigger guaranteed resources, or brand pedigree**, pick **{opt_b.title()}**.
+
+Which of these two matters more to you right now: freedom or stability?"""
 
             if decision and is_specifically_about_decision:
                 alt_section = ""
                 if d_alt:
                     alt_section = f"""
-#### Why '{d_alt}' Was Deprioritized:
-While **{d_alt}** is a viable path, FlowMind's multi-agent council flagged key bottlenecks:
-- **Opportunity Cost & Delay**: It imposes longer gestation cycles before delivering unmediated feedback.
-- **Structural Friction**: It carries higher switching barriers (One-Way Door risk) compared to the rapid iteration velocity of **{d_rec}**."""
+#### Why "{d_alt}" was ranked second:
+While **{d_alt}** is a solid backup option, it takes longer to get results and is harder to undo if you change your mind later."""
 
-                return f"""### ✦ Strategic Trade-Off & Recommendation Analysis
+                return f"""### ✦ Why "{d_rec}" is the Recommended Option
 
-**Dilemma**: *"{d_title}"*
-**Recommended Route**: **{d_rec}** (Calibrated Decision Score: {int((decision.decision_score if decision else 82))} / 100)
+**Top Choice**: **{d_rec}** (Score: {int((decision.decision_score if decision else 82))} / 100)
 
 ---
 
-#### The Decisive Advantage:
-1. **Direct Alignment with '{user_goal}'**:
-   - **{d_rec}** achieves the highest direct congruence with your stated priorities, maximizing practical upside while bounding irreversible commitments.
-2. **Asymmetric Leverage & Velocity**:
-   - This route allows you to convert time and energy into verifiable proof-of-work immediately, without waiting for institutional permission or bureaucratic sponsorship.
-3. **Two-Way Door Flexibility**:
-   - If market dynamics or your personal conviction changes over the next 90 days, this pathway is easily reversible at minimal reputational or financial switching cost.
+#### 3 Simple Reasons Why This Option Won:
+1. **Best Match for Your Goal**:
+   - It directly moves you closer to *" {user_goal} "* with the highest score.
+2. **Lower Risk & Fast to Start**:
+   - You can start right away without needing institutional permission or taking on high financial debt.
+3. **Easy to Undo (Low Switching Cost)**:
+   - If you test this for 30–60 days and change your mind, you can easily pivot without losing your foundation.
 {alt_section}
 
 ---
 
-**Decisive Recommendation**:
-Commit to **{d_rec}** for the upcoming 60-day sprint. Re-evaluate only if empirical traction fails to hit your target milestones."""
+#### Simple Next Steps:
+1. **Step 1 (Days 1–7)**: Take one small, concrete step in **{d_rec}** (e.g. build a small prototype or start a draft).
+2. **Step 2 (Days 8–30)**: Review your progress. If it's working well, commit fully!"""
             else:
-                return f"""### ✦ Strategic Decision Analysis
+                return f"""### ✦ Simple Comparison & Trade-Offs
 
 Regarding: **"{question}"**
 
 ---
 
-#### Key Trade-Off Dimensions:
-1. **Asymmetric Leverage vs. Downside Risk**: When comparing alternatives, look for the option that bounds your catastrophic downside while preserving unlimited upside.
-2. **Reversibility (One-Way vs. Two-Way Doors)**: Prefer choices that can be tested in 30 days without permanent switching costs.
-3. **Empirical Traction**: Base choices on observed customer behavior and measurable metrics rather than speculative optimism.
+#### How to Pick Between Your Options:
+1. **Look at the downside first**: Ask yourself, *"If this fails completely, will I be okay?"* Always protect your emergency savings and peace of mind.
+2. **Check how easy it is to undo**: Can you test this for 30 days and quit if you hate it? If yes, it's a safe bet to try.
+3. **Pick the one with clear next steps**: The best option is usually the one you can start working on today.
 
-What specific alternatives would you like to evaluate or compare?"""
+What two options are you deciding between?"""
 
         # Intent 3: RISKS, PITFALLS & FAILURE MODES
         elif is_risk_query:
@@ -970,98 +946,98 @@ Regarding: **"{question}"**
         # Intent 7: PARALYSIS, DOUBT & DECISION ANXIETY
         elif any(w in q_lower for w in ["can't decide", "stuck", "confused", "not sure", "afraid", "doubt", "hesitant", "scared", "worried"]):
             if decision and is_specifically_about_decision:
-                return f"""### ✦ Deconstructing Decision Paralysis
+                return f"""### ✦ How to Unstick Your Decision on: "{d_title}"
 
-When grappling with **"{d_title}"**, feeling uncertain is a natural symptom of treating this as an irreversible life event rather than an iterative experiment:
+Feeling stuck is completely normal. Usually it happens when we treat a simple choice as a huge, permanent life trap.
 
 ---
 
-#### 1. The Two-Way Door Principle:
-- Most career and project decisions are **Two-Way Doors** (Jeff Bezos mental model): you can walk through, gather data for 30–60 days, and walk back if the evidence does not match your thesis.
-- **{d_rec}** has exceptionally high reversibility. Testing it does not burn your existing bridge.
+#### 3 Simple Rules to Stop Overthinking:
+1. **You Don't Need to Decide Forever**:
+   - Choosing **{d_rec}** isn't a 5-year prison sentence. It's just your focus for the next 2 to 4 weeks.
+2. **Action Beats Overthinking**:
+   - Thinking more won't give you new information. Taking one small action will immediately show you if you like it.
+3. **Your 14-Day Micro-Test**:
+   - Give yourself permission to test **{d_rec}** for just 14 days. If it feels right, keep going. If not, switch to **{d_alt or 'another option'}** with zero guilt.
 
-#### 2. The Regret Minimization Lens:
-- In 10 years, will you regret testing **{d_rec}** for 60 days and learning where your edges are? Or will you regret remaining in chronic analysis paralysis, wondering what might have been?
-
-#### 3. Immediate De-risking Action:
-- Do NOT make a 5-year commitment today. Make a **14-day commitment** to complete a single micro-proof project. Let real empirical momentum decide your next step."""
+What is one tiny step you can take today to test this?"""
             else:
-                return f"""### ✦ Overcoming Decision Paralysis & Uncertainty
+                return f"""### ✦ How to Overcome Decision Paralysis
 
-When feeling stuck or uncertain regarding **"{question}"**:
+When you feel confused or stuck on: **"{question}"**
 
 ---
 
-#### 1. The Two-Way Door Mental Model:
-- Most decisions are **Two-Way Doors**: you can test a direction for 14–30 days, evaluate real evidence, and adjust course with minimal downside.
-- Treat this as an **experiment**, not an irrevocable life sentence.
+#### 3 Easy Rules to Get Unstuck:
+1. **Ask: "Can I undo this?"**:
+   - If you can change your mind in a month without losing everything, stop overthinking and just try it.
+2. **The 70% Rule**:
+   - If you wait until you are 100% sure, you will wait forever. Once you have ~70% of the facts, make the call.
+3. **Run a 2-Week Trial**:
+   - Don't commit to a whole year. Commit to 14 days. Reality will teach you faster than your head can.
 
-#### 2. Regret Minimization Framework:
-- Fast forward 5 years: will you regret taking a calculated, reversible shot and learning from it, or staying trapped in analysis paralysis?
-
-#### 3. The 14-Day Micro-Experiment:
-- You don't need a multi-year masterplan. Commit to a simple, concrete 14-day test that produces real feedback. Action creates clarity faster than overthinking."""
+What is the biggest thing you are worried might go wrong?"""
 
         # Intent 7.5: SPECIFIC DECISION INQUIRY (When user explicitly asks about the active dilemma)
         elif is_specifically_about_decision:
             options_summary = "\n".join([f"- **{o}**" for o in options_titles[:4]]) if options_titles else f"- **{d_rec}**"
-            return f"""### ✦ Strategic Analysis: "{d_title}"
+            return f"""### ✦ Summary of Your Dilemma: "{d_title}"
 
-Addressing: *"{question}"*
+Here is where your decision stands in plain, clear terms:
 
 ---
 
-#### 1. Multi-Agent Council Consensus:
-The 7-agent council arbitrated the candidate pathways against your stated priorities:
+#### 1. What You Are Choosing Between:
 {options_summary}
 
-#### 2. Calibrated Focus: **{d_rec}**
-- **Asymmetric Payoff**: Delivers compounding upside while bounding exposure to irreversible traps.
-- **Validation Checkpoint**: Establish a 30-day milestone to test critical assumptions before committing heavy resources.
-- **Failure Mode Defense**: Prepare contingencies for execution friction and liquidity drag.
+#### 2. The Current Winner: **{d_rec}**
+- **Why it leads**: It has the highest match for your main goal with the least upfront friction.
+- **Key advantage**: You can start testing it right now without taking on big permanent risks.
+
+#### 3. Recommended Next Step:
+Spend the next 7 days testing the first step of **{d_rec}**. Check your progress at the end of the week before making any big commitments.
 
 ---
-*Tip: You can stress-test this in **Red Team Mode** or run a **1,000-scenario Monte Carlo simulation** from the workspace.*"""
+*Tip: Click **AI Council** in the dock to see comments from all 7 advisors, or click **⚔️ Red Team** to check for blind spots.*"""
 
         # Intent 8: GENERAL COMPARISON (X vs Y)
         elif any(w in q_lower for w in [" vs ", " versus ", " or ", "compare ", "difference between"]):
-            return f"""### ✦ Strategic Comparison & Trade-Off Analysis
+            return f"""### ✦ Comparing Your Options Simply
 
 Evaluating: **"{question}"**
 
 ---
 
-#### 1. Fundamental Trade-Off Dynamics:
-- **Option / Path A**: Often favors immediate agility, lower initial overhead, and faster validation feedback loops. Best when uncertainty is high and learning speed is critical.
-- **Option / Path B**: Often favors compounding scale, structural defensibility, and long-term leverage. Best when you have sufficient runway and clear conviction.
+#### How to Decide Between Option A and Option B:
+1. **Option A (The Agile / Fast Path)**:
+   - Best when you want immediate results, lower initial costs, and freedom to change your mind.
+2. **Option B (The Established / Structured Path)**:
+   - Best when you have plenty of time and budget, and want higher security or an established brand.
 
-#### 2. Decision Lens (Type 1 vs Type 2):
-- **Is this decision reversible?**
-  - **Two-Way Door (Reversible)**: Bias toward fast experimentation and rapid prototyping.
-  - **One-Way Door (Irreversible)**: Audit worst-case scenarios, impose a 48-hour cooling period, and identify what would invalidate your thesis.
+#### The Golden Rule:
+Pick the option that gives you real results within 30 days while keeping your risks low.
 
-#### 3. Recommended Approach:
-Start with the option that provides empirical data in 14–30 days while keeping switching costs low. Would you like me to model these specific options in FlowMind?"""
+Would you like to put these two options into FlowMind to compare them side-by-side?"""
 
         # Intent 9: ACTIONABLE ADVICE, ROADMAP & HOW-TO
         elif any(w in q_lower for w in ["how to", "how do i", "tips for", "advice on", "best way to", "guide", "steps to", "suggest"]):
-            return f"""### ✦ Actionable Framework & Suggestions
+            return f"""### ✦ Practical Advice & Next Steps
 
 Regarding: **"{question}"**
 
 ---
 
-#### 1. Core Principles:
-- **Clarify the Single Priority**: Identify the one constraint or goal that matters most right now (e.g. runway, velocity, validation, or scale).
-- **Separate Facts from Hypotheses**: Write down what is empirically verified versus what is merely an unproven assumption.
-- **De-Risk Through Iteration**: Build a 14-day prototype or pilot before locking in irrevocable commitments.
+#### 3 Simple Rules to Follow:
+1. **Pick One Clear Priority**: Focus on the single most important goal right now (e.g. learning, income, or saving time).
+2. **Start Small (Low Risk)**: Test your idea with a 14-day experiment before spending big money or quitting your current routine.
+3. **Measure Real Results**: Check whether people actually use or pay for what you built, or whether your skills actually improved.
 
-#### 2. Tactical Execution Steps:
-1. **Define Success Criteria**: What quantifiable benchmark confirms this is working?
-2. **Launch a Low-Friction Test**: Run an experiment that costs minimal capital or time.
-3. **Review & Calibrate**: Measure real-world feedback against your initial expectation.
+#### Simple 3-Step Action Plan:
+- **Step 1**: Write down the exact first action you need to take today.
+- **Step 2**: Block out 1 hour on your calendar to finish it.
+- **Step 3**: Check your results and decide what to do next.
 
-What specific details would you like to explore or structure?"""
+What specific goal do you want to tackle first?"""
 
         # Intent 10: GENERAL CHATBOT RESPONSE (Direct, Helpful, Conversational)
         else:
@@ -1071,15 +1047,15 @@ Regarding your question: **"{question}"**
 
 ---
 
-Here is a structured, practical way to look at this:
+Here is a straightforward, practical way to look at this:
 
-1. **Signal vs. Noise**: Focus on the 1–2 high-leverage factors that truly determine the outcome, rather than getting overwhelmed by minor variables.
-2. **Evaluate Reversibility**: Ask whether choices here are easily reversible (Two-Way Doors) or carry high switching costs (One-Way Doors).
-3. **Test with Evidence**: Wherever possible, rely on empirical precedents and small experiments rather than intuition alone.
+1. **Keep it simple**: Focus on the 1 or 2 things that actually matter most to you, and ignore the rest of the noise.
+2. **Check the downside**: Make sure the worst-case scenario is safe and manageable before you move forward.
+3. **Take a small test step**: Don't try to solve the next 5 years today. Take one concrete step this week and see where it leads.
 
 ---
 
-Feel free to ask follow-up questions, share a specific dilemma to analyze, or ask about any of FlowMind's tools (Council, Red Team, Monte Carlo, or Matrix)!"""
+Feel free to ask a follow-up question, or tell me what choices you're comparing!"""
 
     def _extract_factors(self, question: str, answer: str) -> List[str]:
         factors = ["Expected Value", "Opportunity Cost", "Reversibility"]

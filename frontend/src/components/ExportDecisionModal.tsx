@@ -44,20 +44,20 @@ export const ExportDecisionModal: React.FC<ExportDecisionModalProps> = ({
     lines.push('');
     lines.push('---');
     lines.push('');
-    lines.push('## 1. Executive Summary & Recommended Signal');
+    lines.push('## 1. Executive Summary & Recommendation');
     lines.push(`**Recommended Action:** **${decision.recommendation || winnerOption?.title}**`);
     lines.push(`**Calibrated Model Confidence:** ${decision.confidence_score}%`);
     lines.push(`**Decision Score:** ${decision.decision_score || winnerOption?.score || 85} / 100`);
     lines.push('');
-    lines.push('### Decisive Synthesis:');
-    lines.push(decision.reasoning_summary || 'Multi-agent arbitration determined this pathway maximizes compounding upside with bounded downside exposure.');
+    lines.push('### Summary & Why This Option Won:');
+    lines.push(decision.reasoning_summary || 'Based on your goals, this option gives you the highest chance of success with low risk and high flexibility.');
     lines.push('');
     lines.push('---');
     lines.push('');
-    lines.push('## 2. Competing Pathways Evaluated');
+    lines.push('## 2. Options Evaluated');
     decision.options.forEach((opt, idx) => {
       lines.push(`### Option ${idx + 1}: ${opt.title} ${opt.is_recommended ? '(★ Recommended)' : ''}`);
-      lines.push(`- **Equilibrium Score:** ${opt.score}/100`);
+      lines.push(`- **Score:** ${opt.score}/100`);
       if (opt.description) lines.push(`- **Context:** ${opt.description}`);
       if (opt.pros && opt.pros.length > 0) {
         lines.push(`- **Pros:** ${opt.pros.join('; ')}`);
@@ -70,7 +70,7 @@ export const ExportDecisionModal: React.FC<ExportDecisionModalProps> = ({
 
     lines.push('---');
     lines.push('');
-    lines.push('## 3. Multi-Agent Council Arbitration');
+    lines.push('## 3. 7-Agent Council Feedback');
     decision.agent_runs.forEach((run) => {
       lines.push(`- **${run.agent_name}** (${run.agent_role}, ${Math.round(run.confidence * 100)}% confidence):`);
       lines.push(`  > ${run.viewpoint}`);
@@ -78,7 +78,7 @@ export const ExportDecisionModal: React.FC<ExportDecisionModalProps> = ({
 
     if (decision.contradictions && decision.contradictions.length > 0) {
       lines.push('');
-      lines.push('### Council Arbitration Friction Points:');
+      lines.push('### Key Points of Debate:');
       decision.contradictions.forEach((c) => {
         lines.push(`- ${c}`);
       });

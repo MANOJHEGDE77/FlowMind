@@ -39,33 +39,30 @@ class AgentOrchestrator:
                 payload = {
                     "contents": [{
                         "parts": [{
-                            "text": f"""You are the Real-Time Strategic Pathway & Decision Intelligence Generator for FlowMind.
-Analyze this user's decision dilemma or life ambition and deconstruct it into high-fidelity competing pathways.
+                            "text": f"""You are the Decision Helper & Strategic Pathway Generator for FlowMind.
+Analyze this user's decision dilemma or goal and break it down into realistic, practical options that anyone can easily understand.
 
-CRITICAL INSTRUCTION:
-If the user states an open-ended ambition or goal (e.g. "I want to become an AI engineer", "I want to start a business", "How do I transition to product management?", "I want to buy a house in 2 years"):
-The user does NOT already know what options to define! You MUST formulate 3 to 4 distinct, realistic, competing strategic pathways/approaches to reach that specific ambition.
-Examples of distinct pathways:
-- Pathway A: Self-directed portfolio, open source contributions, and proof-of-work
-- Pathway B: Internal lateral move / apprenticeship at current organization
-- Pathway C: Formal credential / intensive specialized fellowship program
-- Pathway D: Gateway transition via adjacent hybrid role
-Do NOT simply repeat the user's desire as an option!
+CRITICAL INSTRUCTION - KEEP IT SIMPLE AND CLEAR:
+- Write in plain, everyday English. Do NOT use complicated corporate jargon or academic buzzwords.
+- Keep option titles short and clear (3 to 6 words).
+- If the user states an ambition (e.g. "I want to become an AI engineer", "I want to start a business", "How do I transition to product management?", "I want to buy a house in 2 years"):
+  Formulate 3 to 4 distinct, realistic, competing approaches to reach that goal (e.g., self-taught portfolio, internal transfer, specialized course, or stepping-stone role).
+- Do NOT simply repeat the user's desire as an option!
 
 User Input:
 "{prompt}"
 
 Respond strictly in valid JSON:
 {{
-  "title": "A clear, compelling title (max 75 chars)",
+  "title": "A clear, compelling title in plain English (max 75 chars)",
   "options": [
-    {{"title": "Specific pathway title", "description": "1-2 sentence concrete description of this strategic approach"}}
+    {{"title": "Simple pathway title", "description": "1-2 sentence simple, practical description of this approach"}}
   ],
   "factors": [
-    {{"name": "Relevant Evaluation Factor (e.g., Speed to Goal, Capital Required, Risk, Credibility)", "category": "category", "weight": 1.0}}
+    {{"name": "Practical Factor (e.g. Speed, Cost, Risk, Flexibility)", "category": "category", "weight": 1.0}}
   ],
   "goals": [
-    {{"description": "Core ambition or primary milestone", "priority": "high", "weight": 1.2}}
+    {{"description": "Core goal or primary ambition", "priority": "high", "weight": 1.2}}
   ],
   "constraints": [
     {{"description": "Any stated or inherent constraint", "severity": "soft"}}

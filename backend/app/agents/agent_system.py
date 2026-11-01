@@ -79,9 +79,9 @@ class AnalystAgent(BaseAgent):
 
         duration = int((time.time() - start) * 1000)
         viewpoint = (
-            f"The core decision requires selecting the optimal strategy under bounded information. "
-            f"There are {len(options)} competing paths identified. Structural constraints require verifying "
-            f"exit velocity, cognitive load, and financial sustainability."
+            f"Here are the straightforward facts: we have {len(options)} competing options to compare. "
+            f"We are evaluating each one against your main goal, practical requirements, and what information "
+            f"is verified right now."
         )
 
         evidence_snippets = [e.get("quote", "")[:120] for e in evidence[:3]] if evidence else [
@@ -129,9 +129,8 @@ class OptimistAgent(BaseAgent):
             key_upside_findings.append(f"Convex upside in {opt}: high mastery compounding and peer pedigree.")
 
         viewpoint = (
-            f"Optimistic outlook: Each path offers distinct multiplier opportunities. "
-            f"Choosing the highest-agency path creates compounding professional capital and unlocks "
-            f"second-order opportunities that are invisible from the starting line."
+            f"Here is the upside: each option gives you real opportunities to grow your skills, earn more, "
+            f"and open up exciting new career doors over the next 2 to 4 years."
         )
 
         duration = int((time.time() - start) * 1000)
@@ -175,9 +174,8 @@ class SkepticAgent(BaseAgent):
             flat_risks.extend(risk_items[:2])
 
         viewpoint = (
-            f"Cautionary critique: Critical assumptions remain untested. Optimism biases often mask "
-            f"hidden operational friction, high switching costs, and uncompensated cognitive overhead. "
-            f"Stress-test against the worst-case scenario before committing."
+            f"Here is what could go wrong: watch out for hidden stress, unexpected extra costs, and "
+            f"promises that sound too good to be true before you make your final choice."
         )
 
         duration = int((time.time() - start) * 1000)
@@ -229,8 +227,8 @@ class FinancialAgent(BaseAgent):
             scores[opt] = base_score
 
         viewpoint = (
-            f"Financial appraisal: Liquidity, total compensation certainty, and capital preservation "
-            f"must be weighed against long-term equity upside. Evaluate the discount rate of future earnings."
+            f"Looking at the money: compare reliable pay and steady income against risks or startup equity, "
+            f"and make sure you always keep a 3 to 6 month emergency savings cushion."
         )
 
         duration = int((time.time() - start) * 1000)
@@ -281,8 +279,8 @@ class LongTermPlanner(BaseAgent):
             trajectory_findings.append(f"{opt}: {door_type} optionality with compounding pedigree.")
 
         viewpoint = (
-            f"Strategic horizon analysis: Decisions are not isolated events but branching state machines. "
-            f"Favor choices that maintain high optionality and minimize irreversible lock-in early on."
+            f"Thinking ahead 3 to 5 years: pick options that keep your doors open and let you change your "
+            f"mind easily if things don't work out as expected."
         )
 
         duration = int((time.time() - start) * 1000)
@@ -315,9 +313,9 @@ class DevilsAdvocateAgent(BaseAgent):
     async def challenge(self, top_option: str, alternative_option: str, context: str, assumptions: List[str]) -> Dict[str, Any]:
         start = time.time()
         critique = (
-            f"Why '{top_option}' may be the wrong move: You are likely overweighting immediate safety "
-            f"and prestige while underestimating the long-term stagnation trap. What if the apparent consensus "
-            f"is driven by risk aversion rather than true conviction? '{alternative_option}' forces faster adaptation."
+            f"Let's be honest: what happens if '{top_option}' doesn't work out as well as you hope? "
+            f"Let's check your blind spots now so you don't get surprised later. '{alternative_option}' "
+            f"could be a solid backup if things get rocky."
         )
         vulnerabilities = [
             f"Heavily relies on assumption that '{top_option}' delivers on promised mentorship and autonomy.",
@@ -502,15 +500,15 @@ class SynthesizerAgent(BaseAgent):
         ]
 
         reasoning = (
-            f"**Decisive Signal Recommendation**: FlowMind's multi-agent council converges on **{top['title']}** as the highest-conviction strategic pathway (Decision Score: {top['score']}/100, {confidence}% calibrated confidence).\n\n"
-            f"**Why This Pathway Won with Conviction**:\n"
-            f"1. **Direct Goal Congruence**: It scores {top['alignment_scores']['goal']}% in direct alignment with your stated priority ('{primary_goal_name}').\n"
-            f"2. **The Decisive Factor**: {decisive_edge}. Unlike paths that require institutional permission or multi-year delays, this maximizes immediate leverage and {secondary_edge.lower()}.\n"
-            f"3. **Two-Way Door Optionality**: This approach preserves your strategic flexibility, allowing you to pivot without uncompensated switching costs if market conditions evolve.\n\n"
-            f"**Why '{alt['title']}' Was Ranked Lower**:\n"
-            f"While '{alt['title']}' is a viable secondary alternative (Score: {alt['score']}/100), {runner_up_drawback.lower()}. It carries heavier structural friction and deprioritizes your primary velocity target.\n\n"
-            f"**Immediate 30-Day Execution Directive**:\n"
-            f"Commit full focused attention to the initial sprint of {top['title']}. Measure empirical progress at Day 30 before allocating irreversible capital."
+            f"**Recommended Option**: **{top['title']}** (Score: {top['score']}/100, {confidence}% confidence)\n\n"
+            f"**Why This Is Your Best Option**:\n"
+            f"1. **Direct Match for Your Goal**: It scores {top['alignment_scores']['goal']}% in direct alignment with your primary goal ('{primary_goal_name}').\n"
+            f"2. **Fast & Low Risk**: {decisive_edge}. You can get started right away without needing institutional permission or taking on high debt.\n"
+            f"3. **Easy to Undo**: This option keeps your doors open. If you want to change course in 30–60 days, you can easily pivot without losing progress.\n\n"
+            f"**Why '{alt['title']}' Was Ranked Second**:\n"
+            f"While '{alt['title']}' is a solid backup option (Score: {alt['score']}/100), {runner_up_drawback.lower()}. It takes longer to see results and is harder to undo.\n\n"
+            f"**Simple 30-Day Action Plan**:\n"
+            f"Focus on the first simple step for {top['title']}. Test it for 2 to 4 weeks and review your results before spending big money or making irreversible changes."
         )
 
         structured_findings = {
