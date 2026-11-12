@@ -19,6 +19,7 @@ import { FocusPage } from './pages/FocusPage';
 import { AIThinkPage } from './pages/AIThinkPage';
 import { InsightsPage } from './pages/InsightsPage';
 import { LibraryPage } from './pages/LibraryPage';
+import { ExportDecisionModal } from './components/ExportDecisionModal';
 
 // Settings & Notification Modals
 import { Settings, User, X, Bell, Sparkles, Sliders } from 'lucide-react';
@@ -58,6 +59,7 @@ function FlowMindAppContent() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isQuickPromptOpen, setIsQuickPromptOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
   // Sync hash changes (e.g. back/forward button)
   useEffect(() => {
@@ -202,6 +204,7 @@ function FlowMindAppContent() {
               onOpenNotifications={() => setIsNotificationsOpen(true)}
               onNewFlow={() => setIsQuickPromptOpen(true)}
               onOpenAIThink={() => setActiveView('ai-think')}
+              onOpenExport={() => setIsExportOpen(true)}
             />
 
             {/* View Switcher Container */}
@@ -305,6 +308,7 @@ function FlowMindAppContent() {
               setAskAIQuestion(initialQ || '');
               setIsAskAIOpen(true);
             }}
+            onOpenExport={() => setIsExportOpen(true)}
           />
         )}
       </AnimatePresence>
@@ -314,6 +318,13 @@ function FlowMindAppContent() {
         isOpen={isAskAIOpen}
         onClose={() => setIsAskAIOpen(false)}
         initialQuestion={askAIQuestion}
+      />
+
+      {/* MULTI-FORMAT EXECUTIVE EXPORT & REPORT MODAL */}
+      <ExportDecisionModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        flow={activeFlow}
       />
 
       {/* SETTINGS MODAL */}

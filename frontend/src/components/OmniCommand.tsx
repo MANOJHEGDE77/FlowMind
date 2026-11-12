@@ -11,6 +11,7 @@ import {
   ArrowRight,
   Plus,
   Flame,
+  Share2,
 } from 'lucide-react';
 import { useFlow } from '../context/FlowContext';
 import { soundService } from '../services/sound';
@@ -23,6 +24,7 @@ interface OmniCommandProps {
   onOpenFlow: (flowId: string) => void;
   onOpenAskAI: (query?: string) => void;
   onStartFocusTask?: (taskId: string) => void;
+  onOpenExport?: () => void;
 }
 
 interface CommandItem {
@@ -40,6 +42,7 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
   onNavigate,
   onOpenFlow,
   onOpenAskAI,
+  onOpenExport,
 }) => {
   const {
     flows,
@@ -136,6 +139,21 @@ export const OmniCommand: React.FC<OmniCommandProps> = ({
         icon: Sparkles,
         action: () => onOpenAskAI(query),
       },
+      ...(onOpenExport
+        ? [
+            {
+              id: 'act-export',
+              category: 'ACTIONS' as const,
+              title: 'Export Executive Report & Blueprint',
+              desc: 'Generate printable HTML presentation, Markdown memo, CSV matrix, or JSON',
+              icon: Share2,
+              action: () => {
+                onClose();
+                onOpenExport();
+              },
+            },
+          ]
+        : []),
     ];
 
     flows.forEach((flow) => {

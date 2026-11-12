@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Plus, Sparkles, Bell, CheckCircle2, GitBranch } from 'lucide-react';
+import { Search, Plus, Sparkles, Bell, CheckCircle2, GitBranch, Share2 } from 'lucide-react';
 import { useFlow } from '../context/FlowContext';
 import { soundService } from '../services/sound';
 import { GithubIcon } from './GithubIcon';
@@ -9,6 +9,7 @@ interface AppTopBarProps {
   onOpenNotifications: () => void;
   onNewFlow: () => void;
   onOpenAIThink: () => void;
+  onOpenExport?: () => void;
 }
 
 export const AppTopBar: React.FC<AppTopBarProps> = ({
@@ -16,6 +17,7 @@ export const AppTopBar: React.FC<AppTopBarProps> = ({
   onOpenNotifications,
   onNewFlow,
   onOpenAIThink,
+  onOpenExport,
 }) => {
   const { activeFlow } = useFlow();
 
@@ -82,6 +84,21 @@ export const AppTopBar: React.FC<AppTopBarProps> = ({
           <Sparkles size={13} className="text-[#5EE7FF]" />
           <span>Copilot</span>
         </button>
+
+        {/* Export Executive Memo & Report */}
+        {onOpenExport && (
+          <button
+            onClick={() => {
+              soundService.playClick();
+              onOpenExport();
+            }}
+            className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-[#151823] border border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 text-xs font-medium transition-colors"
+            title="Export Executive Report & Blueprint (HTML, Markdown, CSV, JSON)"
+          >
+            <Share2 size={13} className="text-cyan-400" />
+            <span className="hidden md:inline">Export</span>
+          </button>
+        )}
 
         {/* GitHub Repository Link */}
         <a

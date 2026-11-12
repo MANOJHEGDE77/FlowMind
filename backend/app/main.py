@@ -2,6 +2,7 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.database.session import init_db
@@ -37,6 +38,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Response payload compression optimization (>1KB payloads)
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Exception handler
 @app.exception_handler(Exception)
